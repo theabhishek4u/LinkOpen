@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, HelpCircle } from 'lucide-react'
+import { ChevronDown, HelpCircle, Link2, Smartphone, Globe, Shield, Zap, Code, Eye, MessageSquare, Lightbulb, Sparkles } from 'lucide-react'
+
+const faqIcons = [Link2, Smartphone, Globe, Shield, Code, Zap, Eye, MessageSquare]
 
 const faqs = [
   {
@@ -47,16 +49,18 @@ const faqs = [
   },
 ]
 
-// Individual FAQ item component (to satisfy React hooks rules)
+// Individual FAQ item component with animated icon, expand/collapse, gradient accent
 function FaqItem({ faq, index, isOpen, onToggle }: { faq: typeof faqs[0]; index: number; isOpen: boolean; onToggle: () => void }) {
+  const Icon = faqIcons[index % faqIcons.length]
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.06 }}
-      className={`faq-hover-glow faq-gradient-border relative rounded-lg overflow-hidden ${
-        isOpen ? 'open' : ''
+      className={`relative rounded-lg overflow-hidden transition-all duration-300 ${
+        isOpen ? 'faq-item-open-accent' : 'hover:bg-accent/20'
       }`}
     >
       <button
@@ -64,10 +68,18 @@ function FaqItem({ faq, index, isOpen, onToggle }: { faq: typeof faqs[0]; index:
         className="w-full flex items-center gap-3 px-4 sm:px-5 py-4 text-left group transition-all duration-300 focus-visible-ring"
         aria-expanded={isOpen}
       >
-        {/* Number badge */}
-        <span className="flex-shrink-0 w-7 h-7 rounded-full bg-emerald-500/10 text-emerald-400 text-xs flex items-center justify-center font-mono transition-all duration-300 group-hover:bg-emerald-500/20 group-hover:scale-110">
-          {index + 1}
-        </span>
+        {/* Animated icon badge */}
+        <motion.span
+          className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+            isOpen
+              ? 'bg-emerald-500/20 text-emerald-400 scale-110'
+              : 'bg-accent/50 text-muted-foreground group-hover:bg-emerald-500/10 group-hover:text-emerald-400'
+          }`}
+          animate={{ rotate: isOpen ? 5 : 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        >
+          <Icon className="size-4" />
+        </motion.span>
 
         {/* Question text */}
         <span className={`flex-1 text-sm sm:text-base font-medium transition-colors duration-300 ${
@@ -76,9 +88,9 @@ function FaqItem({ faq, index, isOpen, onToggle }: { faq: typeof faqs[0]; index:
           {faq.question}
         </span>
 
-        {/* Animated chevron icon */}
+        {/* Animated chevron icon with spin */}
         <motion.div
-          animate={{ rotate: isOpen ? 180 : 0 }}
+          animate={{ rotate: isOpen ? 180 : 0, scale: isOpen ? 1.1 : 1 }}
           transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
           className={`flex-shrink-0 transition-colors duration-300 ${
             isOpen ? 'text-emerald-400' : 'text-muted-foreground group-hover:text-emerald-400'
@@ -88,7 +100,7 @@ function FaqItem({ faq, index, isOpen, onToggle }: { faq: typeof faqs[0]; index:
         </motion.div>
       </button>
 
-      {/* Smooth accordion content with Framer Motion */}
+      {/* Smooth accordion content with expand/collapse animation */}
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
@@ -98,7 +110,7 @@ function FaqItem({ faq, index, isOpen, onToggle }: { faq: typeof faqs[0]; index:
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
             className="overflow-hidden"
           >
-            <div className="px-4 sm:px-5 pb-4 pl-12 sm:pl-14 text-sm text-muted-foreground leading-relaxed">
+            <div className="px-4 sm:px-5 pb-4 pl-15 sm:pl-16 text-sm text-muted-foreground leading-relaxed">
               {faq.answer}
             </div>
           </motion.div>
@@ -118,7 +130,7 @@ export default function FAQ() {
   return (
     <section id="faq" className="relative py-20 sm:py-28 mesh-gradient-subtle">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        {/* Header with gradient text */}
+        {/* Header with gradient text and better visual hierarchy */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -137,14 +149,26 @@ export default function FAQ() {
             <span className="text-xs font-medium text-emerald-400">Got Questions?</span>
           </motion.div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-            <span className="faq-header-gradient">Frequently Asked Questions</span>
+            <span className="gradient-text">Frequently Asked Questions</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Got questions? We have answers. If you can not find what you are looking for, reach out to our support team.
           </p>
+
+          {/* FAQ count indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="mt-4 flex items-center justify-center gap-2"
+          >
+            <span className="count-badge">{faqs.length}</span>
+            <span className="text-xs text-muted-foreground">questions answered</span>
+          </motion.div>
         </motion.div>
 
-        {/* FAQ Accordion with Framer Motion */}
+        {/* FAQ Accordion with gradient accent on open items */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -163,6 +187,23 @@ export default function FAQ() {
               />
             ))}
           </div>
+
+          {/* Bottom CTA for more help */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="mt-6 pt-4 border-t border-border/10 flex items-center justify-center gap-2"
+          >
+            <Lightbulb className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-xs text-muted-foreground">
+              Still have questions?{' '}
+              <span className="text-emerald-400 font-medium cursor-pointer hover:underline">
+                Contact our support team
+              </span>
+            </span>
+          </motion.div>
         </motion.div>
       </div>
     </section>

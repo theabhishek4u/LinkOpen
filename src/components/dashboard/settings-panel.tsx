@@ -30,6 +30,7 @@ import {
 import { useLinkStore } from '@/store/link-store'
 import { toast } from 'sonner'
 import { DEFAULT_SHORTCUTS, type ShortcutBinding } from './keyboard-shortcuts'
+import { ThemeCustomizer } from './theme-customizer'
 
 interface SettingsPanelProps {
   open: boolean
@@ -242,6 +243,11 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
               </div>
             </div>
           </div>
+
+          <Separator className="bg-border/30" />
+
+          {/* Accent Color Section */}
+          <ThemeCustomizer />
 
           <Separator className="bg-border/30" />
 

@@ -146,6 +146,12 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: color 0.4s ease, background-color 0.4s ease;
+  }
+
+  /* Smooth theme color transitions on :root */
+  :root {
+    transition: --primary 0.4s ease, --ring 0.4s ease, --accent 0.4s ease;
   }
 
   /* Premium selection color */
@@ -3522,6 +3528,268 @@ nav a:focus-visible {
   }
 
   .sample-pill-hover:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   TASK 4a+4b: STYLING ENHANCEMENT ROUND 5
+   ============================================================ */
+
+/* ── Float animation with 2s delay ──────────────────────── */
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float-delayed {
+  animation: float-delayed 4s ease-in-out 2s infinite;
+}
+
+/* ── Glass card with enhanced hover state ────────────────── */
+.glass-card-hover {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+}
+
+.glass-card-hover:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    0 0 0 1px oklch(0.696 0.17 162.48 / 20%),
+    0 8px 32px oklch(0 0 0 / 12%),
+    0 0 20px oklch(0.696 0.17 162.48 / 8%);
+  border-color: oklch(0.696 0.17 162.48 / 25%);
+}
+
+.dark .glass-card-hover:hover {
+  box-shadow:
+    0 0 0 1px oklch(0.696 0.17 162.48 / 30%),
+    0 12px 40px oklch(0 0 0 / 60%),
+    0 0 24px oklch(0.696 0.17 162.48 / 12%);
+  border-color: oklch(0.696 0.17 162.48 / 35%);
+}
+
+/* ── Horizontal gradient animation ──────────────────────── */
+@keyframes gradient-x {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-x {
+  background-size: 200% 100%;
+  animation: gradient-x 3s ease infinite;
+}
+
+/* ── Skeleton loading shimmer with gradient ─────────────── */
+@keyframes shimmer-skeleton {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(0.93 0.01 270 / 4%) 25%,
+    oklch(0.93 0.01 270 / 8%) 37%,
+    oklch(0.93 0.01 270 / 4%) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-skeleton 1.8s ease-in-out infinite;
+}
+
+.dark .shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(0.15 0.02 275 / 40%) 25%,
+    oklch(0.20 0.03 275 / 60%) 37%,
+    oklch(0.15 0.02 275 / 40%) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-skeleton 1.8s ease-in-out infinite;
+}
+
+/* ── Subtle glow behind stat cards ──────────────────────── */
+.stat-card-glow {
+  position: relative;
+}
+
+.stat-card-glow::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    oklch(0.696 0.17 162.48 / 4%) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 0.4s ease;
+  opacity: 0;
+}
+
+.stat-card-glow:hover::after {
+  opacity: 1;
+}
+
+/* ── Slide up with fade entrance ────────────────────────── */
+@keyframes slide-up-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slide-up-fade 0.5s ease-out both;
+}
+
+/* ── Navbar scroll shadow ───────────────────────────────── */
+.nav-scroll-shadow {
+  box-shadow:
+    0 4px 24px oklch(0 0 0 / 8%),
+    0 1px 0 oklch(0.696 0.17 162.48 / 6%);
+}
+
+.dark .nav-scroll-shadow {
+  box-shadow:
+    0 4px 32px oklch(0 0 0 / 40%),
+    0 1px 0 oklch(0.696 0.17 162.48 / 10%);
+}
+
+/* ── AI Powered gradient pill badge ─────────────────────── */
+.ai-powered-pill {
+  background: linear-gradient(135deg, oklch(0.696 0.17 162.48 / 15%), oklch(0.488 0.243 264.376 / 15%));
+  background-size: 200% 100%;
+  animation: gradient-x 4s ease infinite;
+  border: 1px solid oklch(0.696 0.17 162.48 / 20%);
+}
+
+/* ── FAQ gradient accent on open items ──────────────────── */
+.faq-item-open-accent {
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48 / 4%) 0%,
+    oklch(0.488 0.243 264.376 / 3%) 50%,
+    transparent 100%
+  );
+  border-left: 3px solid oklch(0.696 0.17 162.48 / 50%);
+}
+
+/* ── Trend arrow bounce animation ───────────────────────── */
+@keyframes trend-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.animate-trend-bounce {
+  animation: trend-bounce 2s ease-in-out infinite;
+}
+
+/* ── Dashboard footer social link hover ─────────────────── */
+.footer-social-link {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-social-link:hover {
+  transform: translateY(-1px);
+  color: oklch(0.696 0.17 162.48);
+}
+
+/* ── Count badge pill ───────────────────────────────────── */
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: oklch(0.696 0.17 162.48 / 15%);
+  color: oklch(0.696 0.17 162.48);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.dark .count-badge {
+  background: oklch(0.696 0.17 162.48 / 20%);
+  color: oklch(0.82 0.19 160);
+}
+
+/* ── Particle dot subtle animation ──────────────────────── */
+@keyframes particle-float {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  25% { transform: translate(8px, -12px) scale(1.1); opacity: 0.6; }
+  50% { transform: translate(-4px, -20px) scale(0.9); opacity: 0.4; }
+  75% { transform: translate(12px, -8px) scale(1.05); opacity: 0.5; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+}
+
+.particle-dot {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: oklch(0.696 0.17 162.48 / 30%);
+  animation: particle-float 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Chart bar glow on hover ────────────────────────────── */
+.chart-bar-glow {
+  transition: box-shadow 0.3s ease, filter 0.3s ease;
+}
+
+.chart-bar-glow:hover {
+  filter: brightness(1.15);
+}
+
+/* ── Empty state illustration ───────────────────────────── */
+.empty-state-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, oklch(0.696 0.17 162.48 / 8%), oklch(0.488 0.243 264.376 / 6%));
+}
+
+.dark .empty-state-icon {
+  background: linear-gradient(135deg, oklch(0.696 0.17 162.48 / 12%), oklch(0.488 0.243 264.376 / 8%));
+}
+
+/* ── Mobile menu slide animation ────────────────────────── */
+@keyframes mobile-menu-slide {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.animate-mobile-menu-slide {
+  animation: mobile-menu-slide 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* ── Reduced motion — new animations ────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-delayed,
+  .animate-gradient-x,
+  .shimmer-skeleton,
+  .animate-slide-up-fade,
+  .animate-trend-bounce,
+  .particle-dot,
+  .animate-mobile-menu-slide {
+    animation: none !important;
+  }
+  .glass-card-hover:hover {
     transform: none;
   }
 }

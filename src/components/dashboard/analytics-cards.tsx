@@ -73,8 +73,8 @@ function Sparkline({ data, color, gradientFrom }: { data: number[]; color: strin
   const max = Math.max(...data)
   const min = Math.min(...data)
   const range = max - min || 1
-  const width = 64
-  const height = 24
+  const width = 72
+  const height = 28
 
   const points = data.map((v, i) => {
     const x = (i / (data.length - 1)) * width
@@ -89,15 +89,21 @@ function Sparkline({ data, color, gradientFrom }: { data: number[]; color: strin
     return `${i === 0 ? 'M' : 'L'}${x},${y}`
   }).join(' ') + ` L${width},${height} L0,${height} Z`
 
-  const gradientId = `spark-grad-${color.replace('#', '')}`
+  const gradientId = `spark-grad-${color.replace('#', '')}-${data.length}`
+  const lastX = width
+  const lastY = height - ((data[data.length - 1] - min) / range) * height
 
   return (
-    <svg width={width} height={height} className="opacity-70">
+    <svg width={width} height={height} className="opacity-80">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
+        <radialGradient id={`${gradientId}-dot`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </radialGradient>
       </defs>
       <path d={areaPath} fill={`url(#${gradientId})`} />
       <polyline
@@ -108,12 +114,20 @@ function Sparkline({ data, color, gradientFrom }: { data: number[]; color: strin
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {/* End dot */}
+      {/* Glow behind end dot */}
       <circle
-        cx={(data.length - 1) / (data.length - 1) * width}
-        cy={height - ((data[data.length - 1] - min) / range) * height}
-        r="2"
+        cx={lastX}
+        cy={lastY}
+        r="6"
+        fill={`url(#${gradientId}-dot)`}
+      />
+      {/* End dot with pulse */}
+      <circle
+        cx={lastX}
+        cy={lastY}
+        r="2.5"
         fill={color}
+        style={{ filter: `drop-shadow(0 0 2px ${color}40)` }}
       />
     </svg>
   )
@@ -125,10 +139,18 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="relative group rounded-xl overflow-hidden gradient-card-bg"
+      className="relative group rounded-xl overflow-hidden glass-card-hover stat-card-glow"
     >
       {/* Animated gradient border */}
       <div className="absolute inset-0 rounded-xl premium-border pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      {/* Subtle gradient background per card */}
+      <div
+        className="absolute inset-0 pointer-events-none rounded-xl"
+        style={{
+          background: `linear-gradient(135deg, ${iconColor}06 0%, transparent 50%, ${iconColor}03 100%)`,
+        }}
+      />
 
       <div className="glass-card hover-lift p-4 sm:p-5 space-y-3 rounded-xl relative z-10">
         <div className="flex items-center justify-between">
@@ -148,14 +170,21 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
             <div className={`text-2xl sm:text-3xl font-bold text-foreground animate-number-glow`}>
               <AnimatedNumber value={value} suffix={suffix} />
             </div>
-            {/* Trend indicator */}
+            {/* Trend indicator with animated arrow */}
             {trend && trendValue && (
               <div className="flex items-center gap-1 mt-1">
-                {trend === 'up' ? (
-                  <TrendingUp className="h-3 w-3 text-emerald-400" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-red-400" />
-                )}
+                <motion.span
+                  className="animate-trend-bounce inline-flex"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: delay + 0.5 }}
+                >
+                  {trend === 'up' ? (
+                    <TrendingUp className="h-3 w-3 text-emerald-400" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 text-red-400" />
+                  )}
+                </motion.span>
                 <span className={`text-xs font-semibold ${trend === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
                   {trendValue}
                 </span>

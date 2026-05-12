@@ -33,6 +33,8 @@ import { BatchOperationsBar } from './batch-operations'
 import { PerformanceDashboard } from './performance-dashboard'
 import { ApiDocsModal } from './api-docs-modal'
 import { LinkInsights } from './link-insights'
+import { LinkSearch } from './link-search'
+import { DeepLinkTester } from './deep-link-tester'
 import { useLinkStore } from '@/store/link-store'
 
 type SectionId = 'input' | 'analytics' | 'history' | 'tools'
@@ -474,6 +476,16 @@ export function DashboardMain() {
             )}
           </AnimatePresence>
 
+          {/* Link Search & Filter */}
+          <motion.div
+            custom={5.5}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <LinkSearch />
+          </motion.div>
+
           {/* Two-Column Layout */}
           <div id="section-analytics" className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Left Column (wider) */}
@@ -522,24 +534,62 @@ export function DashboardMain() {
               <LinkHealthChecker />
               <LinkScheduler />
               <ExportPanel />
+              <DeepLinkTester />
             </div>
           </motion.div>
 
-          {/* Footer */}
+          {/* Enhanced Footer */}
           <motion.footer
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="text-center py-6 mt-auto border-t border-border/20"
+            className="mt-auto border-t border-border/20 pt-6 pb-8"
           >
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-primary/60" />
-                <span className="text-sm font-medium gradient-text-green">LinkVerse</span>
+            <div className="flex flex-col items-center gap-4">
+              {/* Brand row */}
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary/60" />
+                <span className="text-sm font-semibold gradient-text-green">LinkVerse</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-mono">v2.0</span>
               </div>
-              <p className="text-xs text-muted-foreground/40">
-                Intelligent deep linking platform &middot; 13 platforms &middot; AI-powered detection
-              </p>
+
+              {/* Feature badges */}
+              <div className="flex items-center gap-3 text-[10px] text-muted-foreground/50">
+                <span className="flex items-center gap-1">
+                  <Link2 className="h-2.5 w-2.5" />
+                  13 Platforms
+                </span>
+                <span className="text-border/40">·</span>
+                <span className="flex items-center gap-1">
+                  <Zap className="h-2.5 w-2.5" />
+                  AI-Powered
+                </span>
+                <span className="text-border/40">·</span>
+                <span className="flex items-center gap-1">
+                  <Shield className="h-2.5 w-2.5" />
+                  SOC 2
+                </span>
+              </div>
+
+              {/* Social links */}
+              <div className="flex items-center gap-4">
+                {[
+                  { label: 'GitHub', icon: '⌘' },
+                  { label: 'Twitter', icon: '𝕏' },
+                  { label: 'Discord', icon: '◆' },
+                  { label: 'Docs', icon: '📖' },
+                ].map((social) => (
+                  <button
+                    key={social.label}
+                    className="footer-social-link text-muted-foreground/40 hover:text-emerald-400 text-xs focus-visible-ring rounded"
+                    aria-label={social.label}
+                  >
+                    <span className="text-sm">{social.icon}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Copyright */}
               <p className="text-[10px] text-muted-foreground/25">
                 &copy; {new Date().getFullYear()} LinkVerse. All rights reserved.
               </p>

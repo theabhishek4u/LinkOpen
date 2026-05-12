@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Link2, ArrowUp } from 'lucide-react'
+import { ArrowRight, Link2, ArrowUp, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -189,7 +189,7 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? 'nav-glass'
+            ? 'nav-glass nav-scroll-shadow'
             : 'bg-transparent'
         }`}
       >
@@ -221,6 +221,12 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
                   </button>
                 )
               })}
+
+              {/* AI Powered gradient pill badge */}
+              <span className="ai-powered-pill inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-emerald-400">
+                <Sparkles className="size-3" />
+                AI Powered
+              </span>
             </div>
 
             {/* Desktop CTA with glow effect */}
@@ -251,19 +257,27 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
                       <LinkVerseLogo />
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col gap-2 mt-6">
+                  {/* AI Powered badge in mobile menu */}
+                  <div className="mt-4 mb-2">
+                    <span className="ai-powered-pill inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-emerald-400">
+                      <Sparkles className="size-3" />
+                      AI Powered
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2 mt-2">
                     {navLinks.map((link, i) => (
                       <motion.button
                         key={link.label}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
+                        transition={{ delay: i * 0.05, type: 'spring', stiffness: 300, damping: 25 }}
                         onClick={() => handleNavClick(link.href)}
-                        className={`text-base transition-colors py-3 px-3 rounded-lg text-left focus-visible-ring ${
+                        className={`text-base transition-colors py-3 px-3 rounded-lg text-left focus-visible-ring animate-mobile-menu-slide ${
                           currentSection === link.href.replace('#', '')
                             ? 'text-emerald-400 bg-emerald-500/10'
                             : 'text-muted-foreground hover:text-emerald-400 hover:bg-accent/50'
                         }`}
+                        style={{ animationDelay: `${i * 0.06}s` }}
                       >
                         {link.label}
                       </motion.button>

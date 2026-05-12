@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { TrendingUp, Users, Link2, Zap, Calendar } from 'lucide-react'
+import { TrendingUp, Users, Link2, Zap, Calendar, Sparkles } from 'lucide-react'
 
 const stats = [
-  { label: 'Total Links', value: '12,847', numericValue: 12847, icon: Link2, color: 'text-emerald-400', bg: 'bg-emerald-500/15', glowColor: 'oklch(0.696 0.17 162.48)' },
-  { label: 'Native Opens', value: '89%', numericValue: 89, icon: Zap, color: 'text-violet-400', bg: 'bg-violet-500/15', glowColor: 'oklch(0.488 0.243 264.376)' },
-  { label: 'Conversion Rate', value: '94.2%', numericValue: 94.2, icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/15', glowColor: 'oklch(0.769 0.188 70.08)' },
-  { label: 'Active Users', value: '3,241', numericValue: 3241, icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-500/15', glowColor: 'oklch(0.65 0.2 200)' },
+  { label: 'Total Links', value: '12,847', numericValue: 12847, icon: Link2, color: 'text-emerald-400', bg: 'bg-emerald-500/15', glowColor: 'oklch(0.696 0.17 162.48)', gradient: 'from-emerald-500/8 to-transparent' },
+  { label: 'Native Opens', value: '89%', numericValue: 89, icon: Zap, color: 'text-violet-400', bg: 'bg-violet-500/15', glowColor: 'oklch(0.488 0.243 264.376)', gradient: 'from-violet-500/8 to-transparent' },
+  { label: 'Conversion Rate', value: '94.2%', numericValue: 94.2, icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/15', glowColor: 'oklch(0.769 0.188 70.08)', gradient: 'from-amber-500/8 to-transparent' },
+  { label: 'Active Users', value: '3,241', numericValue: 3241, icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-500/15', glowColor: 'oklch(0.65 0.2 200)', gradient: 'from-cyan-500/8 to-transparent' },
 ]
 
 const barChartData = [
@@ -28,6 +28,17 @@ const platformDistribution = [
   { name: 'TikTok', value: 12, color: '#ff0050', icon: '🎵' },
   { name: 'X (Twitter)', value: 10, color: '#888888', icon: '🐦' },
 ]
+
+// Particle positions for subtle background effect
+const particles = Array.from({ length: 8 }, (_, i) => ({
+  id: i,
+  style: {
+    left: `${10 + i * 12}%`,
+    top: `${15 + (i % 3) * 25}%`,
+    animationDelay: `${i * 1.2}s`,
+    animationDuration: `${7 + i * 0.8}s`,
+  },
+}))
 
 // Animated number counter hook
 function useAnimatedNumber(end: number, duration: number = 1500) {
@@ -82,39 +93,51 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="glass-card hover-lift p-4 sm:p-5 animated-border-glow group"
-      style={{
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = `0 0 20px ${stat.glowColor}20, 0 0 40px ${stat.glowColor}08`
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = ''
-      }}
+      className="glass-card glass-card-hover stat-card-glow p-4 sm:p-5 animated-border-glow group relative overflow-hidden"
     >
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-md ${stat.bg} flex items-center justify-center`}>
-            <Icon className={`size-4 ${stat.color}`} />
+      {/* Gradient background overlay per card */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} pointer-events-none`} />
+
+      <div className="relative z-10">
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2">
+            <div className={`w-8 h-8 rounded-md ${stat.bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
+              <Icon className={`size-4 ${stat.color}`} />
+            </div>
+            <span className="text-xs text-muted-foreground">{stat.label}</span>
           </div>
-          <span className="text-xs text-muted-foreground">{stat.label}</span>
+          {/* Live indicator with pulsing green dot on first card */}
+          {index === 0 && (
+            <span className="live-indicator">
+              <span className="sr-only">Live data</span>
+            </span>
+          )}
         </div>
-        {/* Live indicator with pulsing green dot on first card */}
-        {index === 0 && (
-          <span className="live-indicator">
-            <span className="sr-only">Live data</span>
+        <span className="text-2xl sm:text-3xl font-bold text-foreground animate-number-glow">
+          {displayValue}
+        </span>
+        {/* Mini trend indicator */}
+        <div className="flex items-center gap-1 mt-1.5">
+          <motion.span
+            className="animate-trend-bounce inline-flex"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.8 + index * 0.1 }}
+          >
+            <TrendingUp className="h-3 w-3 text-emerald-400" />
+          </motion.span>
+          <span className="text-[10px] text-emerald-400 font-medium">
+            +{(8 + index * 3.2).toFixed(1)}%
           </span>
-        )}
+          <span className="text-[10px] text-muted-foreground/50">vs last week</span>
+        </div>
       </div>
-      <span className="text-2xl sm:text-3xl font-bold text-foreground animate-number-glow">
-        {displayValue}
-      </span>
     </motion.div>
   )
 }
 
-// Individual bar chart bar with stagger animation
+// Individual bar chart bar with stagger animation and glow
 function ChartBar({ bar, index, animated, hoveredBar, onHover, onLeave }: {
   bar: typeof barChartData[0]
   index: number
@@ -144,7 +167,7 @@ function ChartBar({ bar, index, animated, hoveredBar, onHover, onLeave }: {
       </motion.div>
       <div className="w-full relative" style={{ height: '120px' }}>
         <motion.div
-          className={`absolute bottom-0 w-full rounded-t-lg ${bar.color} cursor-pointer`}
+          className={`absolute bottom-0 w-full rounded-t-lg ${bar.color} cursor-pointer chart-bar-glow`}
           initial={{ scaleY: 0 }}
           animate={{
             scaleY: animated ? 1 : 0,
@@ -158,9 +181,23 @@ function ChartBar({ bar, index, animated, hoveredBar, onHover, onLeave }: {
             height: `${bar.value}%`,
             transformOrigin: 'bottom',
             borderRadius: '6px 6px 2px 2px',
-            boxShadow: hoveredBar === index ? '0 0 16px oklch(0.696 0.17 162.48 / 30%), 0 -4px 12px oklch(0.696 0.17 162.48 / 15%)' : 'none',
+            boxShadow: hoveredBar === index
+              ? `0 0 16px oklch(0.696 0.17 162.48 / 30%), 0 -4px 12px oklch(0.696 0.17 162.48 / 15%), inset 0 1px 0 rgba(255,255,255,0.1)`
+              : 'inset 0 1px 0 rgba(255,255,255,0.05)',
           }}
-        />
+        >
+          {/* Glass shine on bar */}
+          <div className="absolute inset-0 rounded-t-lg overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/8 to-transparent" />
+            {hoveredBar === index && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/10"
+              />
+            )}
+          </div>
+        </motion.div>
       </div>
       <span className={`text-[10px] transition-colors duration-200 ${hoveredBar === index ? 'text-emerald-400 font-medium' : 'text-muted-foreground'}`}>
         {bar.label}
@@ -183,8 +220,18 @@ export default function AnalyticsPreview() {
   const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   return (
-    <section className="relative py-20 sm:py-28">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section className="relative py-20 sm:py-28 overflow-hidden">
+      {/* Subtle particle effects */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        {particles.map((p) => (
+          <div key={p.id} className="particle-dot" style={p.style} />
+        ))}
+      </div>
+
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-emerald-500/[0.02] to-background pointer-events-none" aria-hidden="true" />
+
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -193,6 +240,16 @@ export default function AnalyticsPreview() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12 sm:mb-16"
         >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20"
+          >
+            <Sparkles className="size-3.5 text-emerald-400" />
+            <span className="text-xs font-medium text-emerald-400">Real-time Insights</span>
+          </motion.div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
             <span className="gradient-text">Enterprise Analytics</span>
           </h2>
@@ -201,7 +258,7 @@ export default function AnalyticsPreview() {
           </p>
         </motion.div>
 
-        {/* Stats cards with animated number counters and Live indicator */}
+        {/* Stats cards with animated number counters, glass morphism, and Live indicator */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -216,100 +273,110 @@ export default function AnalyticsPreview() {
 
         {/* Charts row */}
         <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
-          {/* Bar chart with tooltips and shimmer */}
+          {/* Bar chart with tooltips, shimmer and gradient bg */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="glass-card p-5 sm:p-6 shimmer-subtle"
+            className="glass-card glass-card-hover p-5 sm:p-6 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-sm font-semibold text-foreground">
-                Weekly Link Opens
-              </h3>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-                <Calendar className="size-3" />
-                <span>Last 14 days</span>
-                <span className="text-muted-foreground/30 mx-1">•</span>
-                <span>{formatDate(twoWeeksAgo)} – {formatDate(today)}</span>
-              </div>
-            </div>
+            {/* Gradient background for chart */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-violet-500/[0.02] pointer-events-none" />
 
-            {/* Chart with grid lines */}
-            <div className="relative">
-              {/* Grid lines */}
-              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none" style={{ height: '140px', paddingBottom: '20px' }}>
-                {[0, 25, 50, 75, 100].map((pct) => (
-                  <div key={pct} className="flex items-center gap-2">
-                    <span className="text-[9px] text-muted-foreground/20 w-6 text-right">{pct}%</span>
-                    <div className="flex-1 h-px bg-border/15" />
-                  </div>
-                ))}
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Weekly Link Opens
+                </h3>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                  <Calendar className="size-3" />
+                  <span>Last 14 days</span>
+                  <span className="text-muted-foreground/30 mx-1">•</span>
+                  <span>{formatDate(twoWeeksAgo)} – {formatDate(today)}</span>
+                </div>
               </div>
 
-              {/* Bars with staggered grow animation */}
-              <div className="relative flex items-end gap-2 sm:gap-3 h-40 pt-4">
-                {barChartData.map((bar, i) => (
-                  <ChartBar
-                    key={bar.label}
-                    bar={bar}
-                    index={i}
-                    animated={animated}
-                    hoveredBar={hoveredBar}
-                    onHover={() => setHoveredBar(i)}
-                    onLeave={() => setHoveredBar(null)}
-                  />
-                ))}
+              {/* Chart with grid lines */}
+              <div className="relative">
+                {/* Grid lines */}
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none" style={{ height: '140px', paddingBottom: '20px' }}>
+                  {[0, 25, 50, 75, 100].map((pct) => (
+                    <div key={pct} className="flex items-center gap-2">
+                      <span className="text-[9px] text-muted-foreground/20 w-6 text-right">{pct}%</span>
+                      <div className="flex-1 h-px bg-border/15" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bars with staggered grow animation */}
+                <div className="relative flex items-end gap-2 sm:gap-3 h-40 pt-4">
+                  {barChartData.map((bar, i) => (
+                    <ChartBar
+                      key={bar.label}
+                      bar={bar}
+                      index={i}
+                      animated={animated}
+                      hoveredBar={hoveredBar}
+                      onHover={() => setHoveredBar(i)}
+                      onLeave={() => setHoveredBar(null)}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Platform distribution with Live indicator */}
+          {/* Platform distribution with Live indicator and gradient bg */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="glass-card p-5 sm:p-6 shimmer-subtle"
+            className="glass-card glass-card-hover p-5 sm:p-6 relative overflow-hidden"
           >
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-sm font-semibold text-foreground">
-                Platform Distribution
-              </h3>
-              {/* Live indicator with pulsing green dot */}
-              <span className="live-indicator">
-                <span className="sr-only">Live data</span>
-              </span>
-            </div>
-            <div className="flex flex-col gap-4">
-              {platformDistribution.map((platform, i) => (
-                <div key={platform.name} className="flex items-center gap-3 group">
-                  <span className="text-base w-6 text-center flex-shrink-0">{platform.icon}</span>
-                  <span className="text-xs text-muted-foreground w-20 truncate group-hover:text-foreground transition-colors">
-                    {platform.name}
-                  </span>
-                  <div className="flex-1 h-5 rounded-full bg-accent/30 overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full relative"
-                      style={{ backgroundColor: platform.color }}
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${animated ? platform.value : 0}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.2, delay: 0.5 + i * 0.12, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    >
-                      {/* Shimmer effect on bar */}
-                      <div className="absolute inset-0 opacity-30" style={{
-                        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
-                        animation: 'shimmer 2.5s ease-in-out infinite',
-                      }} />
-                    </motion.div>
+            {/* Gradient background for distribution */}
+            <div className="absolute inset-0 bg-gradient-to-bl from-violet-500/[0.03] via-transparent to-amber-500/[0.02] pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Platform Distribution
+                </h3>
+                {/* Live indicator with pulsing green dot */}
+                <span className="live-indicator">
+                  <span className="sr-only">Live data</span>
+                </span>
+              </div>
+              <div className="flex flex-col gap-4">
+                {platformDistribution.map((platform, i) => (
+                  <div key={platform.name} className="flex items-center gap-3 group">
+                    <span className="text-base w-6 text-center flex-shrink-0">{platform.icon}</span>
+                    <span className="text-xs text-muted-foreground w-20 truncate group-hover:text-foreground transition-colors">
+                      {platform.name}
+                    </span>
+                    <div className="flex-1 h-5 rounded-full bg-accent/30 overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full relative"
+                        style={{ backgroundColor: platform.color }}
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${animated ? platform.value : 0}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1.2, delay: 0.5 + i * 0.12, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      >
+                        {/* Shimmer effect on bar */}
+                        <div className="absolute inset-0 opacity-30" style={{
+                          background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+                          animation: 'shimmer 2.5s ease-in-out infinite',
+                        }} />
+                      </motion.div>
+                    </div>
+                    <span className="text-xs font-medium text-muted-foreground w-10 text-right group-hover:text-foreground transition-colors">
+                      {platform.value}%
+                    </span>
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground w-10 text-right group-hover:text-foreground transition-colors">
-                    {platform.value}%
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </motion.div>
         </div>

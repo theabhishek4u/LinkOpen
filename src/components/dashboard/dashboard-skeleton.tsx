@@ -11,13 +11,17 @@ function SkeletonPulse({ className = '', delay = 0 }: { className?: string; dela
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, delay, ease: 'easeOut' }}
-      className={`skeleton-shimmer relative overflow-hidden rounded-md bg-muted/30 ${className}`}
+      className={`shimmer-skeleton relative overflow-hidden rounded-md ${className}`}
     >
-      {/* Subtle pulse overlay */}
+      {/* Animated gradient shimmer overlay */}
       <motion.div
-        className="absolute inset-0 bg-muted/10"
-        animate={{ opacity: [0, 0.15, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: delay + 0.5 }}
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(90deg, transparent 0%, oklch(0.696 0.17 162.48 / 4%) 50%, transparent 100%)',
+          backgroundSize: '200% 100%',
+        }}
+        animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'linear', delay: delay + 0.5 }}
       />
     </motion.div>
   )
@@ -58,6 +62,7 @@ export function DashboardSkeleton() {
               <SkeletonPulse className="h-8 w-40 rounded-lg" delay={0.1} />
               <SkeletonPulse className="h-8 w-8 rounded-lg" delay={0.15} />
               <SkeletonPulse className="h-8 w-8 rounded-lg" delay={0.2} />
+              <SkeletonPulse className="h-8 w-8 rounded-lg" delay={0.25} />
             </div>
           </div>
         </PulseCard>
@@ -96,9 +101,11 @@ export function DashboardSkeleton() {
           </div>
         </PulseCard>
 
-        {/* Input card skeleton */}
+        {/* Input card skeleton with shimmer */}
         <PulseCard delay={staggerDelays[3]}>
-          <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3">
+          <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3 relative overflow-hidden">
+            {/* Gradient shimmer bar at top */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 shimmer-skeleton" />
             <div className="flex items-center gap-3">
               <SkeletonPulse className="h-10 w-10 rounded-lg" delay={0.6} />
               <SkeletonPulse className="h-6 flex-1" delay={0.65} />
@@ -108,17 +115,26 @@ export function DashboardSkeleton() {
               <SkeletonPulse className="h-9 w-32 rounded-md" delay={0.75} />
               <SkeletonPulse className="h-9 w-20 rounded-md" delay={0.8} />
             </div>
+            {/* Action row skeleton */}
+            <div className="flex items-center gap-2 pt-1">
+              {[0, 1, 2, 3].map((i) => (
+                <SkeletonPulse key={i} className="h-6 w-20 rounded-md" delay={0.85 + i * 0.04} />
+              ))}
+            </div>
           </div>
         </PulseCard>
 
-        {/* Result skeleton */}
+        {/* Result skeleton with 3-tier comparison structure */}
         <PulseCard delay={staggerDelays[4]}>
-          <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3">
+          <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3 relative overflow-hidden">
+            {/* Gradient shimmer bar at top */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 shimmer-skeleton" />
             <div className="flex items-center gap-3">
               <SkeletonPulse className="h-8 w-8 rounded-lg" delay={0.85} />
               <SkeletonPulse className="h-4 w-40" delay={0.9} />
             </div>
             <div className="space-y-2">
+              {/* Original URL tier */}
               <SkeletonPulse className="h-12 w-full rounded-lg" delay={0.95} />
               <div className="flex justify-center">
                 <motion.div
@@ -128,7 +144,23 @@ export function DashboardSkeleton() {
                   <SkeletonPulse className="h-4 w-4 rounded" delay={1} />
                 </motion.div>
               </div>
+              {/* Deep Link tier */}
               <SkeletonPulse className="h-12 w-full rounded-lg" delay={1.05} />
+              <div className="flex justify-center">
+                <motion.div
+                  animate={{ y: [0, 3, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
+                >
+                  <SkeletonPulse className="h-4 w-4 rounded" delay={1.1} />
+                </motion.div>
+              </div>
+              {/* Short Link tier */}
+              <SkeletonPulse className="h-10 w-3/4 rounded-lg" delay={1.15} />
+            </div>
+            {/* Action buttons row */}
+            <div className="flex items-center gap-2 pt-1">
+              <SkeletonPulse className="h-8 w-24 rounded-md" delay={1.2} />
+              <SkeletonPulse className="h-8 w-24 rounded-md" delay={1.25} />
             </div>
           </div>
         </PulseCard>
@@ -138,7 +170,7 @@ export function DashboardSkeleton() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Left column */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              {/* Analytics cards */}
+              {/* Analytics cards with gradient backgrounds */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <motion.div
@@ -147,27 +179,49 @@ export function DashboardSkeleton() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 1.1 + i * 0.1, ease: 'easeOut' }}
                   >
-                    <div className="glass-card rounded-xl p-4 space-y-2 metric-gradient-border">
-                      <div className="flex items-center justify-between">
-                        <SkeletonPulse className="h-4 w-4 rounded" delay={1.1 + i * 0.1} />
-                        <SkeletonPulse className="h-3 w-6 rounded" delay={1.15 + i * 0.1} />
-                      </div>
-                      <SkeletonPulse className="h-7 w-16" delay={1.2 + i * 0.1} />
-                      {/* Animated progress bar skeleton */}
-                      <div className="h-2 w-full rounded-full bg-muted/20 overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full bg-primary/20 progress-gradient"
-                          initial={{ width: '0%' }}
-                          animate={{ width: `${40 + i * 15}%` }}
-                          transition={{ duration: 1, delay: 1.3 + i * 0.1, ease: 'easeOut' }}
-                        />
+                    <div className="glass-card rounded-xl p-4 space-y-2 relative overflow-hidden">
+                      {/* Subtle gradient bg per skeleton card */}
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `linear-gradient(135deg, oklch(0.696 0.17 162.48 / ${2 + i}%) 0%, transparent 60%)`,
+                        }}
+                      />
+                      <div className="relative z-10 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <SkeletonPulse className="h-4 w-4 rounded" delay={1.1 + i * 0.1} />
+                          <SkeletonPulse className="h-3 w-6 rounded" delay={1.15 + i * 0.1} />
+                        </div>
+                        <SkeletonPulse className="h-7 w-16" delay={1.2 + i * 0.1} />
+                        {/* Sparkline skeleton */}
+                        <div className="flex items-end gap-0.5 h-4">
+                          {[0, 1, 2, 3, 4, 5].map((j) => (
+                            <motion.div
+                              key={j}
+                              className="flex-1 rounded-sm bg-muted/20"
+                              initial={{ height: '0%' }}
+                              animate={{ height: `${20 + Math.sin(j * 1.2) * 30 + 40}%` }}
+                              transition={{ duration: 0.6, delay: 1.3 + i * 0.1 + j * 0.05 }}
+                            />
+                          ))}
+                        </div>
+                        {/* Animated progress bar skeleton */}
+                        <div className="h-2 w-full rounded-full bg-muted/20 overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full shimmer-skeleton"
+                            initial={{ width: '0%' }}
+                            animate={{ width: `${40 + i * 15}%` }}
+                            transition={{ duration: 1, delay: 1.3 + i * 0.1, ease: 'easeOut' }}
+                          />
+                        </div>
                       </div>
                     </div>
                   </motion.div>
                 ))}
               </div>
-              {/* Chart skeleton */}
-              <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3">
+              {/* Chart skeleton with improved bar animation */}
+              <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 shimmer-skeleton" />
                 <div className="flex items-center justify-between">
                   <SkeletonPulse className="h-4 w-24" delay={1.5} />
                   <SkeletonPulse className="h-3 w-16" delay={1.55} />
@@ -176,11 +230,17 @@ export function DashboardSkeleton() {
                   {Array.from({ length: 7 }).map((_, i) => (
                     <motion.div
                       key={i}
-                      className="flex-1 skeleton-shimmer rounded-t-sm bg-muted/20"
+                      className="flex-1 shimmer-skeleton rounded-t-sm"
                       initial={{ height: '0%' }}
-                      animate={{ height: `${30 + Math.random() * 70}%` }}
+                      animate={{ height: `${30 + Math.sin(i * 0.9) * 25 + 35}%` }}
                       transition={{ duration: 0.8, delay: 1.6 + i * 0.08, ease: [0.34, 1.56, 0.64, 1] as const }}
                     />
+                  ))}
+                </div>
+                {/* X-axis labels */}
+                <div className="flex gap-1.5 pt-1">
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <SkeletonPulse key={i} className="flex-1 h-2" delay={1.8 + i * 0.04} />
                   ))}
                 </div>
               </div>
@@ -188,13 +248,23 @@ export function DashboardSkeleton() {
 
             {/* Right column */}
             <div className="lg:col-span-1 space-y-4 sm:space-y-6">
-              {/* History skeleton */}
-              <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3">
+              {/* History skeleton with search and tabs */}
+              <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 shimmer-skeleton" />
                 <div className="flex items-center justify-between">
-                  <SkeletonPulse className="h-4 w-24" delay={1.7} />
+                  <div className="flex items-center gap-2">
+                    <SkeletonPulse className="h-4 w-24" delay={1.7} />
+                    <SkeletonPulse className="h-4 w-6 rounded-full" delay={1.72} />
+                  </div>
                   <SkeletonPulse className="h-3 w-12" delay={1.75} />
                 </div>
-                <SkeletonPulse className="h-8 w-full rounded-md" delay={1.8} />
+                {/* Search input skeleton */}
+                <SkeletonPulse className="h-8 w-full rounded-md" delay={1.78} />
+                {/* Tab filter skeleton */}
+                <div className="flex gap-1">
+                  <SkeletonPulse className="h-6 w-12 rounded-md" delay={1.8} />
+                  <SkeletonPulse className="h-6 w-16 rounded-md" delay={1.82} />
+                </div>
                 <div className="space-y-2">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <motion.div
@@ -215,7 +285,8 @@ export function DashboardSkeleton() {
                 </div>
               </div>
               {/* Activity feed skeleton */}
-              <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3">
+              <div className="glass-card rounded-xl p-4 sm:p-6 space-y-3 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 shimmer-skeleton" />
                 <div className="flex items-center justify-between">
                   <SkeletonPulse className="h-4 w-20" delay={2.2} />
                   <SkeletonPulse className="h-5 w-12 rounded-full" delay={2.25} />

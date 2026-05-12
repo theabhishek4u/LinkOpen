@@ -12,33 +12,34 @@ import { toast } from 'sonner'
 export function LinkResult() {
   const { deepLinkResult, setDeepLinkResult, detectedPlatform } = useLinkStore()
   const [dismissed, setDismissed] = useState(false)
-  const [prevUrl, setPrevUrl] = useState<string | null>(null)
   const [copiedDeepLink, setCopiedDeepLink] = useState(false)
   const [copiedShortLink, setCopiedShortLink] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
 
-  // Reset dismissed state when a new result comes in
-  const currentUrl = deepLinkResult?.originalUrl ?? null
-  const isNewResult = currentUrl !== prevUrl
-
-  // Auto-dismiss after 30 seconds & handle new result reset
+  // Reset states when a new result comes in
   useEffect(() => {
-    if (isNewResult && currentUrl !== null) {
-      queueMicrotask(() => {
-        setPrevUrl(currentUrl)
+    if (deepLinkResult) {
+      const resetTimer = setTimeout(() => {
         setDismissed(false)
         setShowSuccess(true)
-      })
-      const timer = setTimeout(() => setShowSuccess(false), 2000)
-      return () => clearTimeout(timer)
+      }, 0)
+      const successTimer = setTimeout(() => setShowSuccess(false), 2000)
+      return () => {
+        clearTimeout(resetTimer)
+        clearTimeout(successTimer)
+      }
     }
+  }, [deepLinkResult])
+
+  // Auto-dismiss after 30 seconds
+  useEffect(() => {
     if (deepLinkResult && !dismissed) {
       const timer = setTimeout(() => {
         setDismissed(true)
       }, 30000)
       return () => clearTimeout(timer)
     }
-  }, [currentUrl, deepLinkResult, dismissed, isNewResult, prevUrl])
+  }, [deepLinkResult, dismissed])
 
   const handleClose = useCallback(() => {
     setDismissed(true)

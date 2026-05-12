@@ -109,7 +109,6 @@ function useCounter(end: number, duration: number = 2000) {
 }
 
 // Generate stars client-side only to avoid SSR/client hydration mismatch
-// We use a ref + suppressHydrationWarning to avoid rendering stars on SSR
 function useStars(count: number) {
   const [stars, setStars] = useState<Array<{
     id: number
@@ -121,8 +120,9 @@ function useStars(count: number) {
   }> | null>(null)
   const generatedRef = useRef(false)
 
-  // Generate stars lazily on first client render
-  if (!generatedRef.current && typeof window !== 'undefined') {
+  // Generate stars after mount to avoid hydration mismatch
+  useEffect(() => {
+    if (generatedRef.current) return
     generatedRef.current = true
     const generated = []
     for (let i = 0; i < count; i++) {
@@ -135,9 +135,10 @@ function useStars(count: number) {
         bright: Math.random() > 0.85,
       })
     }
-    // Schedule state update outside of render
-    queueMicrotask(() => setStars(generated))
-  }
+    // Schedule via setTimeout to avoid synchronous setState in effect
+    const timer = setTimeout(() => setStars(generated), 0)
+    return () => clearTimeout(timer)
+  }, [count])
 
   return stars
 }

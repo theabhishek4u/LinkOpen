@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe, Heart, Pin, AlertCircle, CheckSquare, Square } from 'lucide-react'
+import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe, Heart, Pin, AlertCircle, CheckSquare, Square, FileQuestion, ArrowUpRight, TrendingUp } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -124,9 +124,12 @@ export function LinkHistory() {
 
   return (
     <div className="glass-card p-4 sm:p-6 space-y-4">
-      {/* Header */}
+      {/* Header with count badge */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Recent Links</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground">Recent Links</h3>
+          <span className="count-badge">{history.length}</span>
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -189,22 +192,25 @@ export function LinkHistory() {
       {/* Tag filter */}
       <LinkTags />
 
-      {/* Search Input */}
+      {/* Search Input with filter indicator */}
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search links..."
-          className="h-8 pl-8 pr-8 text-xs bg-background/40 border-border/50 focus:border-primary/50"
+          placeholder="Search by URL, platform, or deep link..."
+          className="h-8 pl-8 pr-16 text-xs bg-background/40 border-border/50 focus:border-primary/50 transition-colors"
         />
         {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-3 w-3" />
-          </button>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+            <span className="text-[9px] text-muted-foreground/40">{filteredHistory.length}</span>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
         )}
       </div>
 
@@ -238,37 +244,49 @@ export function LinkHistory() {
         </button>
       </div>
 
-      {/* List */}
+      {/* List with improved empty state */}
       {filteredHistory.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="relative mb-4">
+          <div className="empty-state-icon mb-4">
             <motion.div
               animate={{ y: [-2, 2, -2] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <Link2 className="h-10 w-10 text-muted-foreground/15" />
+              <FileQuestion className="h-8 w-8 text-muted-foreground/25" />
             </motion.div>
+            {/* Orbiting decorative dots */}
             <motion.div
               className="absolute -top-1 -right-1"
-              animate={{ y: [1, -1, 1] }}
+              animate={{ y: [1, -1, 1], scale: [1, 1.2, 1] }}
               transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
             >
-              <Sparkles className="h-4 w-4 text-primary/20" />
+              <Sparkles className="h-4 w-4 text-primary/30" />
             </motion.div>
             <motion.div
               className="absolute -bottom-1 -left-1"
-              animate={{ y: [-1, 1, -1] }}
+              animate={{ y: [-1, 1, -1], scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
             >
-              <Globe className="h-4 w-4 text-violet-400/20" />
+              <Globe className="h-4 w-4 text-violet-400/30" />
             </motion.div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm font-medium text-muted-foreground">
             {searchQuery ? 'No matching links' : activeTab === 'favorites' ? 'No favorites yet' : 'No links yet'}
           </p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            {searchQuery ? 'Try a different search term' : 'Paste a link above to get started!'}
+          <p className="text-xs text-muted-foreground/60 mt-1 max-w-[200px]">
+            {searchQuery ? 'Try a different search term or filter' : 'Paste a link above to generate your first deep link!'}
           </p>
+          {!searchQuery && activeTab === 'all' && (
+            <motion.div
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-3 flex items-center gap-1 text-[10px] text-emerald-400/60"
+            >
+              <ArrowUpRight className="h-3 w-3" />
+              <span>Supports 13+ platforms</span>
+            </motion.div>
+          )}
         </div>
       ) : (
         <>

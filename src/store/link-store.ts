@@ -85,6 +85,15 @@ export interface LinkVerseSettings {
   soundEffects: boolean
 }
 
+export interface DeepLinkTest {
+  id: string
+  platform: string
+  url: string
+  deepLink: string
+  status: 'success' | 'failed' | 'pending'
+  testedAt: string
+}
+
 const defaultSettings: LinkVerseSettings = {
   compactMode: false,
   animationsEnabled: true,
@@ -177,6 +186,19 @@ interface LinkState {
   addNoteToLink: (linkId: string, note: string) => void
   removeNoteFromLink: (linkId: string) => void
   updateNoteOnLink: (linkId: string, note: string) => void
+  // Search & Filter
+  searchQuery: string
+  setSearchQuery: (query: string) => void
+  filterPlatform: string | null
+  setFilterPlatform: (platform: string | null) => void
+  filterDateRange: 'today' | '7d' | '30d' | 'all'
+  setFilterDateRange: (range: 'today' | '7d' | '30d' | 'all') => void
+  sortBy: 'newest' | 'oldest' | 'mostOpened' | 'recentlyOpened'
+  setSortBy: (sort: 'newest' | 'oldest' | 'mostOpened' | 'recentlyOpened') => void
+  // Deep Link Tests
+  deepLinkTests: DeepLinkTest[]
+  addDeepLinkTest: (test: Omit<DeepLinkTest, 'id' | 'testedAt'>) => void
+  clearDeepLinkTests: () => void
 }
 
 const defaultAnalytics: AnalyticsData = {
@@ -500,4 +522,24 @@ export const useLinkStore = create<LinkState>((set, get) => ({
     saveHistory(newHistory)
     set({ history: newHistory })
   },
+  // Search & Filter
+  searchQuery: '',
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  filterPlatform: null,
+  setFilterPlatform: (platform) => set({ filterPlatform: platform }),
+  filterDateRange: 'all',
+  setFilterDateRange: (range) => set({ filterDateRange: range }),
+  sortBy: 'newest',
+  setSortBy: (sort) => set({ sortBy: sort }),
+  // Deep Link Tests
+  deepLinkTests: [],
+  addDeepLinkTest: (test) => {
+    const newTest: DeepLinkTest = {
+      ...test,
+      id: crypto.randomUUID(),
+      testedAt: new Date().toISOString(),
+    }
+    set((state) => ({ deepLinkTests: [newTest, ...state.deepLinkTests].slice(0, 50) }))
+  },
+  clearDeepLinkTests: () => set({ deepLinkTests: [] }),
 }))
