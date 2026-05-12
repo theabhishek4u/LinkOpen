@@ -21,6 +21,7 @@ const socialLinks = [
 export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
+  const [emailFocused, setEmailFocused] = useState(false)
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,7 +37,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative">
+    <footer className="relative gradient-mesh-bg">
       {/* Gradient top border */}
       <div
         className="h-px"
@@ -46,37 +47,50 @@ export default function Footer() {
       />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+        {/* Prominent Newsletter Section */}
+        <div className="mb-14">
+          <div className="newsletter-card glass-card p-6 sm:p-8 rounded-xl text-center max-w-2xl mx-auto">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Mail className="size-5 text-emerald-400" />
+              <h3 className="text-lg font-bold text-foreground">Stay in the Loop</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
+              Get the latest updates on deep linking, new platform support, and product features delivered to your inbox.
+            </p>
+            <form onSubmit={handleSubscribe} className="flex gap-2 max-w-md mx-auto">
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setEmailFocused(true)}
+                onBlur={() => setEmailFocused(false)}
+                placeholder="your@email.com"
+                className={`h-11 text-sm bg-surface-2 border-border/30 placeholder:text-muted-foreground/40 transition-all duration-300 ${
+                  emailFocused ? 'border-emerald-500/40 glow-green-sm' : ''
+                }`}
+              />
+              <Button
+                type="submit"
+                className="h-11 px-5 bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold text-sm flex-shrink-0 transition-all duration-300"
+              >
+                {subscribed ? (
+                  <span className="flex items-center gap-1.5">✓ Subscribed!</span>
+                ) : (
+                  'Subscribe'
+                )}
+              </Button>
+            </form>
+            <p className="text-[10px] text-muted-foreground/30 mt-3">No spam, unsubscribe anytime.</p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-10 sm:gap-12 mb-14">
           {/* Brand column */}
           <div className="col-span-2 sm:col-span-4 lg:col-span-1 mb-4 lg:mb-0">
-            <span className="text-xl font-bold gradient-text">LinkVerse</span>
+            <span className="text-xl font-bold gradient-text-smooth">LinkVerse</span>
             <p className="mt-3 text-sm text-muted-foreground max-w-xs leading-relaxed">
               AI-powered deep linking platform that opens social media links in their native apps.
             </p>
-
-            {/* Newsletter — glass card background */}
-            <div className="mt-5 glass-card p-4 rounded-xl">
-              <div className="flex items-center gap-2 mb-2.5">
-                <Mail className="size-3.5 text-emerald-400" />
-                <p className="text-xs text-muted-foreground/80 font-medium uppercase tracking-wider">Stay updated</p>
-              </div>
-              <form onSubmit={handleSubscribe} className="flex gap-2">
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="h-9 text-xs bg-surface-2 border-border/30 placeholder:text-muted-foreground/40 focus:border-emerald-500/40"
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-9 px-3 bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold text-xs flex-shrink-0"
-                >
-                  {subscribed ? 'Done!' : 'Subscribe'}
-                </Button>
-              </form>
-            </div>
 
             {/* Social links with hover effects */}
             <div className="flex gap-3 mt-5">
@@ -141,10 +155,11 @@ export default function Footer() {
               Made with <Heart className="size-3 text-rose-400/60 fill-rose-400/60" /> and AI
             </span>
 
-            {/* Back to top with bounce animation */}
+            {/* Back to top button */}
             <button
               onClick={scrollToTop}
-              className="back-to-top-hover flex items-center gap-1.5 text-xs text-muted-foreground/40 hover:text-emerald-400 transition-colors duration-200 group"
+              className="back-to-top-hover flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-2/40 border border-border/10 text-xs text-muted-foreground/40 hover:text-emerald-400 hover:border-emerald-500/20 transition-all duration-300 group"
+              aria-label="Back to top"
             >
               Back to top
               <ArrowUp className="size-3 group-hover:-translate-y-0.5 transition-transform" />

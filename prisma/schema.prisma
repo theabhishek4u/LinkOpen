@@ -30,6 +30,9 @@ model Link {
   title         String?
   isFavorite    Boolean  @default(false)
   openCount     Int      @default(0)
+  expiresAt     DateTime?
+  healthStatus  String?
+  lastHealthCheck DateTime?
   userId        String?
   user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   analytics     Analytics[]

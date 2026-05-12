@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe } from 'lucide-react'
+import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe, Heart, Pin, AlertCircle } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useLinkStore } from '@/store/link-store'
+import { Badge } from '@/components/ui/badge'
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date()
@@ -55,6 +56,8 @@ export function LinkHistory() {
 
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [heartAnimatingId, setHeartAnimatingId] = useState<string | null>(null)
 
   const handleItemClick = useCallback(
     (item: (typeof history)[0]) => {
@@ -70,16 +73,26 @@ export function LinkHistory() {
     [setInputUrl, setDeepLinkResult]
   )
 
+  const handleToggleFavorite = useCallback((id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    toggleFavorite(id)
+    setHeartAnimatingId(id)
+    setTimeout(() => setHeartAnimatingId(null), 400)
+  }, [toggleFavorite])
+
+  const handleExpand = useCallback((id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setExpandedId(prev => prev === id ? null : id)
+  }, [])
+
   // Filtered list
   const filteredHistory = useMemo(() => {
     let items = history
 
-    // Tab filter
     if (activeTab === 'favorites') {
       items = items.filter((item) => item.isFavorite)
     }
 
-    // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       items = items.filter(
@@ -155,7 +168,6 @@ export function LinkHistory() {
       {/* List */}
       {filteredHistory.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-center">
-          {/* Illustration-like icon arrangement */}
           <div className="relative mb-4">
             <motion.div
               animate={{ y: [-2, 2, -2] }}
@@ -188,94 +200,173 @@ export function LinkHistory() {
       ) : (
         <>
           <ScrollArea className="max-h-96">
-            <div className="space-y-1">
+            {/* Timeline container */}
+            <div className="timeline-line space-y-0">
               <AnimatePresence initial={false}>
-                {filteredHistory.map((item) => (
+                {filteredHistory.map((item, index) => (
                   <motion.div
                     key={item.id}
                     layout
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, x: -30, height: 0 }}
+                    animate={{ opacity: 1, x: 0, height: 'auto' }}
                     exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-accent/50 transition-all cursor-pointer relative overflow-hidden"
-                    onClick={() => handleItemClick(item)}
-                    style={{
-                      borderLeft: `3px solid ${item.platform.color}40`,
-                    }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="group relative"
                   >
-                    {/* Hover glow effect */}
-                    <div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                      style={{
-                        background: `radial-gradient(ellipse at left, ${item.platform.color}08, transparent 60%)`,
-                      }}
-                    />
-
-                    {/* Platform Icon */}
-                    <div
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm relative z-10"
-                      style={{
-                        backgroundColor: `${item.platform.color}20`,
-                      }}
-                    >
-                      {item.platform.icon}
+                    {/* Timeline dot */}
+                    <div className="absolute left-[11px] top-3 z-10">
+                      <motion.div
+                        className="h-[9px] w-[9px] rounded-full border-2 border-background"
+                        style={{ backgroundColor: item.platform.color }}
+                        whileHover={{ scale: 1.4 }}
+                        transition={{ type: 'spring', stiffness: 400 }}
+                      />
                     </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0 relative z-10">
-                      <p className="text-sm text-foreground truncate">
-                        {truncateUrl(item.originalUrl)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatRelativeTime(item.createdAt)}
-                      </p>
-                    </div>
-
-                    {/* Open Count */}
-                    {item.openCount > 0 && (
-                      <span className="text-xs text-muted-foreground/60 shrink-0 relative z-10">
-                        {item.openCount}x
-                      </span>
+                    {/* Pin indicator for favorites */}
+                    {item.isFavorite && (
+                      <motion.div
+                        className="absolute -top-1 right-3 z-10"
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                      >
+                        <Pin className="h-3 w-3 text-amber-400/70 rotate-45" />
+                      </motion.div>
                     )}
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 relative z-10">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          toggleFavorite(item.id)
+                    <div
+                      className={`flex items-center gap-3 rounded-lg p-2.5 ml-8 transition-all cursor-pointer relative overflow-hidden ${
+                        item.isFavorite
+                          ? 'bg-amber-500/5 border border-amber-500/10'
+                          : 'hover:bg-accent/50 border border-transparent'
+                      } ${expandedId === item.id ? 'bg-accent/50' : ''}`}
+                      onClick={() => handleItemClick(item)}
+                    >
+                      {/* Hover glow effect */}
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        style={{
+                          background: `radial-gradient(ellipse at left, ${item.platform.color}08, transparent 60%)`,
                         }}
-                        className="rounded-md p-1 hover:bg-accent transition-colors"
-                      >
-                        <Star
-                          className={`h-3.5 w-3.5 transition-colors ${
-                            item.isFavorite
-                              ? 'fill-amber-400 text-amber-400'
-                              : 'text-muted-foreground'
-                          }`}
-                        />
-                      </button>
+                      />
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          window.open(item.deepLink, '_blank')
+                      {/* Platform Icon */}
+                      <div
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm relative z-10"
+                        style={{
+                          backgroundColor: `${item.platform.color}20`,
                         }}
-                        className="rounded-md p-1 hover:bg-accent transition-colors"
                       >
-                        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                      </button>
+                        {item.platform.icon}
+                      </div>
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          removeFromHistory(item.id)
-                        }}
-                        className="rounded-md p-1 hover:bg-destructive/20 transition-colors"
-                      >
-                        <X className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                      </button>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0 relative z-10">
+                        <p className="text-sm text-foreground truncate">
+                          {truncateUrl(item.originalUrl)}
+                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-xs text-muted-foreground">
+                            {formatRelativeTime(item.createdAt)}
+                          </p>
+                          {item.openCount > 0 && (
+                            <span className="text-[10px] text-muted-foreground/50">
+                              • {item.openCount}x opened
+                            </span>
+                          )}
+                          {item.expiry && new Date(item.expiry).getTime() <= Date.now() && (
+                            <Badge variant="outline" className="h-3.5 text-[8px] border-red-500/30 text-red-400 px-1">
+                              Expired
+                            </Badge>
+                          )}
+                          {item.expiry && new Date(item.expiry).getTime() > Date.now() && new Date(item.expiry).getTime() - Date.now() < 3600000 && (
+                            <Badge variant="outline" className="h-3.5 text-[8px] border-amber-500/30 text-amber-400 px-1">
+                              Expiring
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Expanded details */}
+                        <AnimatePresence>
+                          {expandedId === item.id && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="mt-2 pt-2 border-t border-border/20 space-y-1.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Deep Link</span>
+                                  <p className="text-[11px] text-primary font-mono truncate">
+                                    {item.deepLink}
+                                  </p>
+                                </div>
+                                {item.shortCode && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Short</span>
+                                    <p className="text-[11px] text-amber-400 font-mono">
+                                      /s/{item.shortCode}
+                                    </p>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Platform</span>
+                                  <p className="text-[11px] text-foreground">
+                                    {item.platform.name}
+                                  </p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 relative z-10">
+                        {/* Favorite / Heart button with animation */}
+                        <button
+                          onClick={(e) => handleToggleFavorite(item.id, e)}
+                          className="rounded-md p-1 hover:bg-accent transition-colors"
+                        >
+                          <span className={heartAnimatingId === item.id ? 'animate-heart-pop inline-block' : ''}>
+                            {item.isFavorite ? (
+                              <Heart className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                            ) : (
+                              <Heart className="h-3.5 w-3.5 text-muted-foreground hover:text-amber-400 transition-colors" />
+                            )}
+                          </span>
+                        </button>
+
+                        {/* Expand button */}
+                        <button
+                          onClick={(e) => handleExpand(item.id, e)}
+                          className="rounded-md p-1 hover:bg-accent transition-colors"
+                        >
+                          <Clock className={`h-3.5 w-3.5 transition-colors ${expandedId === item.id ? 'text-primary' : 'text-muted-foreground'}`} />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(item.deepLink, '_blank')
+                          }}
+                          className="rounded-md p-1 hover:bg-accent transition-colors"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            removeFromHistory(item.id)
+                          }}
+                          className="rounded-md p-1 hover:bg-destructive/20 transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                        </button>
+                      </div>
                     </div>
                   </motion.div>
                 ))}

@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { CheckCheck } from 'lucide-react'
 import { useLinkStore } from '@/store/link-store'
 
 interface ActivityItem {
@@ -75,6 +77,7 @@ function getSeedActivities(): ActivityItem[] {
 export function ActivityFeed() {
   const { history } = useLinkStore()
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [readItems, setReadItems] = useState<Set<string>>(new Set())
 
   // Compute base activities from history + seed using useMemo
   const baseActivities = useMemo(() => {
@@ -136,6 +139,12 @@ export function ActivityFeed() {
     return [...liveUpdates, ...baseActivities].slice(0, 50)
   }, [liveUpdates, baseActivities])
 
+  const handleMarkAllRead = useCallback(() => {
+    setReadItems(new Set(activities.map((a) => a.id)))
+  }, [activities])
+
+  const unreadCount = activities.filter((a) => !readItems.has(a.id)).length
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -143,32 +152,61 @@ export function ActivityFeed() {
       transition={{ duration: 0.5, delay: 0.5 }}
       className="glass-card p-4 sm:p-5 space-y-3"
     >
-      {/* Header with Live indicator */}
+      {/* Header with Live indicator and Mark All Read */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Activity Feed</h3>
-        <div className="flex items-center gap-1.5">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span className="text-xs font-medium text-emerald-400">Live</span>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground">Activity Feed</h3>
+          {/* Prominent Live indicator */}
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Live</span>
+          </div>
+          {unreadCount > 0 && (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/20 px-1 text-[10px] font-bold text-primary"
+            >
+              {unreadCount}
+            </motion.span>
+          )}
         </div>
+        {unreadCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleMarkAllRead}
+            className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground"
+          >
+            <CheckCheck className="h-3 w-3 mr-1" />
+            Mark all read
+          </Button>
+        )}
       </div>
 
       {/* Activity List */}
       <ScrollArea className="max-h-72">
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           <AnimatePresence initial={false}>
-            {activities.map((item) => {
+            {activities.map((item, index) => {
               const statusCfg = STATUS_CONFIG[item.status]
+              const isRead = readItems.has(item.id)
               return (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, x: -10, height: 0 }}
-                  animate={{ opacity: 1, x: 0, height: 'auto' }}
+                  initial={{ opacity: 0, x: -10, height: 0, scaleY: 0.97 }}
+                  animate={{ opacity: 1, x: 0, height: 'auto', scaleY: 1 }}
                   exit={{ opacity: 0, x: 10, height: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="group flex items-center gap-2.5 rounded-lg p-2 hover:bg-accent/30 transition-colors"
+                  transition={{ duration: 0.3, delay: index * 0.03 }}
+                  className={`group flex items-center gap-2.5 rounded-lg p-2 hover:bg-accent/30 transition-colors ${
+                    !isRead ? 'bg-accent/10' : ''
+                  }`}
+                  onClick={() => {
+                    setReadItems(prev => new Set([...prev, item.id]))
+                  }}
                 >
                   {/* Platform Icon */}
                   <div
@@ -180,7 +218,7 @@ export function ActivityFeed() {
 
                   {/* Description */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-foreground truncate">
+                    <p className={`text-xs truncate ${isRead ? 'text-foreground/70' : 'text-foreground'}`}>
                       <span className="font-medium">{item.platform}</span>{' '}
                       <span className="text-muted-foreground">{item.action}</span>
                     </p>
@@ -196,8 +234,11 @@ export function ActivityFeed() {
                         color: statusCfg.color,
                       }}
                     >
+                      {/* Animated status dot */}
                       <span
-                        className="h-1.5 w-1.5 rounded-full"
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          item.status === 'pending' ? 'animate-status-dot' : ''
+                        }`}
                         style={{ backgroundColor: statusCfg.color }}
                       />
                       {statusCfg.label}

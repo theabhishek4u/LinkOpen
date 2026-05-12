@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Globe, ExternalLink, Copy, Share2, QrCode, Loader2, Link2, ClipboardPaste, X } from 'lucide-react'
+import { Globe, ExternalLink, Copy, Share2, QrCode, Loader2, Link2, ClipboardPaste, X, Check, Sparkles, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useLinkStore } from '@/store/link-store'
 import { detectPlatform, validateUrl } from '@/lib/platform-detect'
@@ -29,10 +29,14 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
     setShowQRCode,
     addToHistory,
     setQrCodeDataUrl,
+    linkExpiry,
+    addNotification,
   } = useLinkStore()
 
   const [error, setError] = useState<string | null>(null)
   const [isFocused, setIsFocused] = useState(false)
+  const [showSparkle, setShowSparkle] = useState(false)
+  const [prevPlatform, setPrevPlatform] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -43,7 +47,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
     generateQR: handleQRCode,
   }))
 
-  // Debounced platform detection
+  // Debounced platform detection with sparkle effect
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current)
@@ -52,12 +56,25 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
     if (!inputUrl.trim()) {
       setDetectedPlatform(null)
       setError(null)
+      setPrevPlatform(null)
       return
     }
 
     debounceRef.current = setTimeout(() => {
       const platform = detectPlatform(inputUrl)
       setDetectedPlatform(platform)
+
+      // Trigger sparkle when a new platform is detected
+      if (platform && platform.id !== prevPlatform) {
+        setShowSparkle(true)
+        const timer = setTimeout(() => setShowSparkle(false), 800)
+        setPrevPlatform(platform.id)
+        return () => clearTimeout(timer)
+      }
+
+      if (!platform) {
+        setPrevPlatform(null)
+      }
     }, 300)
 
     return () => {
@@ -65,7 +82,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         clearTimeout(debounceRef.current)
       }
     }
-  }, [inputUrl, setDetectedPlatform])
+  }, [inputUrl, setDetectedPlatform, prevPlatform])
 
   const handleOpenInApp = useCallback(async () => {
     const validation = validateUrl(inputUrl)
@@ -92,7 +109,6 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
       const json = await res.json()
       const result = json.data || json
 
-      // Set deep link result for display
       setDeepLinkResult({
         originalUrl: result.originalUrl,
         deepLink: result.deepLink,
@@ -101,7 +117,6 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         shortCode: result.shortCode,
       })
 
-      // Try to open the deep link
       try {
         const iframe = document.createElement('iframe')
         iframe.style.display = 'none'
@@ -115,7 +130,6 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         window.open(result.webUrl, '_blank')
       }
 
-      // Record analytics (best-effort)
       try {
         await fetch('/api/analytics', {
           method: 'POST',
@@ -130,7 +144,6 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         // Analytics recording is best-effort
       }
 
-      // Add to history
       addToHistory({
         id: crypto.randomUUID(),
         originalUrl: validation.normalizedUrl,
@@ -140,6 +153,13 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         isFavorite: false,
         openCount: 1,
         createdAt: new Date().toISOString(),
+        expiry: linkExpiry || null,
+      })
+
+      addNotification({
+        type: 'link_generated',
+        title: 'Link Generated',
+        description: `${result.platform?.name || 'Unknown'} deep link created`,
       })
 
       toast.success('Deep link generated successfully!', {
@@ -161,7 +181,6 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
     }
     window.open(validation.normalizedUrl, '_blank')
 
-    // Record analytics
     fetch('/api/analytics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -240,11 +259,33 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
   )
 
   const isUrlValid = validateUrl(inputUrl).valid
+  const charCount = inputUrl.length
+  const maxChars = 2048
 
-  // Compute deep link preview
+  // Compute deep link preview with syntax highlighting
   const deepLinkPreview = detectedPlatform
     ? inputUrl.replace(/^https?:\/\/(www\.)?/i, detectedPlatform.deepLinkScheme)
     : null
+
+  // Parse the deep link preview into syntax-highlighted segments
+  const renderCodePreview = (preview: string) => {
+    const schemeEnd = preview.indexOf('//')
+    if (schemeEnd === -1) return <span className="code-path">{preview}</span>
+
+    const scheme = preview.slice(0, schemeEnd + 2)
+    const rest = preview.slice(schemeEnd + 2)
+    const pathStart = rest.indexOf('/')
+    const host = pathStart === -1 ? rest : rest.slice(0, pathStart)
+    const path = pathStart === -1 ? '' : rest.slice(pathStart)
+
+    return (
+      <>
+        <span className="code-scheme">{scheme}</span>
+        <span className="code-keyword">{host}</span>
+        {path && <span className="code-path">{path}</span>}
+      </>
+    )
+  }
 
   return (
     <div className="w-full space-y-4">
@@ -254,22 +295,79 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className={`relative rounded-xl transition-all duration-300 ${
-          isFocused ? 'premium-border' : ''
-        } ${
-          detectedPlatform ? 'glow-green-sm' : ''
+          isProcessing
+            ? 'animate-spin-border'
+            : isFocused
+              ? 'animate-pulse-border'
+              : detectedPlatform
+                ? 'glow-green-sm'
+                : ''
         }`}
       >
+        {/* Sparkle overlay effect */}
+        <AnimatePresence>
+          {showSparkle && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 pointer-events-none z-20 overflow-hidden rounded-xl"
+            >
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{
+                    opacity: 0,
+                    scale: 0,
+                    x: `${20 + Math.random() * 60}%`,
+                    y: `${20 + Math.random() * 60}%`,
+                  }}
+                  animate={{
+                    opacity: [0, 1, 0],
+                    scale: [0, 1.2, 0],
+                    rotate: [0, 180, 360],
+                  }}
+                  transition={{ duration: 0.6, delay: i * 0.08 }}
+                  className="absolute h-2 w-2 rounded-full bg-primary"
+                  style={{
+                    left: `${15 + Math.random() * 70}%`,
+                    top: `${15 + Math.random() * 70}%`,
+                    boxShadow: '0 0 6px oklch(0.696 0.17 162.48 / 60%)',
+                  }}
+                />
+              ))}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: [0, 0.8, 0], scale: [0.5, 1.5, 2] }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 rounded-xl"
+                style={{
+                  background: 'radial-gradient(circle at 50% 50%, oklch(0.696 0.17 162.48 / 15%), transparent 60%)',
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div
-          className={`glass-card p-4 sm:p-6 rounded-xl transition-all duration-300 ${
+          className={`glass-card p-4 sm:p-6 rounded-xl transition-all duration-300 relative z-10 ${
             error ? 'border-red-500/50' : ''
           }`}
         >
           <div className="flex items-center gap-3">
             {/* Left Icon */}
             <div className="flex-shrink-0">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Globe className="h-5 w-5" />
-              </div>
+              <motion.div
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                animate={isProcessing ? { rotate: 360 } : {}}
+                transition={isProcessing ? { duration: 2, repeat: Infinity, ease: 'linear' } : {}}
+              >
+                {isProcessing ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Globe className="h-5 w-5" />
+                )}
+              </motion.div>
             </div>
 
             {/* Input */}
@@ -286,15 +384,16 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
                 onBlur={() => setIsFocused(false)}
                 onKeyDown={handleKeyDown}
                 placeholder="Paste any social media link here..."
-                className={`w-full bg-transparent text-foreground placeholder:text-muted-foreground text-base sm:text-lg outline-none pr-20 ${
+                className={`w-full bg-transparent text-foreground placeholder:text-muted-foreground text-base sm:text-lg outline-none pr-24 ${
                   error ? 'text-red-400' : ''
                 }`}
                 disabled={isProcessing}
+                aria-label="URL input"
               />
 
               {/* Right side controls */}
               <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                {/* Platform Badge */}
+                {/* Platform Badge with sparkle */}
                 <AnimatePresence>
                   {detectedPlatform && (
                     <motion.div
@@ -302,8 +401,39 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0, opacity: 0 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      className="relative"
                     >
                       <PlatformBadge platform={detectedPlatform} />
+                      {/* Mini sparkle particles around the badge */}
+                      {showSparkle && (
+                        <>
+                          <motion.span
+                            initial={{ opacity: 1, scale: 0, y: 0 }}
+                            animate={{ opacity: 0, scale: 1, y: -8 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute -top-1 left-1/2 text-[8px]"
+                          >
+                            ✨
+                          </motion.span>
+                        </>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* URL validation indicator */}
+                <AnimatePresence>
+                  {inputUrl.trim() && !detectedPlatform && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                    >
+                      {isUrlValid ? (
+                        <Check className="h-4 w-4 text-emerald-400" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4 text-amber-400/60" />
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -347,22 +477,9 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Processing Spinner */}
-            <AnimatePresence>
-              {isProcessing && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                >
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
-          {/* Deep Link Preview */}
+          {/* Code-Style Deep Link Preview */}
           <AnimatePresence>
             {detectedPlatform && deepLinkPreview && inputUrl.trim() && (
               <motion.div
@@ -372,12 +489,52 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
                 className="overflow-hidden"
               >
                 <div className="mt-3 pt-3 border-t border-border/30">
-                  <div className="flex items-center gap-2">
-                    <Link2 className="h-3 w-3 text-primary/60 shrink-0" />
-                    <span className="text-xs text-muted-foreground/60 font-mono truncate">
-                      {deepLinkPreview}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Sparkles className="h-3 w-3 text-primary/60 shrink-0" />
+                    <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider font-medium">
+                      Deep Link Preview
                     </span>
                   </div>
+                  <div className="code-preview px-3 py-2 overflow-x-auto">
+                    <span className="text-muted-foreground/40 mr-2 select-none">→</span>
+                    {renderCodePreview(deepLinkPreview)}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Character Count & URL Validation Indicator */}
+          <AnimatePresence>
+            {inputUrl.trim() && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-2 flex items-center justify-between text-[10px]">
+                  <div className="flex items-center gap-2">
+                    {isUrlValid ? (
+                      <span className="flex items-center gap-1 text-emerald-400/70">
+                        <Check className="h-2.5 w-2.5" />
+                        Valid URL
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-amber-400/60">
+                        <AlertCircle className="h-2.5 w-2.5" />
+                        Enter a valid URL
+                      </span>
+                    )}
+                    {detectedPlatform && (
+                      <span className="text-primary/50">
+                        • {detectedPlatform.name} detected
+                      </span>
+                    )}
+                  </div>
+                  <span className={`${charCount > maxChars ? 'text-red-400' : 'text-muted-foreground/30'}`}>
+                    {charCount}/{maxChars}
+                  </span>
                 </div>
               </motion.div>
             )}
@@ -390,8 +547,9 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-2 text-sm text-red-400"
+                className="mt-2 text-sm text-red-400 flex items-center gap-1.5"
               >
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                 {error}
               </motion.p>
             )}

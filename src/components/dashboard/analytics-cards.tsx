@@ -19,6 +19,7 @@ interface StatCardProps {
   trend?: 'up' | 'down'
   trendValue?: string
   sparkData?: number[]
+  gradientFrom?: string
 }
 
 function easeOutExpo(t: number): number {
@@ -66,14 +67,14 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
   )
 }
 
-function Sparkline({ data, color }: { data: number[]; color: string }) {
+function Sparkline({ data, color, gradientFrom }: { data: number[]; color: string; gradientFrom?: string }) {
   if (!data || data.length < 2) return null
 
   const max = Math.max(...data)
   const min = Math.min(...data)
   const range = max - min || 1
-  const width = 60
-  const height = 20
+  const width = 64
+  const height = 24
 
   const points = data.map((v, i) => {
     const x = (i / (data.length - 1)) * width
@@ -81,8 +82,24 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
     return `${x},${y}`
   }).join(' ')
 
+  // Create area fill path
+  const areaPath = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width
+    const y = height - ((v - min) / range) * height
+    return `${i === 0 ? 'M' : 'L'}${x},${y}`
+  }).join(' ') + ` L${width},${height} L0,${height} Z`
+
+  const gradientId = `spark-grad-${color.replace('#', '')}`
+
   return (
-    <svg width={width} height={height} className="opacity-50">
+    <svg width={width} height={height} className="opacity-70">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaPath} fill={`url(#${gradientId})`} />
       <polyline
         points={points}
         fill="none"
@@ -91,17 +108,24 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+      {/* End dot */}
+      <circle
+        cx={(data.length - 1) / (data.length - 1) * width}
+        cy={height - ((data[data.length - 1] - min) / range) * height}
+        r="2"
+        fill={color}
+      />
     </svg>
   )
 }
 
-function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, delay, trend, trendValue, sparkData }: StatCardProps) {
+function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, delay, trend, trendValue, sparkData, gradientFrom }: StatCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="relative group rounded-xl overflow-hidden"
+      className="relative group rounded-xl overflow-hidden gradient-card-bg"
     >
       {/* Animated gradient border */}
       <div className="absolute inset-0 rounded-xl premium-border pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -112,7 +136,7 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
             {title}
           </h4>
           <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            className="flex h-8 w-8 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110"
             style={{ backgroundColor: iconBg }}
           >
             <span style={{ color: iconColor }}>{icon}</span>
@@ -121,7 +145,7 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
 
         <div className="flex items-end justify-between gap-2">
           <div>
-            <div className="text-2xl sm:text-3xl font-bold text-foreground">
+            <div className={`text-2xl sm:text-3xl font-bold text-foreground animate-number-glow`}>
               <AnimatedNumber value={value} suffix={suffix} />
             </div>
             {/* Trend indicator */}
@@ -132,17 +156,18 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
                 ) : (
                   <TrendingDown className="h-3 w-3 text-red-400" />
                 )}
-                <span className={`text-xs font-medium ${trend === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
+                <span className={`text-xs font-semibold ${trend === 'up' ? 'text-emerald-400' : 'text-red-400'}`}>
                   {trendValue}
                 </span>
+                <span className="text-[10px] text-muted-foreground/50 ml-0.5">vs last week</span>
               </div>
             )}
           </div>
 
-          {/* Sparkline */}
+          {/* Sparkline with gradient fill */}
           {sparkData && (
             <div className="flex-shrink-0">
-              <Sparkline data={sparkData} color={iconColor} />
+              <Sparkline data={sparkData} color={iconColor} gradientFrom={gradientFrom} />
             </div>
           )}
         </div>
@@ -192,6 +217,7 @@ export function AnalyticsCards() {
       trend: 'up',
       trendValue: '+12.3%',
       sparkData: [8, 12, 10, 18, 14, 22, 20],
+      gradientFrom: '#10b981',
     },
     {
       title: 'Native Opens',
@@ -204,6 +230,7 @@ export function AnalyticsCards() {
       trend: 'up',
       trendValue: '+8.7%',
       sparkData: [15, 22, 18, 25, 20, 28, 24],
+      gradientFrom: '#8b5cf6',
     },
     {
       title: 'Browser Opens',
@@ -216,6 +243,7 @@ export function AnalyticsCards() {
       trend: 'down',
       trendValue: '-3.2%',
       sparkData: [10, 8, 12, 7, 9, 6, 8],
+      gradientFrom: '#3b82f6',
     },
     {
       title: 'Conversion Rate',
@@ -229,6 +257,7 @@ export function AnalyticsCards() {
       trend: 'up',
       trendValue: '+2.1%',
       sparkData: [88, 90, 91, 93, 92, 94, 94],
+      gradientFrom: '#f59e0b',
     },
   ]
 

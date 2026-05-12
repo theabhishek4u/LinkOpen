@@ -26,7 +26,6 @@ export function MiniChart() {
         day: DAYS[i] || DAYS[0],
         value: item.opens,
       }))
-      // Pad to 7 days if needed
       while (chartData.length < 7) {
         chartData.unshift({
           day: DAYS[6 - chartData.length],
@@ -42,6 +41,9 @@ export function MiniChart() {
   const avgValue = Math.round(data.reduce((sum, d) => sum + d.value, 0) / data.length)
   const avgHeightPercent = (avgValue / maxValue) * 100
 
+  // Grid line positions
+  const gridLines = [25, 50, 75]
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -54,12 +56,21 @@ export function MiniChart() {
         <span className="text-xs text-muted-foreground">Last 7 days</span>
       </div>
 
-      {/* Bar Chart with dot grid background */}
+      {/* Bar Chart with dot grid background and grid lines */}
       <div className="relative">
         {/* Dot grid background */}
         <div className="absolute inset-0 dot-grid rounded-lg opacity-60" />
 
         <div className="relative flex items-end justify-between gap-2 h-32">
+          {/* Grid lines */}
+          {gridLines.map((percent) => (
+            <div
+              key={percent}
+              className="absolute left-0 right-0 border-t border-border/10 z-0 pointer-events-none"
+              style={{ bottom: `${percent}%` }}
+            />
+          ))}
+
           {/* Average line */}
           <div
             className="absolute left-0 right-0 border-t border-dashed border-emerald-500/30 z-10 pointer-events-none"
@@ -72,7 +83,7 @@ export function MiniChart() {
 
           {data.map((item, index) => {
             const heightPercent = (item.value / maxValue) * 100
-            const minHeight = 4 // minimum height in percent
+            const minHeight = 4
             const isHovered = hoveredIndex === index
 
             return (
@@ -81,16 +92,19 @@ export function MiniChart() {
                 <AnimatePresence>
                   {isHovered && (
                     <motion.div
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
-                      className="absolute -top-8 left-1/2 -translate-x-1/2 z-20"
+                      initial={{ opacity: 0, y: 4, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 4, scale: 0.9 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute -top-10 left-1/2 -translate-x-1/2 z-20"
                     >
-                      <div className="rounded-md bg-popover border border-border/50 px-2 py-1 shadow-lg">
-                        <span className="text-[10px] font-medium text-foreground whitespace-nowrap">
+                      <div className="rounded-lg bg-popover border border-border/50 px-2.5 py-1.5 shadow-lg">
+                        <span className="text-[11px] font-semibold text-foreground whitespace-nowrap">
                           {item.value} opens
                         </span>
                       </div>
+                      {/* Tooltip arrow */}
+                      <div className="w-2 h-2 bg-popover border-r border-b border-border/50 rotate-45 mx-auto -mt-1" />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -104,18 +118,28 @@ export function MiniChart() {
                     delay: index * 0.08,
                     ease: [0.25, 0.46, 0.45, 0.94],
                   }}
-                  className="w-full max-w-[32px] rounded-t-md relative overflow-hidden cursor-pointer"
+                  className="w-full max-w-[32px] rounded-t-md relative overflow-hidden cursor-pointer group/bar"
                   style={{
                     minHeight: `${minHeight}%`,
                   }}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 >
-                  {/* Gradient bar: emerald-500 at bottom to emerald-300 at top */}
-                  <div className="absolute inset-0 rounded-t-md bg-gradient-to-t from-emerald-500 to-emerald-300" />
+                  {/* Gradient bar fill: emerald at bottom to lighter shade at top */}
+                  <div className="absolute inset-0 rounded-t-md bg-gradient-to-t from-emerald-600 via-emerald-500 to-emerald-300" />
 
-                  {/* Shine effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  {/* Glass shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+
+                  {/* Animated gradient overlay */}
+                  <motion.div
+                    className="absolute inset-0"
+                    style={{
+                      background: 'linear-gradient(180deg, oklch(0.696 0.17 162.48 / 20%) 0%, transparent 50%)',
+                    }}
+                    animate={isHovered ? { opacity: 1 } : { opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
 
                   {/* Hover highlight */}
                   {isHovered && (
@@ -125,10 +149,24 @@ export function MiniChart() {
                       className="absolute inset-0 bg-white/10 rounded-t-md"
                     />
                   )}
+
+                  {/* Glow effect at base on hover */}
+                  {isHovered && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150%] h-4 rounded-full"
+                      style={{
+                        background: 'radial-gradient(ellipse, oklch(0.696 0.17 162.48 / 25%), transparent)',
+                      }}
+                    />
+                  )}
                 </motion.div>
 
                 {/* Day Label */}
-                <span className="text-[10px] text-muted-foreground">{item.day}</span>
+                <span className={`text-[10px] transition-colors duration-200 ${isHovered ? 'text-emerald-400 font-medium' : 'text-muted-foreground'}`}>
+                  {item.day}
+                </span>
               </div>
             )
           })}

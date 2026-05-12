@@ -1,22 +1,22 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Play, ExternalLink, Loader2, Copy, Check } from 'lucide-react'
+import { ArrowRight, Play, ExternalLink, Loader2, Copy, Check, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { detectPlatform } from '@/lib/platform-detect'
 
 const floatingIcons = [
-  { emoji: '📸', x: '10%', y: '15%', delay: 0, color: '#E4405F' },
-  { emoji: '▶️', x: '85%', y: '10%', delay: 0.5, color: '#FF0000' },
-  { emoji: '💬', x: '75%', y: '70%', delay: 1, color: '#25D366' },
-  { emoji: '🐦', x: '15%', y: '75%', delay: 1.5, color: '#888888' },
-  { emoji: '🎵', x: '90%', y: '45%', delay: 0.8, color: '#ff0050' },
-  { emoji: '💼', x: '5%', y: '45%', delay: 1.2, color: '#0A66C2' },
-  { emoji: '🎮', x: '50%', y: '5%', delay: 0.3, color: '#5865F2' },
-  { emoji: '🧵', x: '45%', y: '80%', delay: 1.8, color: '#000000' },
+  { emoji: '📸', x: '10%', y: '15%', delay: 0, color: '#E4405F', rotateX: 10, rotateY: -15 },
+  { emoji: '▶️', x: '85%', y: '10%', delay: 0.5, color: '#FF0000', rotateX: -8, rotateY: 20 },
+  { emoji: '💬', x: '75%', y: '70%', delay: 1, color: '#25D366', rotateX: 12, rotateY: 10 },
+  { emoji: '🐦', x: '15%', y: '75%', delay: 1.5, color: '#888888', rotateX: -5, rotateY: -12 },
+  { emoji: '🎵', x: '90%', y: '45%', delay: 0.8, color: '#ff0050', rotateX: 15, rotateY: -8 },
+  { emoji: '💼', x: '5%', y: '45%', delay: 1.2, color: '#0A66C2', rotateX: -10, rotateY: 18 },
+  { emoji: '🎮', x: '50%', y: '5%', delay: 0.3, color: '#5865F2', rotateX: 8, rotateY: -20 },
+  { emoji: '🧵', x: '45%', y: '80%', delay: 1.8, color: '#000000', rotateX: -12, rotateY: 15 },
 ]
 
 const containerVariants = {
@@ -80,6 +80,24 @@ function useCounter(end: number, duration: number = 2000) {
   return { count, ref }
 }
 
+// Generate random stars for the particle field
+function useStars(count: number) {
+  return useMemo(() => {
+    const stars = []
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        id: i,
+        x: `${Math.random() * 100}%`,
+        y: `${Math.random() * 100}%`,
+        duration: `${2 + Math.random() * 4}s`,
+        delay: `${Math.random() * 4}s`,
+        bright: Math.random() > 0.85,
+      })
+    }
+    return stars
+  }, [count])
+}
+
 interface HeroProps {
   onTryNow?: () => void
 }
@@ -93,9 +111,28 @@ export default function Hero({ onTryNow }: HeroProps) {
     success?: boolean
   } | null>(null)
   const [copied, setCopied] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [showCursorGlow, setShowCursorGlow] = useState(false)
 
   const detectedPlatform = url ? detectPlatform(url) : null
   const { count, ref: counterRef } = useCounter(12847, 2500)
+  const stars = useStars(80)
+
+  // Mouse-following cursor glow
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY })
+      setShowCursorGlow(true)
+    }
+    const handleMouseLeave = () => setShowCursorGlow(false)
+
+    window.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseleave', handleMouseLeave)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [])
 
   const handleSubmit = useCallback(async () => {
     if (!url.trim()) return
@@ -124,32 +161,62 @@ export default function Hero({ onTryNow }: HeroProps) {
 
   return (
     <section className="relative min-h-screen overflow-hidden">
+      {/* Mouse-following cursor glow */}
+      {showCursorGlow && (
+        <div
+          className="cursor-glow"
+          style={{
+            left: mousePos.x,
+            top: mousePos.y,
+            opacity: 1,
+          }}
+        />
+      )}
+
       {/* Animated mesh gradient background with breathing effect */}
       <div className="absolute inset-0 mesh-gradient animate-breathing" style={{ animationDuration: '8s' }} />
 
+      {/* Particle / stars field */}
+      <div className="stars-field">
+        {stars.map((star) => (
+          <div
+            key={star.id}
+            className={`star ${star.bright ? 'bright' : ''}`}
+            style={{
+              left: star.x,
+              top: star.y,
+              '--duration': star.duration,
+              '--delay': star.delay,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+
       {/* Dot grid overlay */}
-      <div className="absolute inset-0 dot-grid opacity-40" />
+      <div className="absolute inset-0 dot-grid opacity-30" />
 
       {/* Spotlight radial gradient behind headline */}
       <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] pointer-events-none"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[700px] pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 60% 50% at 50% 50%, oklch(0.696 0.17 162.48 / 8%) 0%, oklch(0.488 0.243 264.376 / 4%) 30%, transparent 70%)',
+          background: 'radial-gradient(ellipse 60% 50% at 50% 50%, oklch(0.696 0.17 162.48 / 10%) 0%, oklch(0.488 0.243 264.376 / 5%) 30%, transparent 70%)',
         }}
       />
 
-      {/* Floating social media icons with glass-card styling */}
+      {/* Floating social media icons with 3D perspective transforms */}
       {floatingIcons.map((icon, i) => (
         <motion.div
           key={i}
           className="absolute pointer-events-none select-none hidden sm:block"
-          style={{ left: icon.x, top: icon.y }}
+          style={{ left: icon.x, top: icon.y, perspective: '600px' }}
           animate={{
-            y: [0, -14, 0],
-            rotate: [0, 5, -5, 0],
+            y: [0, -18, 0],
+            rotateX: [icon.rotateX, icon.rotateX + 5, icon.rotateX - 3, icon.rotateX],
+            rotateY: [icon.rotateY, icon.rotateY - 8, icon.rotateY + 5, icon.rotateY],
+            rotateZ: [0, 3, -3, 0],
           }}
           transition={{
-            duration: 4 + i * 0.5,
+            duration: 5 + i * 0.5,
             repeat: Infinity,
             delay: icon.delay,
             ease: 'easeInOut',
@@ -159,19 +226,20 @@ export default function Hero({ onTryNow }: HeroProps) {
           <div
             className="absolute inset-0 rounded-xl"
             style={{
-              boxShadow: `0 0 20px ${icon.color}25, 0 0 40px ${icon.color}10`,
+              boxShadow: `0 0 25px ${icon.color}30, 0 0 50px ${icon.color}15`,
               animation: `pulse-ring-anim ${2.5 + i * 0.3}s ease-in-out infinite ${icon.delay}s`,
             }}
           />
-          {/* Glass card wrapper — larger icons */}
+          {/* Glass card wrapper with 3D transform style */}
           <div
-            className="relative flex items-center justify-center w-14 h-14 rounded-xl glass-card platform-icon-hover"
+            className="relative flex items-center justify-center w-16 h-16 rounded-xl glass-card platform-icon-hover"
             style={{
-              boxShadow: `0 0 15px ${icon.color}20, inset 0 0 15px ${icon.color}05`,
-              border: `1px solid ${icon.color}25`,
+              transformStyle: 'preserve-3d',
+              boxShadow: `0 0 20px ${icon.color}25, inset 0 0 20px ${icon.color}08`,
+              border: `1px solid ${icon.color}30`,
             }}
           >
-            <span className="text-2xl">{icon.emoji}</span>
+            <span className="text-3xl" style={{ transform: 'translateZ(8px)' }}>{icon.emoji}</span>
           </div>
         </motion.div>
       ))}
@@ -195,13 +263,13 @@ export default function Hero({ onTryNow }: HeroProps) {
             </Badge>
           </motion.div>
 
-          {/* Headline with spotlight */}
+          {/* Headline with smoother gradient */}
           <motion.h1
             variants={itemVariants}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight max-w-4xl relative"
           >
             Open Any Social Link{' '}
-            <span className="gradient-text-animated">In Its Native App</span>
+            <span className="gradient-text-smooth">In Its Native App</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -213,7 +281,7 @@ export default function Hero({ onTryNow }: HeroProps) {
             links directly in their native apps. No more browser tabs.
           </motion.p>
 
-          {/* Live link input demo — with orbit ring */}
+          {/* Live link input demo — with orbit ring + dramatic glow */}
           <motion.div
             variants={itemVariants}
             className="mt-10 w-full max-w-xl relative"
@@ -230,7 +298,7 @@ export default function Hero({ onTryNow }: HeroProps) {
               </div>
             </div>
 
-            <div className="glass-card input-glow p-4 sm:p-6 relative" style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
+            <div className="glass-card dramatic-input-glow p-4 sm:p-6 relative" style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Input
@@ -412,6 +480,12 @@ export default function Hero({ onTryNow }: HeroProps) {
             </div>
           </motion.div>
         </motion.div>
+      </div>
+
+      {/* Scroll down indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 scroll-indicator">
+        <span className="text-xs text-muted-foreground/40 uppercase tracking-[0.15em]">Scroll</span>
+        <ChevronDown className="size-5 text-muted-foreground/30" />
       </div>
     </section>
   )

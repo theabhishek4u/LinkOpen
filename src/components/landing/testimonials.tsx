@@ -1,14 +1,15 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { useState } from 'react'
-import { Star, Quote, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Star, Quote, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const testimonials = [
   {
     name: 'Sarah Chen',
     role: 'CTO',
     company: 'TechFlow',
+    companyEmoji: '🚀',
     initials: 'SC',
     color: 'bg-emerald-500/20 text-emerald-400',
     quote:
@@ -21,18 +22,20 @@ const testimonials = [
     name: 'Marcus Rivera',
     role: 'Product Lead',
     company: 'SocialBase',
+    companyEmoji: '📱',
     initials: 'MR',
     color: 'bg-violet-500/20 text-violet-400',
     quote:
       'The deep linking engine is incredibly smart. It just works, every single time.',
     fullQuote:
-      'The deep linking engine is incredibly smart. It just works, every single time. We\'ve integrated it into our content sharing pipeline and the reliability has been outstanding. Our users love the seamless experience.',
+      "The deep linking engine is incredibly smart. It just works, every single time. We've integrated it into our content sharing pipeline and the reliability has been outstanding. Our users love the seamless experience.",
     rating: 5,
   },
   {
     name: 'Priya Sharma',
     role: 'DevOps',
     company: 'LinkHive',
+    companyEmoji: '🔗',
     initials: 'PS',
     color: 'bg-cyan-500/20 text-cyan-400',
     quote:
@@ -45,6 +48,7 @@ const testimonials = [
     name: 'Alex Thompson',
     role: 'Founder',
     company: 'AppDirect',
+    companyEmoji: '💡',
     initials: 'AT',
     color: 'bg-amber-500/20 text-amber-400',
     quote:
@@ -92,7 +96,7 @@ function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[0] 
       {/* Background quote icon */}
       <Quote className="absolute top-4 right-6 size-12 text-foreground/[0.03] rotate-180 fill-current" />
 
-      {/* Star ratings with filled gold stars — more prominent */}
+      {/* Star ratings with golden color */}
       <div className="flex items-center gap-1.5 mb-5">
         <div className="flex gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -144,7 +148,7 @@ function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[0] 
         >
           {testimonial.initials}
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">
             {testimonial.name}
           </p>
@@ -152,12 +156,43 @@ function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[0] 
             {testimonial.role} <span className="text-muted-foreground/30 mx-0.5">/</span> {testimonial.company}
           </p>
         </div>
+        {/* Company logo placeholder */}
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-2/50 border border-border/15">
+          <span className="text-base">{testimonial.companyEmoji}</span>
+          <span className="text-[10px] font-semibold text-muted-foreground/50">{testimonial.company}</span>
+        </div>
       </div>
     </motion.div>
   )
 }
 
 export default function Testimonials() {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+
+  const nextSlide = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % testimonials.length)
+  }, [])
+
+  const prevSlide = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
+  }, [])
+
+  // Auto-rotate carousel
+  useEffect(() => {
+    if (!isAutoPlaying) return
+    const interval = setInterval(nextSlide, 5000)
+    return () => clearInterval(interval)
+  }, [isAutoPlaying, nextSlide])
+
+  const handleManualNav = (direction: 'next' | 'prev') => {
+    setIsAutoPlaying(false)
+    if (direction === 'next') nextSlide()
+    else prevSlide()
+    // Resume auto-play after 10 seconds of inactivity
+    setTimeout(() => setIsAutoPlaying(true), 10000)
+  }
+
   return (
     <section className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -170,25 +205,81 @@ export default function Testimonials() {
           className="text-center mb-12 sm:mb-16"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-            <span className="gradient-text-animated">Loved by Teams Worldwide</span>
+            <span className="gradient-text-smooth">Loved by Teams Worldwide</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             See what our customers have to say about LinkVerse
           </p>
         </motion.div>
 
-        {/* Testimonial cards */}
+        {/* Desktop: Grid view */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-50px' }}
-          className="grid sm:grid-cols-2 gap-5 sm:gap-6"
+          className="hidden sm:grid sm:grid-cols-2 gap-5 sm:gap-6"
         >
           {testimonials.map((testimonial) => (
             <TestimonialCard key={testimonial.name} testimonial={testimonial} />
           ))}
         </motion.div>
+
+        {/* Mobile: Carousel view */}
+        <div className="sm:hidden relative">
+          <div className="overflow-hidden rounded-xl">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeIndex}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.3 }}
+              >
+                <TestimonialCard testimonial={testimonials[activeIndex]} />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Carousel controls */}
+          <div className="flex items-center justify-center gap-4 mt-5">
+            <button
+              onClick={() => handleManualNav('prev')}
+              className="w-8 h-8 rounded-full bg-surface-2/60 border border-border/20 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-emerald-500/30 transition-colors"
+              aria-label="Previous testimonial"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+
+            {/* Dots */}
+            <div className="flex items-center gap-2">
+              {testimonials.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setActiveIndex(i)
+                    setIsAutoPlaying(false)
+                    setTimeout(() => setIsAutoPlaying(true), 10000)
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    i === activeIndex
+                      ? 'bg-emerald-400 w-6'
+                      : 'bg-muted-foreground/20 hover:bg-muted-foreground/40'
+                  }`}
+                  aria-label={`Go to testimonial ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={() => handleManualNav('next')}
+              className="w-8 h-8 rounded-full bg-surface-2/60 border border-border/20 flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-emerald-500/30 transition-colors"
+              aria-label="Next testimonial"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   )

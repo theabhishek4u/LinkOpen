@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Search, ExternalLink, QrCode, BarChart3, Clock, TrendingUp, Link2, ArrowUpRight } from 'lucide-react'
 
@@ -17,27 +18,45 @@ const statCards = [
   { label: 'QR Generated', value: '847', icon: QrCode, color: 'text-amber-400', change: '+18.7%', up: true },
 ]
 
-function Link2Icon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-    </svg>
-  )
+// Typing animation hook
+function useTypingAnimation(text: string, speed: number = 50, startDelay: number = 1000) {
+  const [displayedText, setDisplayedText] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+
+  const startTyping = useCallback(() => {
+    setIsTyping(true)
+    setDisplayedText('')
+    let i = 0
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayedText(text.slice(0, i + 1))
+        i++
+      } else {
+        clearInterval(interval)
+        setIsTyping(false)
+      }
+    }, speed)
+    return interval
+  }, [text, speed])
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const interval = startTyping()
+      return () => clearInterval(interval)
+    }, startDelay)
+    return () => clearTimeout(timeout)
+  }, [startTyping, startDelay])
+
+  return { displayedText, isTyping }
 }
 
 export default function DashboardPreview() {
+  const { displayedText, isTyping } = useTypingAnimation(
+    'https://instagram.com/p/Cx7kLm2...',
+    60,
+    1500
+  )
+
   return (
     <section className="relative py-20 sm:py-28 mesh-gradient-subtle">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -50,7 +69,7 @@ export default function DashboardPreview() {
           className="text-center mb-12 sm:mb-16"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-            <span className="gradient-text-animated">Powerful Dashboard</span>
+            <span className="gradient-text-smooth">Powerful Dashboard</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Manage all your links, track analytics, and generate deep links from one place
@@ -67,110 +86,137 @@ export default function DashboardPreview() {
             }}
           />
 
-          {/* Dashboard mock with breathing animation */}
+          {/* Browser window mock frame */}
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.97 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.7 }}
-            className="glass-card p-5 sm:p-8 max-w-4xl mx-auto relative animate-breathing"
-            style={{ animationDuration: '6s' }}
+            className="browser-frame"
           >
-            {/* Live Preview badge */}
-            <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-dot" />
-              <span className="text-[10px] font-semibold text-emerald-400/80 uppercase tracking-wider">Live Preview</span>
-            </div>
+            {/* Title bar with window controls */}
+            <div className="browser-titlebar">
+              {/* Window control dots */}
+              <div className="browser-dot" style={{ background: '#ff5f57' }} />
+              <div className="browser-dot" style={{ background: '#febc2e' }} />
+              <div className="browser-dot" style={{ background: '#28c840' }} />
 
-            {/* Subtle shimmer overlay */}
-            <div className="absolute inset-0 overflow-hidden rounded-[var(--radius-lg)] pointer-events-none">
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: 'linear-gradient(90deg, transparent 0%, oklch(0.93 0.01 270 / 2%) 50%, transparent 100%)',
-                  animation: 'shimmer 4s ease-in-out infinite',
-                }}
-              />
-            </div>
+              {/* Address bar */}
+              <div className="browser-addressbar flex items-center gap-2">
+                <span className="text-emerald-400/50">🔒</span>
+                <span>linkverse.app/dashboard</span>
+              </div>
 
-            {/* Smart input bar */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-2 border border-border/30 mb-6 input-glow">
-              <Search className="size-4 text-muted-foreground/50" />
-              <span className="text-sm text-muted-foreground/50 flex-1">
-                Paste any social media link to generate a deep link...
-              </span>
-              <div className="px-3 py-1.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5">
-                <ExternalLink className="size-3" />
-                Open in App
+              {/* Tabs */}
+              <div className="flex items-center gap-1 ml-2">
+                <div className="px-3 py-1 rounded-md bg-surface-2/50 text-[10px] text-emerald-400 border border-emerald-500/20">
+                  Links
+                </div>
+                <div className="px-3 py-1 rounded-md text-[10px] text-muted-foreground/40">
+                  Analytics
+                </div>
               </div>
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
-              {statCards.map((stat) => {
-                const Icon = stat.icon
-                return (
-                  <div
-                    key={stat.label}
-                    className="p-3 sm:p-4 rounded-lg bg-surface-2/50 border border-border/20 hover:border-border/40 transition-colors duration-300"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon className={`size-4 ${stat.color}`} />
-                      <span className="text-xs text-muted-foreground">{stat.label}</span>
-                    </div>
-                    <div className="flex items-end gap-2">
-                      <span className="text-lg sm:text-2xl font-bold text-foreground">
-                        {stat.value}
-                      </span>
-                      <span className={`text-[10px] font-medium ${stat.up ? 'text-emerald-400' : 'text-red-400'} flex items-center gap-0.5 mb-1`}>
-                        <ArrowUpRight className="size-2.5" />
-                        {stat.change}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Recent links */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Clock className="size-4 text-muted-foreground" />
-                  Recent Links
-                </h4>
-                <span className="text-xs text-muted-foreground hover:text-emerald-400 cursor-pointer transition-colors">View all →</span>
+            {/* Dashboard content */}
+            <div className="glass-card p-5 sm:p-8 relative animate-breathing" style={{ animationDuration: '6s', borderRadius: 0 }}>
+              {/* Live Preview badge */}
+              <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 live-dot" />
+                <span className="text-[10px] font-semibold text-emerald-400/80 uppercase tracking-wider">Live Preview</span>
               </div>
-              <div className="flex flex-col gap-2">
-                {recentLinks.map((link, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.3, delay: i * 0.1 }}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-surface-2/30 border border-border/10 hover:border-border/30 hover:bg-surface-2/50 transition-all duration-200 group"
-                  >
-                    <span className="text-lg">{link.platform}</span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-foreground">{link.name}</span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                          link.status === 'native'
-                            ? 'bg-emerald-500/10 text-emerald-400'
-                            : 'bg-amber-500/10 text-amber-400'
-                        }`}>
-                          {link.status === 'native' ? 'Native' : 'Browser'}
+
+              {/* Subtle shimmer overlay */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent 0%, oklch(0.93 0.01 270 / 2%) 50%, transparent 100%)',
+                    animation: 'shimmer 4s ease-in-out infinite',
+                  }}
+                />
+              </div>
+
+              {/* Smart input bar with typing animation */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-2 border border-border/30 mb-6 dramatic-input-glow">
+                <Search className="size-4 text-muted-foreground/50" />
+                <span className="text-sm text-foreground/70 flex-1">
+                  {displayedText || 'Paste any social media link...'}
+                  {isTyping && <span className="typing-cursor" />}
+                </span>
+                <div className="px-3 py-1.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5">
+                  <ExternalLink className="size-3" />
+                  Open in App
+                </div>
+              </div>
+
+              {/* Stats row */}
+              <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
+                {statCards.map((stat) => {
+                  const Icon = stat.icon
+                  return (
+                    <div
+                      key={stat.label}
+                      className="p-3 sm:p-4 rounded-lg bg-surface-2/50 border border-border/20 hover:border-border/40 transition-colors duration-300"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className={`size-4 ${stat.color}`} />
+                        <span className="text-xs text-muted-foreground">{stat.label}</span>
+                      </div>
+                      <div className="flex items-end gap-2">
+                        <span className="text-lg sm:text-2xl font-bold text-foreground">
+                          {stat.value}
+                        </span>
+                        <span className={`text-[10px] font-medium ${stat.up ? 'text-emerald-400' : 'text-red-400'} flex items-center gap-0.5 mb-1`}>
+                          <ArrowUpRight className="size-2.5" />
+                          {stat.change}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground truncate">{link.url}</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">
-                      {link.time}
-                    </span>
-                    <ExternalLink className="size-3 text-muted-foreground/30 group-hover:text-emerald-400/60 flex-shrink-0 transition-colors" />
-                  </motion.div>
-                ))}
+                  )
+                })}
+              </div>
+
+              {/* Recent links with subtle animation */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <Clock className="size-4 text-muted-foreground" />
+                    Recent Links
+                  </h4>
+                  <span className="text-xs text-muted-foreground hover:text-emerald-400 cursor-pointer transition-colors">View all →</span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {recentLinks.map((link, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3, delay: i * 0.1 }}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-surface-2/30 border border-border/10 hover:border-border/30 hover:bg-surface-2/50 transition-all duration-200 group"
+                    >
+                      <span className="text-lg">{link.platform}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-foreground">{link.name}</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                            link.status === 'native'
+                              ? 'bg-emerald-500/10 text-emerald-400'
+                              : 'bg-amber-500/10 text-amber-400'
+                          }`}>
+                            {link.status === 'native' ? 'Native' : 'Browser'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground truncate">{link.url}</p>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">
+                        {link.time}
+                      </span>
+                      <ExternalLink className="size-3 text-muted-foreground/30 group-hover:text-emerald-400/60 flex-shrink-0 transition-colors" />
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>

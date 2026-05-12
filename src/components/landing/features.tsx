@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   Smartphone,
@@ -11,7 +12,10 @@ import {
   Monitor,
   Globe,
   Code2,
+  Sparkles,
 } from 'lucide-react'
+
+type IconAnimation = 'bounce' | 'spin' | 'pulse'
 
 const features = [
   {
@@ -21,6 +25,8 @@ const features = [
     color: 'text-emerald-400',
     bg: 'bg-emerald-500/15',
     glowColor: 'oklch(0.696 0.17 162.48)',
+    iconAnimation: 'bounce' as IconAnimation,
+    featured: true,
   },
   {
     icon: Brain,
@@ -29,6 +35,8 @@ const features = [
     color: 'text-violet-400',
     bg: 'bg-violet-500/15',
     glowColor: 'oklch(0.488 0.243 264.376)',
+    iconAnimation: 'pulse' as IconAnimation,
+    featured: true,
   },
   {
     icon: QrCode,
@@ -37,6 +45,8 @@ const features = [
     color: 'text-amber-400',
     bg: 'bg-amber-500/15',
     glowColor: 'oklch(0.769 0.188 70.08)',
+    iconAnimation: 'spin' as IconAnimation,
+    featured: true,
   },
   {
     icon: BarChart3,
@@ -45,6 +55,8 @@ const features = [
     color: 'text-cyan-400',
     bg: 'bg-cyan-500/15',
     glowColor: 'oklch(0.65 0.2 200)',
+    iconAnimation: 'bounce' as IconAnimation,
+    featured: false,
   },
   {
     icon: History,
@@ -53,6 +65,8 @@ const features = [
     color: 'text-rose-400',
     bg: 'bg-rose-500/15',
     glowColor: 'oklch(0.645 0.246 16.439)',
+    iconAnimation: 'pulse' as IconAnimation,
+    featured: false,
   },
   {
     icon: Link2,
@@ -61,6 +75,8 @@ const features = [
     color: 'text-emerald-400',
     bg: 'bg-emerald-500/15',
     glowColor: 'oklch(0.696 0.17 162.48)',
+    iconAnimation: 'spin' as IconAnimation,
+    featured: false,
   },
   {
     icon: Monitor,
@@ -69,6 +85,8 @@ const features = [
     color: 'text-blue-400',
     bg: 'bg-blue-500/15',
     glowColor: 'oklch(0.55 0.2 250)',
+    iconAnimation: 'bounce' as IconAnimation,
+    featured: false,
   },
   {
     icon: Globe,
@@ -77,6 +95,8 @@ const features = [
     color: 'text-orange-400',
     bg: 'bg-orange-500/15',
     glowColor: 'oklch(0.7 0.18 55)',
+    iconAnimation: 'pulse' as IconAnimation,
+    featured: false,
   },
   {
     icon: Code2,
@@ -85,27 +105,41 @@ const features = [
     color: 'text-violet-400',
     bg: 'bg-violet-500/15',
     glowColor: 'oklch(0.488 0.243 264.376)',
+    iconAnimation: 'spin' as IconAnimation,
+    featured: false,
   },
 ]
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.07 },
-  },
-}
+// Scroll reveal hook using IntersectionObserver
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null)
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
-  },
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const children = el.querySelectorAll('.scroll-reveal')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+          }
+        })
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    )
+
+    children.forEach((child) => observer.observe(child))
+    return () => observer.disconnect()
+  }, [])
+
+  return ref
 }
 
 export default function Features() {
+  const gridRef = useScrollReveal()
+
   return (
     <section className="relative py-20 sm:py-28 mesh-gradient-subtle">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -118,51 +152,66 @@ export default function Features() {
           className="text-center mb-12 sm:mb-16"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-            <span className="gradient-text-animated">Powerful Features</span>
+            <span className="gradient-text-smooth">Powerful Features</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Everything you need for seamless social media deep linking
           </p>
         </motion.div>
 
-        {/* Features grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
+        {/* Features grid with scroll-reveal */}
+        <div
+          ref={gridRef}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
         >
           {features.map((feature, index) => {
             const Icon = feature.icon
             const num = String(index + 1).padStart(2, '0')
-            return (
-              <motion.div
-                key={feature.title}
-                variants={cardVariants}
-                className="glass-card card-shimmer hover-lift p-5 sm:p-6 group relative"
-              >
-                {/* Gradient number badge in top-right */}
-                <div
-                  className="absolute top-4 right-4 text-xs font-bold opacity-30 group-hover:opacity-60 transition-opacity duration-300"
-                  style={{
-                    background: `linear-gradient(135deg, ${feature.glowColor} / 80%, ${feature.glowColor} / 30%)`,
-                    WebkitBackgroundClip: 'text',
-                    backgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  {num}
-                </div>
+            const staggerClass = `scroll-reveal-stagger-${index + 1}`
 
-                {/* Icon with larger circle + pulse on hover */}
+            return (
+              <div
+                key={feature.title}
+                className={`scroll-reveal ${staggerClass} rotating-gradient-border glass-card card-shimmer hover-lift p-5 sm:p-6 group relative`}
+              >
+                {/* Featured badge */}
+                {feature.featured && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">
+                    <Sparkles className="size-3 text-emerald-400" />
+                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Featured</span>
+                  </div>
+                )}
+
+                {/* Gradient number badge in top-right (hidden on featured items) */}
+                {!feature.featured && (
+                  <div
+                    className="absolute top-4 right-4 text-xs font-bold opacity-30 group-hover:opacity-60 transition-opacity duration-300"
+                    style={{
+                      background: `linear-gradient(135deg, ${feature.glowColor} / 80%, ${feature.glowColor} / 30%)`,
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    {num}
+                  </div>
+                )}
+
+                {/* Icon with animation on hover */}
                 <div
-                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${feature.bg} mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300`}
+                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${feature.bg} mb-4 transition-all duration-300`}
                   style={{
                     transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease',
                   }}
                 >
-                  <Icon className={`size-5 ${feature.color} group-hover:rotate-6 transition-transform duration-300`} />
+                  <Icon
+                    className={`size-5 ${feature.color} transition-transform duration-500 ${
+                      feature.iconAnimation === 'bounce' ? 'group-hover:animate-bounce' :
+                      feature.iconAnimation === 'spin' ? 'group-hover:animate-spin' :
+                      feature.iconAnimation === 'pulse' ? 'group-hover:animate-pulse' : ''
+                    }`}
+                    style={{ animationDuration: feature.iconAnimation === 'spin' ? '2s' : undefined }}
+                  />
                 </div>
                 <h3 className="font-semibold text-foreground mb-1.5">
                   {feature.title}
@@ -178,10 +227,10 @@ export default function Features() {
                     background: `linear-gradient(90deg, transparent, ${feature.glowColor} / 30%, transparent)`,
                   }}
                 />
-              </motion.div>
+              </div>
             )
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   )

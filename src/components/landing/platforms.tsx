@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { getAllPlatforms } from '@/lib/platform-detect'
@@ -20,6 +21,40 @@ const categoryLabels: Record<string, string> = {
   community: 'Community',
 }
 
+// Platform user stats for display
+const platformStats: Record<string, string> = {
+  instagram: '2.1B users',
+  youtube: '2.5B users',
+  whatsapp: '2.0B users',
+  x: '600M users',
+  tiktok: '1.5B users',
+  linkedin: '950M users',
+  discord: '200M users',
+  reddit: '1.7B users',
+  telegram: '800M users',
+  snapchat: '750M users',
+  pinterest: '480M users',
+  threads: '200M users',
+  facebook: '3.0B users',
+}
+
+// Marquee platforms (duplicate list for seamless scroll)
+const marqueePlatforms = [
+  { emoji: '📸', name: 'Instagram', color: '#E4405F' },
+  { emoji: '▶️', name: 'YouTube', color: '#FF0000' },
+  { emoji: '💬', name: 'WhatsApp', color: '#25D366' },
+  { emoji: '🐦', name: 'X', color: '#888888' },
+  { emoji: '🎵', name: 'TikTok', color: '#ff0050' },
+  { emoji: '💼', name: 'LinkedIn', color: '#0A66C2' },
+  { emoji: '🎮', name: 'Discord', color: '#5865F2' },
+  { emoji: '🧵', name: 'Reddit', color: '#FF4500' },
+  { emoji: '✈️', name: 'Telegram', color: '#0088cc' },
+  { emoji: '👻', name: 'Snapchat', color: '#FFFC00' },
+  { emoji: '📌', name: 'Pinterest', color: '#E60023' },
+  { emoji: '🧵', name: 'Threads', color: '#000000' },
+  { emoji: '👤', name: 'Facebook', color: '#1877F2' },
+]
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -38,11 +73,66 @@ const cardVariants = {
   },
 }
 
+// SVG Connection Lines Component
+function ConnectionLines() {
+  return (
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none z-0"
+      style={{ opacity: 0.15 }}
+    >
+      {/* Diagonal connection lines */}
+      <line x1="15%" y1="25%" x2="35%" y2="45%" className="connection-line" stroke="oklch(0.696 0.17 162.48 / 30%)" strokeWidth="1" />
+      <line x1="55%" y1="20%" x2="75%" y2="40%" className="connection-line" stroke="oklch(0.488 0.243 264.376 / 30%)" strokeWidth="1" />
+      <line x1="40%" y1="55%" x2="65%" y2="70%" className="connection-line" stroke="oklch(0.769 0.188 70.08 / 30%)" strokeWidth="1" />
+      <line x1="20%" y1="60%" x2="45%" y2="40%" className="connection-line" stroke="oklch(0.696 0.17 162.48 / 20%)" strokeWidth="1" />
+      <line x1="70%" y1="30%" x2="85%" y2="55%" className="connection-line" stroke="oklch(0.488 0.243 264.376 / 20%)" strokeWidth="1" />
+      <line x1="30%" y1="75%" x2="60%" y2="85%" className="connection-line" stroke="oklch(0.65 0.2 200 / 20%)" strokeWidth="1" />
+    </svg>
+  )
+}
+
 export default function Platforms() {
   const platforms = getAllPlatforms()
+  const gridRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+    if (gridRef.current) observer.observe(gridRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <section className="relative py-20 sm:py-28">
+      {/* Marquee of platform icons at the top */}
+      <div className="mb-16 overflow-hidden relative">
+        {/* Fade edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-20 z-10" style={{ background: 'linear-gradient(to right, oklch(0.058 0.008 280), transparent)' }} />
+        <div className="absolute right-0 top-0 bottom-0 w-20 z-10" style={{ background: 'linear-gradient(to left, oklch(0.058 0.008 280), transparent)' }} />
+
+        <div className="marquee-track">
+          {marqueePlatforms.concat(marqueePlatforms).map((platform, i) => (
+            <div
+              key={`${platform.name}-${i}`}
+              className="flex items-center gap-3 px-6 py-3 mx-2 rounded-xl glass-card"
+              style={{
+                borderLeft: `3px solid ${platform.color}40`,
+              }}
+            >
+              <span className="text-2xl">{platform.emoji}</span>
+              <span className="text-sm font-semibold text-muted-foreground/70 whitespace-nowrap">{platform.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -53,81 +143,96 @@ export default function Platforms() {
           className="text-center mb-12 sm:mb-16"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-            <span className="gradient-text">{platforms.length} Platforms Supported</span>
+            <span className="gradient-text-smooth">{platforms.length} Platforms Supported</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             We support all major social media platforms with intelligent deep linking
           </p>
         </motion.div>
 
-        {/* Platform grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-50px' }}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
-        >
-          {platforms.map((platform) => (
-            <motion.div
-              key={platform.id}
-              variants={cardVariants}
-              className="glass-card hover-lift p-4 sm:p-5 cursor-default relative overflow-hidden group animated-border-glow"
-              style={{
-                borderLeft: `3px solid ${platform.color}40`,
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 25px ${platform.color}15, 0 0 50px ${platform.color}08, 0 8px 30px oklch(0 0 0 / 30%)`
-                ;(e.currentTarget as HTMLElement).style.borderLeftColor = `${platform.color}80`
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow = ''
-                ;(e.currentTarget as HTMLElement).style.borderLeftColor = `${platform.color}40`
-              }}
-            >
-              {/* Hover glow accent */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at 10% 50%, ${platform.color}10, transparent 70%)`,
-                }}
-              />
+        {/* Platform grid with connection lines and 3D tilt */}
+        <div className="relative" ref={gridRef}>
+          {/* Animated connection lines (only visible on lg+) */}
+          <div className="hidden lg:block">
+            <ConnectionLines />
+          </div>
 
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110"
-                    style={{
-                      background: `${platform.color}15`,
-                      boxShadow: `0 0 0 0 ${platform.color}00`,
-                    }}
-                  >
-                    {platform.icon}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-50px' }}
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 relative z-10"
+          >
+            {platforms.map((platform) => (
+              <motion.div
+                key={platform.id}
+                variants={cardVariants}
+                className={`tilt-card glass-card hover-lift p-4 sm:p-5 cursor-default relative overflow-hidden group animated-border-glow scroll-reveal ${isVisible ? 'is-visible' : ''}`}
+                style={{
+                  borderLeft: `3px solid ${platform.color}40`,
+                  transitionDelay: `${Math.random() * 0.3}s`,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 25px ${platform.color}15, 0 0 50px ${platform.color}08, 0 8px 30px oklch(0 0 0 / 30%)`
+                  ;(e.currentTarget as HTMLElement).style.borderLeftColor = `${platform.color}80`
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.boxShadow = ''
+                  ;(e.currentTarget as HTMLElement).style.borderLeftColor = `${platform.color}40`
+                }}
+              >
+                {/* Hover glow accent */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                  style={{
+                    background: `radial-gradient(circle at 10% 50%, ${platform.color}10, transparent 70%)`,
+                  }}
+                />
+
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110"
+                      style={{
+                        background: `${platform.color}15`,
+                        boxShadow: `0 0 0 0 ${platform.color}00`,
+                      }}
+                    >
+                      {platform.icon}
+                    </div>
+                    <span className="font-semibold text-sm sm:text-base text-foreground">
+                      {platform.name}
+                    </span>
                   </div>
-                  <span className="font-semibold text-sm sm:text-base text-foreground">
-                    {platform.name}
-                  </span>
+                  {/* Pill-shaped category badge */}
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] sm:text-xs rounded-full px-2.5 py-0.5 ${categoryColors[platform.category]}`}
+                  >
+                    {categoryLabels[platform.category]}
+                  </Badge>
+                  <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed">
+                    Open {platform.name} links directly in the native app
+                  </p>
+                  {/* Platform stats */}
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground/40">👥</span>
+                    <span className="text-[10px] text-muted-foreground/50 font-medium">
+                      {platformStats[platform.id] || '100M+ users'}
+                    </span>
+                  </div>
+                  {/* Deep link scheme */}
+                  <div className="mt-2.5 px-2 py-1 rounded bg-surface-2/50 border border-border/10">
+                    <code className="text-[10px] text-emerald-400/60 font-mono">
+                      {platform.deepLinkScheme}
+                    </code>
+                  </div>
                 </div>
-                {/* Pill-shaped category badge */}
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] sm:text-xs rounded-full px-2.5 py-0.5 ${categoryColors[platform.category]}`}
-                >
-                  {categoryLabels[platform.category]}
-                </Badge>
-                <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed">
-                  Open {platform.name} links directly in the native app
-                </p>
-                {/* Deep link scheme */}
-                <div className="mt-2.5 px-2 py-1 rounded bg-surface-2/50 border border-border/10">
-                  <code className="text-[10px] text-emerald-400/60 font-mono">
-                    {platform.deepLinkScheme}
-                  </code>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   )
