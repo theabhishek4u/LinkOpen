@@ -4085,3 +4085,381 @@ nav a:focus-visible {
     animation: none !important;
   }
 }
+
+/* ============================================================
+   ROUND 6 PREMIUM STYLING — Magnetic, Liquid, Grain, Spotlight
+   ============================================================ */
+
+/* ── Magnetic card — subtle cursor-following transform ──── */
+.magnetic-card {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+/* ── Wave separator — SVG wave divider between sections ── */
+.wave-separator {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.wave-separator svg {
+  display: block;
+  width: 100%;
+  height: 60px;
+}
+
+/* ── Grain overlay — subtle noise texture for premium feel ── */
+.grain-overlay {
+  position: relative;
+}
+
+.grain-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 2;
+  border-radius: inherit;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+}
+
+/* ── Spotlight follow — cursor-following spotlight highlight ── */
+.spotlight-follow {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-follow::before {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.696 0.17 162.48 / 8%) 0%, transparent 70%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.spotlight-follow:hover::before {
+  opacity: 1;
+}
+
+/* ── Bento grid — CSS Grid bento layout with named areas ── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto;
+  gap: 1rem;
+}
+
+.bento-grid .bento-wide {
+  grid-column: span 2;
+}
+
+.bento-grid .bento-tall {
+  grid-row: span 2;
+}
+
+.bento-grid .bento-large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+@media (max-width: 768px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+  .bento-grid .bento-wide,
+  .bento-grid .bento-tall,
+  .bento-grid .bento-large {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .bento-grid .bento-large {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+}
+
+/* ── Scan line — moving line animation for QR codes ── */
+@keyframes scan-line-move {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+
+.scan-line {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(0.696 0.17 162.48 / 60%),
+    oklch(0.696 0.17 162.48),
+    oklch(0.696 0.17 162.48 / 60%),
+    transparent
+  );
+  box-shadow: 0 0 8px oklch(0.696 0.17 162.48 / 40%), 0 0 20px oklch(0.696 0.17 162.48 / 15%);
+  animation: scan-line-move 2.5s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Pixel reveal — pixel-by-pixel reveal animation ── */
+@keyframes pixel-reveal-in {
+  0% {
+    clip-path: inset(0 100% 100% 0);
+    opacity: 0;
+  }
+  25% {
+    clip-path: inset(0 50% 50% 0);
+    opacity: 0.5;
+  }
+  50% {
+    clip-path: inset(0 25% 25% 0);
+    opacity: 0.8;
+  }
+  75% {
+    clip-path: inset(0 10% 10% 0);
+    opacity: 0.95;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.pixel-reveal {
+  animation: pixel-reveal-in 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* ── Gradient trail — gradient that follows active element ── */
+@keyframes gradient-trail-flow {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+.gradient-trail {
+  position: relative;
+}
+
+.gradient-trail::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 80%) 20%,
+    oklch(0.488 0.243 264.376 / 60%) 50%,
+    oklch(0.696 0.17 162.48 / 80%) 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: gradient-trail-flow 2s linear infinite;
+  border-radius: 0 0 inherit inherit;
+}
+
+/* ── Export step indicator — step progress indicator ── */
+.export-step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.export-step-indicator .step-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  border: 2px solid oklch(0.93 0.01 270 / 15%);
+  color: oklch(0.55 0.025 270);
+  background: transparent;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  z-index: 1;
+}
+
+.export-step-indicator .step-dot.active {
+  border-color: oklch(0.696 0.17 162.48);
+  color: oklch(0.696 0.17 162.48);
+  background: oklch(0.696 0.17 162.48 / 10%);
+  box-shadow: 0 0 12px oklch(0.696 0.17 162.48 / 20%);
+}
+
+.export-step-indicator .step-dot.completed {
+  border-color: oklch(0.696 0.17 162.48);
+  background: oklch(0.696 0.17 162.48);
+  color: white;
+}
+
+.export-step-indicator .step-line {
+  flex: 1;
+  height: 2px;
+  background: oklch(0.93 0.01 270 / 15%);
+  transition: background 0.4s ease;
+}
+
+.export-step-indicator .step-line.completed {
+  background: oklch(0.696 0.17 162.48);
+}
+
+/* ── Liquid wave — smooth wave animation ── */
+@keyframes liquid-wave-1 {
+  0% { d: path("M0,160 C320,300,420,60,640,160 C860,260,960,60,1280,160 L1280,320 L0,320 Z"); }
+  50% { d: path("M0,200 C320,100,420,260,640,180 C860,100,960,260,1280,180 L1280,320 L0,320 Z"); }
+  100% { d: path("M0,160 C320,300,420,60,640,160 C860,260,960,60,1280,160 L1280,320 L0,320 Z"); }
+}
+
+@keyframes liquid-wave-2 {
+  0% { d: path("M0,180 C320,80,520,280,640,180 C760,80,960,280,1280,180 L1280,320 L0,320 Z"); }
+  50% { d: path("M0,220 C320,280,520,100,640,200 C760,280,960,100,1280,200 L1280,320 L0,320 Z"); }
+  100% { d: path("M0,180 C320,80,520,280,640,180 C760,80,960,280,1280,180 L1280,320 L0,320 Z"); }
+}
+
+.liquid-wave svg path.wave-1 {
+  animation: liquid-wave-1 6s ease-in-out infinite;
+}
+
+.liquid-wave svg path.wave-2 {
+  animation: liquid-wave-2 8s ease-in-out infinite;
+}
+
+/* ── Data particle flow — particles along connection lines ── */
+@keyframes data-particle-flow {
+  0% { offset-distance: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+.data-particle {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: oklch(0.696 0.17 162.48);
+  box-shadow: 0 0 6px oklch(0.696 0.17 162.48 / 60%), 0 0 12px oklch(0.696 0.17 162.48 / 30%);
+  offset-distance: 0%;
+  animation: data-particle-flow 2s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Processing dots — sequential dots appearing ── */
+@keyframes processing-dot-1 {
+  0%, 20% { opacity: 0.2; }
+  25%, 100% { opacity: 1; }
+}
+
+@keyframes processing-dot-2 {
+  0%, 45% { opacity: 0.2; }
+  50%, 100% { opacity: 1; }
+}
+
+@keyframes processing-dot-3 {
+  0%, 70% { opacity: 0.2; }
+  75%, 100% { opacity: 1; }
+}
+
+.processing-dots .dot-1 { animation: processing-dot-1 1.5s ease-in-out infinite; }
+.processing-dots .dot-2 { animation: processing-dot-2 1.5s ease-in-out infinite; }
+.processing-dots .dot-3 { animation: processing-dot-3 1.5s ease-in-out infinite; }
+
+/* ── Icon bob — subtle bob/rotate animation for platform icons ── */
+@keyframes icon-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-2px) rotate(1deg); }
+  75% { transform: translateY(1px) rotate(-1deg); }
+}
+
+.icon-bob {
+  animation: icon-bob 3s ease-in-out infinite;
+}
+
+/* ── Section gradient divider — gradient line for settings ── */
+.gradient-section-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 30%) 20%,
+    oklch(0.488 0.243 264.376 / 20%) 50%,
+    oklch(0.696 0.17 162.48 / 30%) 80%,
+    transparent 100%
+  );
+  margin: 0.75rem 0;
+}
+
+/* ── Animated toggle thumb slide with shadow ── */
+.animated-toggle-thumb {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.animated-toggle-thumb[data-state="checked"] {
+  box-shadow: 0 0 8px oklch(0.696 0.17 162.48 / 30%);
+}
+
+/* ── Reset confirmation animation ── */
+@keyframes reset-confirm-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+.reset-confirm-shake {
+  animation: reset-confirm-shake 0.4s ease-out;
+}
+
+/* ── Download icon bounce ── */
+@keyframes download-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.download-icon-bounce:hover svg {
+  animation: download-bounce 0.5s ease infinite;
+}
+
+/* ── Reduced motion for new Round 6 animations ── */
+@media (prefers-reduced-motion: reduce) {
+  .scan-line,
+  .pixel-reveal,
+  .data-particle,
+  .icon-bob,
+  .gradient-trail::after {
+    animation: none !important;
+  }
+  .magnetic-card {
+    transform: none !important;
+  }
+  .processing-dots .dot-1,
+  .processing-dots .dot-2,
+  .processing-dots .dot-3 {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

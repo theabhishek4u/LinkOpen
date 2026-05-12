@@ -225,6 +225,87 @@ const API_ENDPOINTS: ApiEndpoint[] = [
       },
     }, null, 2),
   },
+  {
+    method: 'GET',
+    path: '/api/stats',
+    description: 'Get aggregated link statistics for a given period including total links, opens, conversion rate, busiest day/hour, platform breakdown, growth rate, and top performing links.',
+    queryParams: [
+      { name: 'period', type: 'string', required: false, description: 'Stats period: "today", "7d", "30d", "90d", "all" (default: "30d")' },
+    ],
+    responseExample: JSON.stringify({
+      success: true,
+      data: {
+        period: '30d',
+        totalLinks: 150,
+        totalOpens: 1247,
+        nativeOpens: 892,
+        browserOpens: 355,
+        conversionRate: 71.53,
+        averageLinksPerDay: 5.0,
+        busiestDay: { date: '2024-01-15', count: 23 },
+        busiestHour: { hour: 14, count: 45 },
+        platformBreakdown: [
+          { platform: 'youtube', count: 45, percentage: 30.0 },
+        ],
+        growthRate: 12.5,
+        topLinks: [],
+      },
+    }, null, 2),
+  },
+  {
+    method: 'GET',
+    path: '/api/search',
+    description: 'Search and filter links by query string, platform, date range, or tags.',
+    queryParams: [
+      { name: 'q', type: 'string', required: false, description: 'Search query for URL or note text' },
+      { name: 'platform', type: 'string', required: false, description: 'Filter by platform ID' },
+      { name: 'limit', type: 'number', required: false, description: 'Results per page (default: 20)' },
+    ],
+    responseExample: JSON.stringify({
+      success: true,
+      data: [],
+    }, null, 2),
+  },
+  {
+    method: 'POST',
+    path: '/api/share',
+    description: 'Create a shareable public link. Accepts a linkId or URL data and returns a share code that can be used to access the link publicly. Supports optional expiration and deep link reveal toggling.',
+    requestExample: JSON.stringify({
+      originalUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      deepLink: 'vnd.youtube://video/dQw4w9WgXcQ',
+      platform: 'youtube',
+      allowDeepLinkReveal: true,
+      expiresIn: 24,
+    }, null, 2),
+    responseExample: JSON.stringify({
+      success: true,
+      data: {
+        code: 'ABC1234',
+        shareUrl: '/s/ABC1234',
+        expiresAt: '2024-01-16T10:30:00Z',
+        allowDeepLinkReveal: true,
+      },
+    }, null, 2),
+  },
+  {
+    method: 'GET',
+    path: '/api/share/:code',
+    description: 'Retrieve a shared link by its code. Increments the view counter. Returns the original URL and optionally the deep link if allowDeepLinkReveal is true. Returns 410 for expired shares.',
+    queryParams: [
+      { name: 'code', type: 'string', required: true, description: 'The share code (URL parameter)' },
+    ],
+    responseExample: JSON.stringify({
+      success: true,
+      data: {
+        originalUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        deepLink: 'vnd.youtube://video/dQw4w9WgXcQ',
+        platform: 'youtube',
+        views: 15,
+        allowDeepLinkReveal: true,
+        expiresAt: '2024-01-16T10:30:00Z',
+      },
+    }, null, 2),
+  },
 ]
 
 function CopyButton({ text }: { text: string }) {

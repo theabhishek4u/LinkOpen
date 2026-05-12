@@ -184,11 +184,11 @@ export default function Features() {
           </p>
         </motion.div>
 
-        {/* Features grid with spotlight effect and scroll-reveal */}
+        {/* Features grid with spotlight effect and scroll-reveal — Bento layout */}
         <div
           ref={gridRef}
           onMouseMove={handleMouseMove}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 relative"
+          className="bento-grid relative"
         >
           {/* Spotlight radial gradient that follows cursor */}
           <div
@@ -204,10 +204,15 @@ export default function Features() {
             const num = String(index + 1).padStart(2, '0')
             const staggerClass = `scroll-reveal-stagger-${index + 1}`
 
+            // Bento layout: top 3 featured cards are larger
+            const bentoClass = feature.featured
+              ? index === 0 ? 'bento-wide' : index === 1 ? 'bento-tall' : 'bento-wide'
+              : ''
+
             return (
               <div
                 key={feature.title}
-                className={`scroll-reveal ${staggerClass} rotating-gradient-border glass-card card-shimmer card-tilt-hover p-5 sm:p-6 group relative`}
+                className={`scroll-reveal ${staggerClass} rotating-gradient-border glass-card card-shimmer card-tilt-hover p-5 sm:p-6 group relative ${bentoClass}`}
               >
                 {/* Featured badge with rotating gradient */}
                 {feature.featured && (
@@ -239,15 +244,15 @@ export default function Features() {
                   </div>
                 )}
 
-                {/* Icon with animation on hover */}
+                {/* Icon with animation on hover — larger for featured */}
                 <div
-                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${feature.bg} mb-4 transition-all duration-300`}
+                  className={`inline-flex items-center justify-center rounded-xl ${feature.bg} mb-4 transition-all duration-300 ${feature.featured ? 'w-14 h-14' : 'w-12 h-12'}`}
                   style={{
                     transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease',
                   }}
                 >
                   <Icon
-                    className={`size-5 ${feature.color} transition-transform duration-500 ${
+                    className={`${feature.featured ? 'size-6' : 'size-5'} ${feature.color} transition-transform duration-500 ${
                       feature.iconAnimation === 'bounce' ? 'group-hover:animate-bounce' :
                       feature.iconAnimation === 'spin' ? 'group-hover:animate-spin' :
                       feature.iconAnimation === 'pulse' ? 'group-hover:animate-pulse' : ''
@@ -255,10 +260,10 @@ export default function Features() {
                     style={{ animationDuration: feature.iconAnimation === 'spin' ? '2s' : undefined }}
                   />
                 </div>
-                <h3 className="font-semibold text-foreground mb-1.5">
+                <h3 className={`font-semibold text-foreground mb-1.5 ${feature.featured ? 'text-base sm:text-lg' : ''}`}>
                   {feature.title}
                 </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className={`text-sm text-muted-foreground leading-relaxed ${feature.featured ? 'text-muted-foreground/80' : ''}`}>
                   {feature.description}
                 </p>
 

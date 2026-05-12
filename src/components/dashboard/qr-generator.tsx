@@ -133,12 +133,14 @@ export function QRGenerator() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                className="rounded-xl border border-border/50 bg-white p-3"
+                className="rounded-xl border border-border/50 bg-white p-3 relative overflow-hidden"
               >
+                {/* Scan line animation */}
+                <div className="scan-line" />
                 <img
                   src={qrCodeDataUrl}
                   alt="QR Code"
-                  className="h-48 w-48"
+                  className="h-48 w-48 pixel-reveal"
                 />
               </motion.div>
             ) : (
@@ -167,6 +169,7 @@ export function QRGenerator() {
               variant="secondary"
               onClick={handleDownload}
               disabled={!qrCodeDataUrl}
+              className="download-icon-bounce"
             >
               <Download className="h-3.5 w-3.5" />
               Download

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { useLinkStore } from '@/store/link-store'
 import { PlatformBadge } from './platform-badge'
+import { ShareDialog } from './share-dialog'
 import { toast } from 'sonner'
 
 export function LinkResult() {
@@ -367,6 +368,14 @@ export function LinkResult() {
                 </AnimatePresence>
               </Button>
             )}
+
+            {/* Share Button */}
+            <ShareDialog
+              originalUrl={deepLinkResult.originalUrl}
+              deepLink={deepLinkResult.deepLink}
+              shortCode={deepLinkResult.shortCode}
+              platform={detectedPlatform?.id}
+            />
           </motion.div>
         </motion.div>
       )}

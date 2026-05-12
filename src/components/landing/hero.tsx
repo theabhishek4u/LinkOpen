@@ -213,6 +213,8 @@ export default function Hero({ onTryNow }: HeroProps) {
   const [typedSubtitle, setTypedSubtitle] = useState('')
   const [subtitleComplete, setSubtitleComplete] = useState(false)
   const [scrollY, setScrollY] = useState(0)
+  const [cardOffset, setCardOffset] = useState({ x: 0, y: 0 })
+  const demoCardRef = useRef<HTMLDivElement>(null)
 
   const detectedPlatform = url ? detectPlatform(url) : null
   const { count, displayDigits, ref: counterRef } = useCounter(12847, 2500)
@@ -241,6 +243,27 @@ export default function Hero({ onTryNow }: HeroProps) {
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Magnetic effect on demo card
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!demoCardRef.current) return
+      const rect = demoCardRef.current.getBoundingClientRect()
+      const centerX = rect.left + rect.width / 2
+      const centerY = rect.top + rect.height / 2
+      const deltaX = (e.clientX - centerX) / rect.width
+      const deltaY = (e.clientY - centerY) / rect.height
+      // Only apply magnetic effect when cursor is near the card
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+      if (distance < 1.5) {
+        setCardOffset({ x: deltaX * 6, y: deltaY * 6 })
+      } else {
+        setCardOffset({ x: 0, y: 0 })
+      }
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
   // Typing animation for subtitle
@@ -288,7 +311,7 @@ export default function Hero({ onTryNow }: HeroProps) {
   }, [])
 
   return (
-    <section className="relative min-h-screen overflow-hidden">
+    <section className="relative min-h-screen overflow-hidden grain-overlay">
       {/* Mouse-following cursor glow */}
       {showCursorGlow && (
         <div
@@ -492,7 +515,7 @@ export default function Hero({ onTryNow }: HeroProps) {
               </div>
             </div>
 
-            <div className={`glass-card dramatic-input-glow animate-path-border p-4 sm:p-6 relative ${result ? 'demo-card-result-glow' : ''}`} style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
+            <div ref={demoCardRef} className={`magnetic-card glass-card dramatic-input-glow animate-path-border p-4 sm:p-6 relative ${result ? 'demo-card-result-glow' : ''}`} style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)', transform: `translate(${cardOffset.x}px, ${cardOffset.y}px)` }}>
               {/* Confetti burst on success */}
               <ConfettiBurst active={showConfetti} />
 
@@ -696,8 +719,30 @@ export default function Hero({ onTryNow }: HeroProps) {
         </motion.div>
       </div>
 
+      {/* Liquid wave at bottom of hero */}
+      <div className="liquid-wave absolute bottom-0 left-0 right-0 z-[5] pointer-events-none">
+        <svg viewBox="0 0 1280 320" preserveAspectRatio="none" className="w-full h-16 sm:h-24">
+          <path
+            className="wave-1"
+            d="M0,160 C320,300,420,60,640,160 C860,260,960,60,1280,160 L1280,320 L0,320 Z"
+            fill="oklch(0.696 0.17 162.48 / 4%)"
+            style={{ animation: 'liquid-wave-1 6s ease-in-out infinite' }}
+          />
+          <path
+            className="wave-2"
+            d="M0,180 C320,80,520,280,640,180 C760,80,960,280,1280,180 L1280,320 L0,320 Z"
+            fill="oklch(0.488 0.243 264.376 / 3%)"
+            style={{ animation: 'liquid-wave-2 8s ease-in-out infinite' }}
+          />
+          <path
+            d="M0,220 C200,280,400,160,640,220 C880,280,1080,160,1280,220 L1280,320 L0,320 Z"
+            fill="var(--background)"
+          />
+        </svg>
+      </div>
+
       {/* Scroll down indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 scroll-indicator">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 scroll-indicator">
         <span className="text-xs text-muted-foreground/40 uppercase tracking-[0.15em]">Scroll</span>
         <ChevronDown className="size-5 text-muted-foreground/30" />
       </div>

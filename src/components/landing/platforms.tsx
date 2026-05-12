@@ -96,6 +96,8 @@ export default function Platforms() {
   const gridRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [spotlightPos, setSpotlightPos] = useState({ x: 0, y: 0 })
+  const [showSpotlight, setShowSpotlight] = useState(false)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -152,7 +154,25 @@ export default function Platforms() {
         </motion.div>
 
         {/* Platform grid with connection lines and dramatic hover */}
-        <div className="relative" ref={gridRef}>
+        <div
+          className="relative"
+          ref={gridRef}
+          onMouseMove={(e) => {
+            if (!gridRef.current) return
+            const rect = gridRef.current.getBoundingClientRect()
+            setSpotlightPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+            setShowSpotlight(true)
+          }}
+          onMouseLeave={() => setShowSpotlight(false)}
+        >
+          {/* Spotlight effect that follows the mouse cursor */}
+          <div
+            className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-300"
+            style={{
+              background: `radial-gradient(250px circle at ${spotlightPos.x}px ${spotlightPos.y}px, oklch(0.696 0.17 162.48 / 6%) 0%, transparent 70%)`,
+              opacity: showSpotlight ? 1 : 0,
+            }}
+          />
           {/* Animated connection lines (only visible on lg+) */}
           <div className="hidden lg:block">
             <ConnectionLines />
@@ -230,11 +250,12 @@ export default function Platforms() {
                 <div className="relative z-10 overflow-hidden">
                   <div className="flex items-center gap-3 mb-3">
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0 icon-bob"
                       style={{
                         background: `${platform.color}15`,
                         boxShadow: `0 0 0 0 ${platform.color}00`,
                         transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease',
+                        animationDelay: `${index * 0.2}s`,
                       }}
                     >
                       {platform.icon}

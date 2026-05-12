@@ -253,4 +253,6 @@ export const RATE_LIMITS = {
   stats: { windowMs: 60_000, maxRequests: 20 },
   /** Favorite toggle: 30 requests per minute */
   favorite: { windowMs: 60_000, maxRequests: 30 },
+  /** Default: 20 requests per minute */
+  default: { windowMs: 60_000, maxRequests: 20 },
 } as const

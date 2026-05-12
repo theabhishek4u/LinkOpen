@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen, Bell, Moon, Download, Globe } from 'lucide-react'
+import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen, Bell, Moon, Download, Globe, GitBranch, Gauge, Wrench, Share2 } from 'lucide-react'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { SmartInput, SmartInputHandle } from './smart-input'
 import { LinkResult } from './link-result'
@@ -37,6 +37,10 @@ import { LinkSearch } from './link-search'
 import { DeepLinkTester } from './deep-link-tester'
 import { LinkClusters } from './link-clusters'
 import { WelcomeCard } from './welcome-card'
+import { LinkHeatmap } from './link-heatmap'
+import { UrlBuilder } from './url-builder'
+import { RedirectChain } from './redirect-chain'
+import { UsageQuota } from './usage-quota'
 import { useLinkStore } from '@/store/link-store'
 import { useTheme } from 'next-themes'
 
@@ -559,6 +563,7 @@ export function DashboardMain() {
               className="lg:col-span-2 space-y-4 sm:space-y-6"
             >
               <AnalyticsCards />
+              <LinkHeatmap />
               <LinkClusters />
               <AnalyticsChart />
               <PerformanceDashboard />
@@ -593,6 +598,9 @@ export function DashboardMain() {
               <h2 className="text-sm font-semibold text-foreground">Tools & Utilities</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <UrlBuilder />
+              <RedirectChain />
+              <UsageQuota />
               <LinkComparison />
               <LinkHealthChecker />
               <LinkScheduler />
@@ -744,6 +752,10 @@ export function DashboardMain() {
                     { icon: Moon, label: 'Toggle Theme', desc: 'Switch light/dark mode', actionId: 'toggleDarkMode' as const },
                     { icon: Download, label: 'Export Data', desc: 'Export links and analytics', actionId: 'exportData' as const },
                     { icon: Globe, label: 'Link Clusters', desc: 'View link groups by platform', actionId: 'viewClusters' as const },
+                    { icon: Wrench, label: 'URL Builder', desc: 'Build deep link URLs visually', actionId: 'urlBuilder' as const },
+                    { icon: GitBranch, label: 'Redirect Tracer', desc: 'Trace URL redirect chains', actionId: 'redirectTracer' as const },
+                    { icon: Gauge, label: 'Usage Quota', desc: 'View usage and plan limits', actionId: 'usageQuota' as const },
+                    { icon: Share2, label: 'Share Link', desc: 'Create a shareable link URL', actionId: 'shareLink' as const },
                   ].map((cmd) => (
                     <button
                       key={cmd.label}
@@ -759,6 +771,7 @@ export function DashboardMain() {
                         else if (cmd.actionId === 'toggleDarkMode') handleToggleDarkMode()
                         else if (cmd.actionId === 'exportData') handleExportData()
                         else if (cmd.actionId === 'viewClusters') handleSectionNav('analytics')
+                        else if (cmd.actionId === 'urlBuilder' || cmd.actionId === 'redirectTracer' || cmd.actionId === 'usageQuota' || cmd.actionId === 'shareLink') handleSectionNav('tools')
                         setShowCommandPalette(false)
                       }}
                       className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-accent/50 transition-colors group focus-visible-ring"

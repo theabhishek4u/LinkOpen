@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Download, FileJson, FileSpreadsheet, Share2, Eye,
   Link2, BarChart3, Loader2, X, Copy, Check, CheckCircle2,
+  FileCode, FileText, Table, FileBarChart,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -79,11 +80,13 @@ export function ExportPanel() {
   const [copied, setCopied] = useState(false)
   const [exportSuccess, setExportSuccess] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState(0)
+  const [exportStep, setExportStep] = useState<0 | 1 | 2 | 3>(0) // 0=idle, 1=preparing, 2=generating, 3=ready
 
   const handleExport = useCallback(async (format: ExportFormat, type: ExportType) => {
     setExporting(true)
     setDownloadProgress(0)
     setExportSuccess(false)
+    setExportStep(1) // Preparing
 
     // Simulate progress
     const progressInterval = setInterval(() => {
@@ -95,6 +98,8 @@ export function ExportPanel() {
         return prev + Math.random() * 20
       })
     }, 200)
+
+    setTimeout(() => setExportStep(2), 400) // Generating
 
     try {
       let data: unknown[]
@@ -129,6 +134,7 @@ export function ExportPanel() {
 
       clearInterval(progressInterval)
       setDownloadProgress(100)
+      setExportStep(3) // Ready
 
       // Small delay to show 100% before completing
       await new Promise((resolve) => setTimeout(resolve, 300))
@@ -164,6 +170,7 @@ export function ExportPanel() {
     } finally {
       setExporting(false)
       setDownloadProgress(0)
+      setExportStep(0)
     }
   }, [history, analytics])
 
@@ -251,7 +258,7 @@ export function ExportPanel() {
         {exportSuccess && <SuccessCheckmark />}
       </div>
 
-      {/* Download progress indicator */}
+      {/* Download progress indicator with step steps */}
       <AnimatePresence>
         {exporting && (
           <motion.div
@@ -260,9 +267,25 @@ export function ExportPanel() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="space-y-1.5">
+            <div className="space-y-2">
+              {/* Step indicator */}
+              <div className="export-step-indicator">
+                <div className={`step-dot ${exportStep >= 1 ? (exportStep > 1 ? 'completed' : 'active') : ''}`}>
+                  {exportStep > 1 ? '✓' : '1'}
+                </div>
+                <div className={`step-line ${exportStep > 1 ? 'completed' : ''}`} />
+                <div className={`step-dot ${exportStep >= 2 ? (exportStep > 2 ? 'completed' : 'active') : ''}`}>
+                  {exportStep > 2 ? '✓' : '2'}
+                </div>
+                <div className={`step-line ${exportStep > 2 ? 'completed' : ''}`} />
+                <div className={`step-dot ${exportStep >= 3 ? 'completed' : ''}`}>
+                  {exportStep >= 3 ? '✓' : '3'}
+                </div>
+              </div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-muted-foreground">Preparing export...</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {exportStep === 1 ? 'Preparing...' : exportStep === 2 ? 'Generating...' : 'Ready!'}
+                </span>
                 <span className="text-[10px] text-primary font-medium">{Math.round(downloadProgress)}%</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-muted/20 overflow-hidden">
@@ -281,10 +304,10 @@ export function ExportPanel() {
         )}
       </AnimatePresence>
 
-      {/* Export format cards with hover glow */}
+      {/* Export format cards with format-specific icons */}
       <div className="grid grid-cols-2 gap-2">
         <FormatCard
-          icon={<FileJson className="h-4 w-4 text-primary/70" />}
+          icon={<FileCode className="h-4 w-4 text-primary/70" />}
           title="History"
           subtitle="JSON format"
           disabled={exporting || history.length === 0}
@@ -292,7 +315,7 @@ export function ExportPanel() {
           accentColor="#10b981"
         />
         <FormatCard
-          icon={<FileSpreadsheet className="h-4 w-4 text-primary/70" />}
+          icon={<Table className="h-4 w-4 text-primary/70" />}
           title="History"
           subtitle="CSV format"
           disabled={exporting || history.length === 0}
@@ -300,7 +323,7 @@ export function ExportPanel() {
           accentColor="#10b981"
         />
         <FormatCard
-          icon={<BarChart3 className="h-4 w-4 text-violet-400/70" />}
+          icon={<FileBarChart className="h-4 w-4 text-violet-400/70" />}
           title="Analytics"
           subtitle="JSON report"
           disabled={exporting || analytics.topPlatforms.length === 0}
@@ -308,7 +331,7 @@ export function ExportPanel() {
           accentColor="#8b5cf6"
         />
         <FormatCard
-          icon={<FileSpreadsheet className="h-4 w-4 text-violet-400/70" />}
+          icon={<FileText className="h-4 w-4 text-violet-400/70" />}
           title="Analytics"
           subtitle="CSV report"
           disabled={exporting || analytics.topPlatforms.length === 0}

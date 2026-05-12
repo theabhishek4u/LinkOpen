@@ -11,12 +11,12 @@ interface DashboardSidebarProps {
   onSectionChange: (section: SidebarSection) => void
 }
 
-const sidebarItems: { id: SidebarSection; label: string; icon: typeof Link2; gradient: string }[] = [
-  { id: 'input', label: 'Create', icon: Link2, gradient: 'from-emerald-500/20 to-emerald-500/5' },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3, gradient: 'from-violet-500/20 to-violet-500/5' },
-  { id: 'tools', label: 'Tools', icon: Shield, gradient: 'from-amber-500/20 to-amber-500/5' },
-  { id: 'history', label: 'History', icon: Clock, gradient: 'from-emerald-500/20 to-emerald-500/5' },
-  { id: 'settings', label: 'Settings', icon: Settings, gradient: 'from-violet-500/20 to-violet-500/5' },
+const sidebarItems: { id: SidebarSection; label: string; icon: typeof Link2; gradient: string; progress: number }[] = [
+  { id: 'input', label: 'Create', icon: Link2, gradient: 'from-emerald-500/20 to-emerald-500/5', progress: 85 },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3, gradient: 'from-violet-500/20 to-violet-500/5', progress: 60 },
+  { id: 'tools', label: 'Tools', icon: Shield, gradient: 'from-amber-500/20 to-amber-500/5', progress: 40 },
+  { id: 'history', label: 'History', icon: Clock, gradient: 'from-emerald-500/20 to-emerald-500/5', progress: 70 },
+  { id: 'settings', label: 'Settings', icon: Settings, gradient: 'from-violet-500/20 to-violet-500/5', progress: 30 },
 ]
 
 export function DashboardSidebar({ activeSection, onSectionChange }: DashboardSidebarProps) {
@@ -56,7 +56,7 @@ export function DashboardSidebar({ activeSection, onSectionChange }: DashboardSi
                 collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
               } ${
                 isActive
-                  ? `sidebar-active-pill text-emerald-400 border border-emerald-500/20 bg-gradient-to-r ${item.gradient}`
+                  ? `sidebar-active-pill gradient-trail text-emerald-400 border border-emerald-500/20 bg-gradient-to-r ${item.gradient}`
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/40 border border-transparent'
               }`}
               aria-current={isActive ? 'page' : undefined}
@@ -89,12 +89,25 @@ export function DashboardSidebar({ activeSection, onSectionChange }: DashboardSi
                     animate={{ opacity: 1, width: 'auto' }}
                     exit={{ opacity: 0, width: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="text-xs font-medium whitespace-nowrap overflow-hidden"
+                    className="text-xs font-medium whitespace-nowrap overflow-hidden flex-1"
                   >
                     {item.label}
                   </motion.span>
                 )}
               </AnimatePresence>
+
+              {/* Mini progress indicator */}
+              {!collapsed && !isActive && (
+                <div className="ml-auto w-8 h-1 rounded-full bg-muted/30 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${item.progress}%`,
+                      background: 'oklch(0.696 0.17 162.48 / 40%)',
+                    }}
+                  />
+                </div>
+              )}
             </motion.button>
           )
         })}

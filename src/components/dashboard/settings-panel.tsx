@@ -222,7 +222,7 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
                 <Switch
                   checked={settings.compactMode}
                   onCheckedChange={(checked) => updateSettings({ compactMode: checked })}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-primary animated-toggle-thumb"
                 />
               </div>
 
@@ -238,18 +238,18 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
                 <Switch
                   checked={settings.animationsEnabled}
                   onCheckedChange={(checked) => updateSettings({ animationsEnabled: checked })}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-primary animated-toggle-thumb"
                 />
               </div>
             </div>
           </div>
 
-          <Separator className="bg-border/30" />
+          <Separator className="bg-border/30 gradient-section-divider" />
 
           {/* Accent Color Section */}
           <ThemeCustomizer />
 
-          <Separator className="bg-border/30" />
+          <Separator className="bg-border/30 gradient-section-divider" />
 
           {/* Default Behavior Section */}
           <div className="space-y-4">
@@ -293,7 +293,7 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
                 <Switch
                   checked={settings.autoCopyOnGenerate}
                   onCheckedChange={(checked) => updateSettings({ autoCopyOnGenerate: checked })}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-primary animated-toggle-thumb"
                 />
               </div>
 
@@ -309,13 +309,13 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
                 <Switch
                   checked={settings.showQrAfterGenerate}
                   onCheckedChange={(checked) => updateSettings({ showQrAfterGenerate: checked })}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-primary animated-toggle-thumb"
                 />
               </div>
             </div>
           </div>
 
-          <Separator className="bg-border/30" />
+          <Separator className="bg-border/30 gradient-section-divider" />
 
           {/* Notifications Section */}
           <div className="space-y-4">
@@ -337,7 +337,7 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
                 <Switch
                   checked={settings.toastNotifications}
                   onCheckedChange={(checked) => updateSettings({ toastNotifications: checked })}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-primary animated-toggle-thumb"
                 />
               </div>
 
@@ -353,13 +353,13 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
                 <Switch
                   checked={settings.soundEffects}
                   onCheckedChange={(checked) => updateSettings({ soundEffects: checked })}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-primary animated-toggle-thumb"
                 />
               </div>
             </div>
           </div>
 
-          <Separator className="bg-border/30" />
+          <Separator className="bg-border/30 gradient-section-divider" />
 
           {/* Shortcuts Section */}
           <div className="space-y-4">
@@ -438,13 +438,13 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
                   toast.success('Shortcuts reset to defaults')
                 }}
               >
-                <RotateCcw className="h-3.5 w-3.5" />
+                <RotateCcw className="h-3.5 w-3.5 reset-confirm-shake" />
                 Reset to Defaults
               </Button>
             </div>
           </div>
 
-          <Separator className="bg-border/30" />
+          <Separator className="bg-border/30 gradient-section-divider" />
 
           {/* Privacy Section */}
           <div className="space-y-4">

@@ -89,16 +89,30 @@ function DataFlowDots({ activeStep }: { activeStep: number }) {
             }}
           >
             {isActive && (
-              <div
-                className="absolute rounded-full"
-                style={{
-                  width: '4px',
-                  height: '4px',
-                  background: 'oklch(0.696 0.17 162.48)',
-                  boxShadow: '0 0 6px oklch(0.696 0.17 162.48 / 60%)',
-                  animation: 'data-flow-move 1.5s linear infinite',
-                }}
-              />
+              <>
+                {/* Primary data particle */}
+                <div
+                  className="absolute rounded-full"
+                  style={{
+                    width: '4px',
+                    height: '4px',
+                    background: 'oklch(0.696 0.17 162.48)',
+                    boxShadow: '0 0 6px oklch(0.696 0.17 162.48 / 60%)',
+                    animation: 'data-particle-flow 1.5s linear infinite',
+                  }}
+                />
+                {/* Secondary trailing particle */}
+                <div
+                  className="absolute rounded-full"
+                  style={{
+                    width: '3px',
+                    height: '3px',
+                    background: 'oklch(0.488 0.243 264.376 / 80%)',
+                    boxShadow: '0 0 4px oklch(0.488 0.243 264.376 / 40%)',
+                    animation: 'data-particle-flow 1.5s linear infinite 0.4s',
+                  }}
+                />
+              </>
             )}
           </div>
         )
@@ -210,8 +224,21 @@ export default function AIRouting() {
                           {step.label}
                           {(step.isActive || isCurrentlyActive) && (
                             <span className="ml-2 inline-flex items-center gap-1 text-[10px] text-emerald-400/80 font-normal">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                              {isCurrentlyActive ? 'Processing' : 'Active'}
+                              {isCurrentlyActive ? (
+                                <>
+                                  <span className="processing-dots inline-flex gap-0.5">
+                                    <span className="dot-1 w-1 h-1 rounded-full bg-emerald-400 inline-block" />
+                                    <span className="dot-2 w-1 h-1 rounded-full bg-emerald-400 inline-block" />
+                                    <span className="dot-3 w-1 h-1 rounded-full bg-emerald-400 inline-block" />
+                                  </span>
+                                  Processing
+                                </>
+                              ) : (
+                                <>
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                  Active
+                                </>
+                              )}
                             </span>
                           )}
                         </h3>
