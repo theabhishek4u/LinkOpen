@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Github, Twitter, MessageCircle, ArrowUp, Mail, Sparkles } from 'lucide-react'
+import { Github, Twitter, MessageCircle, ArrowUp, Mail, Sparkles, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -13,9 +13,9 @@ const footerLinks = {
 }
 
 const socialLinks = [
-  { icon: Twitter, label: 'Twitter' },
-  { icon: Github, label: 'GitHub' },
-  { icon: MessageCircle, label: 'Discord' },
+  { icon: Twitter, label: 'Twitter', color: 'hover:text-sky-400 hover:bg-sky-500/10' },
+  { icon: Github, label: 'GitHub', color: 'hover:text-foreground hover:bg-surface-4' },
+  { icon: MessageCircle, label: 'Discord', color: 'hover:text-indigo-400 hover:bg-indigo-500/10' },
 ]
 
 export default function Footer() {
@@ -54,9 +54,12 @@ export default function Footer() {
               AI-powered deep linking platform that opens social media links in their native apps.
             </p>
 
-            {/* Newsletter */}
-            <div className="mt-5">
-              <p className="text-xs text-muted-foreground/60 mb-2.5 font-medium uppercase tracking-wider">Stay updated</p>
+            {/* Newsletter — glass card background */}
+            <div className="mt-5 glass-card p-4 rounded-xl">
+              <div className="flex items-center gap-2 mb-2.5">
+                <Mail className="size-3.5 text-emerald-400" />
+                <p className="text-xs text-muted-foreground/80 font-medium uppercase tracking-wider">Stay updated</p>
+              </div>
               <form onSubmit={handleSubscribe} className="flex gap-2">
                 <Input
                   type="email"
@@ -75,7 +78,7 @@ export default function Footer() {
               </form>
             </div>
 
-            {/* Social links */}
+            {/* Social links with hover effects */}
             <div className="flex gap-3 mt-5">
               {socialLinks.map((social) => {
                 const Icon = social.icon
@@ -84,7 +87,7 @@ export default function Footer() {
                     key={social.label}
                     href="#"
                     aria-label={social.label}
-                    className="w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-surface-3 transition-colors"
+                    className={`w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center text-muted-foreground transition-all duration-300 social-icon-hover ${social.color}`}
                   >
                     <Icon className="size-4" />
                   </a>
@@ -113,8 +116,11 @@ export default function Footer() {
           ))}
         </div>
 
+        {/* Gradient horizontal rule above copyright */}
+        <div className="gradient-hr mb-8" />
+
         {/* Bottom bar */}
-        <div className="pt-8 border-t border-border/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <p className="text-xs text-muted-foreground/60">
               &copy; 2025 LinkVerse. All rights reserved.
@@ -129,14 +135,21 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Back to top */}
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground/40 hover:text-emerald-400 transition-colors duration-200 group"
-          >
-            Back to top
-            <ArrowUp className="size-3 group-hover:-translate-y-0.5 transition-transform" />
-          </button>
+          <div className="flex items-center gap-4">
+            {/* Made with ♥ and AI */}
+            <span className="text-xs text-muted-foreground/40 flex items-center gap-1">
+              Made with <Heart className="size-3 text-rose-400/60 fill-rose-400/60" /> and AI
+            </span>
+
+            {/* Back to top with bounce animation */}
+            <button
+              onClick={scrollToTop}
+              className="back-to-top-hover flex items-center gap-1.5 text-xs text-muted-foreground/40 hover:text-emerald-400 transition-colors duration-200 group"
+            >
+              Back to top
+              <ArrowUp className="size-3 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
+          </div>
         </div>
       </div>
     </footer>

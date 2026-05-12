@@ -61,8 +61,8 @@ function LandingView({ onSwitchToDashboard }: { onSwitchToDashboard: () => void 
 function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void }) {
   return (
     <div className="min-h-screen flex flex-col bg-background mesh-gradient-subtle">
-      {/* Dashboard header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/50 backdrop-blur-xl bg-background/80">
+      {/* Dashboard header with gradient bottom border */}
+      <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-background/80 gradient-border-bottom">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
@@ -79,6 +79,10 @@ function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void })
             <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">Dashboard</span>
           </div>
           <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
             <Sparkles className="w-4 h-4 text-emerald-400" />
             <span className="text-xs text-emerald-400 font-medium">AI Active</span>
             <ThemeToggle />

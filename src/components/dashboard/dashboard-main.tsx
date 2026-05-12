@@ -12,6 +12,9 @@ import { MiniChart } from './mini-chart'
 import { ThemeToggle } from './theme-toggle'
 import { BulkOpener } from './bulk-opener'
 import { KeyboardShortcuts } from './keyboard-shortcuts'
+import { PlatformQuickActions } from './platform-quick-actions'
+import { ActivityFeed } from './activity-feed'
+import { OnboardingOverlay } from './onboarding-overlay'
 import { useLinkStore } from '@/store/link-store'
 
 export function DashboardMain() {
@@ -37,7 +40,9 @@ export function DashboardMain() {
   }, [])
 
   return (
-    <div className="min-h-screen w-full mesh-gradient-subtle scroll-smooth">
+    <div className="min-h-screen w-full mesh-gradient-subtle scroll-smooth relative">
+      <OnboardingOverlay />
+
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
         {/* Header */}
         <motion.div
@@ -96,6 +101,9 @@ export function DashboardMain() {
           AI-powered deep linking for every social platform
         </motion.p>
 
+        {/* Platform Quick Actions */}
+        <PlatformQuickActions />
+
         {/* Smart Input Section */}
         <div className="relative">
           <SmartInput ref={smartInputRef} />
@@ -141,8 +149,9 @@ export function DashboardMain() {
           </div>
 
           {/* Right Column (narrower) */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             <LinkHistory />
+            <ActivityFeed />
           </div>
         </div>
 

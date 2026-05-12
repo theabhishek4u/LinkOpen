@@ -829,3 +829,215 @@
     scroll-behavior: smooth;
   }
 }
+
+/* ============================================================
+   PREMIUM ENHANCEMENTS — Billion-dollar startup polish
+   ============================================================ */
+
+/* Cursor glow effect - follows mouse */
+.cursor-glow {
+  pointer-events: none;
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.696 0.17 162.48 / 6%) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  transition: opacity 0.3s;
+}
+
+/* Gradient text animation - smoother */
+.gradient-text-animated {
+  background: linear-gradient(
+    90deg,
+    oklch(0.696 0.17 162.48),
+    oklch(0.488 0.243 264.376),
+    oklch(0.769 0.188 70.08),
+    oklch(0.696 0.17 162.48)
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 8s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Card shimmer effect on hover */
+.card-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(0.93 0.01 270 / 3%),
+    transparent
+  );
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.card-shimmer:hover::after {
+  left: 100%;
+}
+
+/* Stagger animation utility */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* Neon border effect */
+.neon-border {
+  border: 1px solid oklch(0.696 0.17 162.48 / 20%);
+  box-shadow:
+    0 0 5px oklch(0.696 0.17 162.48 / 10%),
+    inset 0 0 5px oklch(0.696 0.17 162.48 / 5%);
+}
+
+/* Smooth reveal on scroll */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Premium input glow on focus */
+.input-glow:focus-within {
+  box-shadow:
+    0 0 0 1px oklch(0.696 0.17 162.48 / 30%),
+    0 0 20px oklch(0.696 0.17 162.48 / 10%);
+}
+
+/* Platform icon hover lift */
+.platform-icon-hover {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.platform-icon-hover:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+/* Breathing animation for mesh gradient */
+@keyframes breathing {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.animate-breathing {
+  animation: breathing 6s ease-in-out infinite;
+}
+
+/* Orbit ring animation */
+@keyframes orbit-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.orbit-ring {
+  animation: orbit-spin 20s linear infinite;
+}
+
+.orbit-ring-reverse {
+  animation: orbit-spin 25s linear infinite reverse;
+}
+
+/* Animated dashed line */
+@keyframes dash-flow {
+  0% { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.dash-animate {
+  stroke-dasharray: 6 4;
+  animation: dash-flow 1s linear infinite;
+}
+
+/* Processing pulse animation */
+@keyframes processing-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.animate-processing {
+  animation: processing-pulse 2s ease-in-out infinite;
+}
+
+/* Slide in from right on hover */
+.slide-in-hover {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.slide-in-hover:hover {
+  transform: translateX(4px);
+}
+
+/* Gradient avatar background */
+.gradient-avatar {
+  background: linear-gradient(135deg, oklch(0.696 0.17 162.48 / 30%), oklch(0.488 0.243 264.376 / 30%));
+}
+
+/* Live preview badge pulse */
+@keyframes live-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+.live-dot {
+  animation: live-dot-pulse 2s ease-in-out infinite;
+}
+
+/* Back to top bounce */
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.back-to-top-hover:hover {
+  animation: bounce-subtle 0.6s ease infinite;
+}
+
+/* Social icon hover */
+.social-icon-hover {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.social-icon-hover:hover {
+  transform: translateY(-2px) scale(1.1);
+}
+
+/* Gradient horizontal rule */
+.gradient-hr {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 40%) 25%,
+    oklch(0.488 0.243 264.376 / 30%) 50%,
+    oklch(0.696 0.17 162.48 / 40%) 75%,
+    transparent 100%
+  );
+}

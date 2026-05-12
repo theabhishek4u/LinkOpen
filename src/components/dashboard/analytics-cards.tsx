@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Link2, Smartphone, Globe, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
+import { Link2, Smartphone, Globe, TrendingUp, TrendingDown, ArrowRight, BarChart3 } from 'lucide-react'
 import { useLinkStore } from '@/store/link-store'
 import { Button } from '@/components/ui/button'
+import { LinkStatsModal } from './link-stats-modal'
 
 interface StatCardProps {
   title: string
@@ -154,6 +155,7 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
 
 export function AnalyticsCards() {
   const { analytics, setAnalytics } = useLinkStore()
+  const [showStatsModal, setShowStatsModal] = useState(false)
 
   // Fetch analytics on mount
   useEffect(() => {
@@ -243,12 +245,17 @@ export function AnalyticsCards() {
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs text-muted-foreground hover:text-primary transition-colors group"
+          onClick={() => setShowStatsModal(true)}
+          className="text-xs text-muted-foreground hover:text-primary transition-colors group gap-1.5"
         >
+          <BarChart3 className="h-3.5 w-3.5" />
           View Full Analytics
-          <ArrowRight className="h-3 w-3 ml-1 group-hover:translate-x-0.5 transition-transform" />
+          <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
         </Button>
       </div>
+
+      {/* Full Stats Modal */}
+      <LinkStatsModal open={showStatsModal} onOpenChange={setShowStatsModal} />
     </div>
   )
 }

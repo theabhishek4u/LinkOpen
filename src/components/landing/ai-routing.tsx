@@ -20,6 +20,7 @@ const flowSteps = [
     color: 'text-violet-400',
     bg: 'bg-violet-500/15',
     border: 'border-violet-500/30',
+    glow: 'oklch(0.488 0.243 264.376 / 15%)',
   },
   {
     icon: Brain,
@@ -28,6 +29,8 @@ const flowSteps = [
     color: 'text-emerald-400',
     bg: 'bg-emerald-500/15',
     border: 'border-emerald-500/30',
+    glow: 'oklch(0.696 0.17 162.48 / 15%)',
+    isActive: true,
   },
   {
     icon: Target,
@@ -36,6 +39,7 @@ const flowSteps = [
     color: 'text-amber-400',
     bg: 'bg-amber-500/15',
     border: 'border-amber-500/30',
+    glow: 'oklch(0.769 0.188 70.08 / 15%)',
   },
   {
     icon: Zap,
@@ -44,6 +48,7 @@ const flowSteps = [
     color: 'text-cyan-400',
     bg: 'bg-cyan-500/15',
     border: 'border-cyan-500/30',
+    glow: 'oklch(0.65 0.2 200 / 15%)',
   },
   {
     icon: Smartphone,
@@ -52,6 +57,7 @@ const flowSteps = [
     color: 'text-emerald-400',
     bg: 'bg-emerald-500/15',
     border: 'border-emerald-500/30',
+    glow: 'oklch(0.696 0.17 162.48 / 15%)',
   },
 ]
 
@@ -66,7 +72,10 @@ const highlights = [
 export default function AIRouting() {
   return (
     <section className="relative py-20 sm:py-28">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      {/* Decorative dot pattern behind the flow */}
+      <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
+
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -76,7 +85,7 @@ export default function AIRouting() {
           className="text-center mb-12 sm:mb-16"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-            <span className="gradient-text">AI-Powered Smart Routing</span>
+            <span className="gradient-text-animated">AI-Powered Smart Routing</span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Our intelligent routing system analyzes every link and determines the
@@ -99,13 +108,35 @@ export default function AIRouting() {
                     transition={{ duration: 0.5, delay: i * 0.15 }}
                     className="relative"
                   >
-                    {/* Connecting line */}
+                    {/* Animated connecting dashed line */}
                     {i < flowSteps.length - 1 && (
-                      <div className="absolute left-5 top-[52px] w-0.5 h-4 bg-gradient-to-b from-border to-transparent" />
+                      <div className="absolute left-6 top-[52px] w-0.5 h-4 overflow-hidden">
+                        <svg width="2" height="16" className="overflow-visible">
+                          <line
+                            x1="1" y1="0" x2="1" y2="16"
+                            stroke="oklch(0.696 0.17 162.48 / 25%)"
+                            strokeWidth="2"
+                            className="dash-animate"
+                          />
+                        </svg>
+                      </div>
                     )}
                     <div
-                      className={`glass-card hover-lift p-4 flex items-center gap-4 border-l-2 ${step.border}`}
+                      className={`glass-card hover-lift p-4 flex items-center gap-4 border-l-2 ${step.border} relative`}
+                      style={{
+                        boxShadow: `0 0 20px ${step.glow}`,
+                      }}
                     >
+                      {/* Processing animation on active step */}
+                      {step.isActive && (
+                        <div className="absolute -left-0.5 top-0 bottom-0 w-1 rounded-full overflow-hidden">
+                          <div
+                            className="w-full h-full bg-emerald-400 animate-processing"
+                            style={{ transformOrigin: 'center' }}
+                          />
+                        </div>
+                      )}
+
                       <div
                         className={`flex-shrink-0 w-10 h-10 rounded-lg ${step.bg} flex items-center justify-center`}
                       >
@@ -114,6 +145,12 @@ export default function AIRouting() {
                       <div className="min-w-0">
                         <h3 className="font-semibold text-sm text-foreground">
                           {step.label}
+                          {step.isActive && (
+                            <span className="ml-2 inline-flex items-center gap-1 text-[10px] text-emerald-400/80 font-normal">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              Active
+                            </span>
+                          )}
                         </h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           {step.description}
@@ -154,7 +191,7 @@ export default function AIRouting() {
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: 0.5 + i * 0.1 }}
-                      className="flex items-center gap-3 group"
+                      className="flex items-center gap-3 group slide-in-hover"
                     >
                       <div className="w-8 h-8 rounded-md bg-surface-3 flex items-center justify-center group-hover:bg-surface-4 transition-colors">
                         <Icon className={`size-4 ${item.color}`} />

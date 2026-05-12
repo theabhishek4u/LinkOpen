@@ -35,15 +35,21 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as const },
   },
 }
 
 const companies = ['Acme Corp', 'TechFlow', 'SocialBase', 'LinkHive', 'AppDirect']
 
+const sampleLinks = [
+  { label: 'instagram.com/p/abc123', url: 'https://instagram.com/p/abc123' },
+  { label: 'youtube.com/watch?v=...', url: 'https://youtube.com/watch?v=dQw4w9WgXcQ' },
+  { label: 'x.com/user/status/...', url: 'https://x.com/user/status/789' },
+]
+
 function useCounter(end: number, duration: number = 2000) {
   const [count, setCount] = useState(0)
-  const ref = useRef<HTMLElement>(null)
+  const ref = useRef<HTMLDivElement>(null)
   const started = useRef(false)
 
   useEffect(() => {
@@ -118,11 +124,19 @@ export default function Hero({ onTryNow }: HeroProps) {
 
   return (
     <section className="relative min-h-screen overflow-hidden">
-      {/* Animated mesh gradient background */}
-      <div className="absolute inset-0 mesh-gradient" style={{ animationDuration: '8s' }} />
+      {/* Animated mesh gradient background with breathing effect */}
+      <div className="absolute inset-0 mesh-gradient animate-breathing" style={{ animationDuration: '8s' }} />
 
       {/* Dot grid overlay */}
       <div className="absolute inset-0 dot-grid opacity-40" />
+
+      {/* Spotlight radial gradient behind headline */}
+      <div
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 60% 50% at 50% 50%, oklch(0.696 0.17 162.48 / 8%) 0%, oklch(0.488 0.243 264.376 / 4%) 30%, transparent 70%)',
+        }}
+      />
 
       {/* Floating social media icons with glass-card styling */}
       {floatingIcons.map((icon, i) => (
@@ -149,15 +163,15 @@ export default function Hero({ onTryNow }: HeroProps) {
               animation: `pulse-ring-anim ${2.5 + i * 0.3}s ease-in-out infinite ${icon.delay}s`,
             }}
           />
-          {/* Glass card wrapper */}
+          {/* Glass card wrapper — larger icons */}
           <div
-            className="relative flex items-center justify-center w-12 h-12 rounded-xl glass-card"
+            className="relative flex items-center justify-center w-14 h-14 rounded-xl glass-card platform-icon-hover"
             style={{
               boxShadow: `0 0 15px ${icon.color}20, inset 0 0 15px ${icon.color}05`,
               border: `1px solid ${icon.color}25`,
             }}
           >
-            <span className="text-xl">{icon.emoji}</span>
+            <span className="text-2xl">{icon.emoji}</span>
           </div>
         </motion.div>
       ))}
@@ -181,13 +195,13 @@ export default function Hero({ onTryNow }: HeroProps) {
             </Badge>
           </motion.div>
 
-          {/* Headline */}
+          {/* Headline with spotlight */}
           <motion.h1
             variants={itemVariants}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight max-w-4xl"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight max-w-4xl relative"
           >
             Open Any Social Link{' '}
-            <span className="gradient-text">In Its Native App</span>
+            <span className="gradient-text-animated">In Its Native App</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -199,12 +213,24 @@ export default function Hero({ onTryNow }: HeroProps) {
             links directly in their native apps. No more browser tabs.
           </motion.p>
 
-          {/* Live link input demo */}
+          {/* Live link input demo — with orbit ring */}
           <motion.div
             variants={itemVariants}
-            className="mt-10 w-full max-w-xl"
+            className="mt-10 w-full max-w-xl relative"
           >
-            <div className="glass-card p-4 sm:p-6" style={{ boxShadow: '0 0 60px oklch(0.696 0.17 162.48 / 8%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
+            {/* Orbit ring around the card */}
+            <div className="absolute -inset-8 pointer-events-none opacity-20">
+              <div className="absolute inset-0 rounded-3xl orbit-ring">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-400/60" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1.5 h-1.5 rounded-full bg-violet-400/60" />
+              </div>
+              <div className="absolute inset-2 rounded-3xl orbit-ring-reverse">
+                <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400/60" />
+                <div className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-400/60" />
+              </div>
+            </div>
+
+            <div className="glass-card input-glow p-4 sm:p-6 relative" style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Input
@@ -246,22 +272,19 @@ export default function Hero({ onTryNow }: HeroProps) {
                 </Button>
               </div>
 
-              {/* Empty state hint */}
+              {/* Empty state hint — pill-style sample buttons */}
               {!result && !loading && (
-                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground/40">
-                  <span>Try:</span>
-                  <button
-                    onClick={() => { setUrl('https://instagram.com/p/abc123'); setResult(null) }}
-                    className="px-2 py-0.5 rounded bg-surface-2/50 hover:bg-surface-3/50 transition-colors text-muted-foreground/60"
-                  >
-                    instagram.com/p/abc123
-                  </button>
-                  <button
-                    onClick={() => { setUrl('https://youtube.com/watch?v=dQw4w9WgXcQ'); setResult(null) }}
-                    className="px-2 py-0.5 rounded bg-surface-2/50 hover:bg-surface-3/50 transition-colors text-muted-foreground/60"
-                  >
-                    youtube.com/watch?v=...
-                  </button>
+                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-muted-foreground/40">Try:</span>
+                  {sampleLinks.map((sample) => (
+                    <button
+                      key={sample.url}
+                      onClick={() => { setUrl(sample.url); setResult(null) }}
+                      className="px-3 py-1 rounded-full bg-surface-2/60 border border-border/20 hover:border-emerald-500/30 hover:bg-emerald-500/8 hover:text-emerald-400/80 transition-all duration-200 text-xs text-muted-foreground/50 font-medium"
+                    >
+                      {sample.label}
+                    </button>
+                  ))}
                 </div>
               )}
 
@@ -346,7 +369,7 @@ export default function Hero({ onTryNow }: HeroProps) {
             </Button>
           </motion.div>
 
-          {/* Counter animation */}
+          {/* Counter animation — with green glow */}
           <motion.div
             variants={itemVariants}
             ref={counterRef}
@@ -354,15 +377,22 @@ export default function Hero({ onTryNow }: HeroProps) {
           >
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-sm font-medium counter-glow text-emerald-400">
+              <span
+                className="text-sm font-bold counter-glow text-emerald-400"
+                style={{
+                  textShadow: '0 0 20px oklch(0.696 0.17 162.48 / 60%), 0 0 40px oklch(0.696 0.17 162.48 / 25%)',
+                }}
+              >
                 {count.toLocaleString()}
               </span>
             </div>
             <span className="text-sm text-muted-foreground/60">links opened today</span>
           </motion.div>
 
-          {/* Trusted by */}
+          {/* Trusted by — with horizontal line */}
           <motion.div variants={itemVariants} className="mt-14 w-full">
+            {/* Subtle line above trusted-by */}
+            <div className="w-48 mx-auto mb-6 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
             <p className="text-xs sm:text-sm text-muted-foreground/40 mb-5 uppercase tracking-[0.2em]">
               Trusted by innovative teams
             </p>
@@ -373,7 +403,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1 + i * 0.15, duration: 0.6 }}
-                  className="px-5 py-2.5 rounded-xl glass-card text-sm text-muted-foreground/40 font-semibold tracking-wide hover:text-muted-foreground/60 transition-colors duration-300"
+                  className="px-5 py-2.5 rounded-xl glass-card text-sm text-muted-foreground/40 font-semibold tracking-wide hover:text-muted-foreground/60 transition-colors duration-300 card-shimmer"
                   style={{ borderColor: 'oklch(0.93 0.01 270 / 4%)' }}
                 >
                   {company}
