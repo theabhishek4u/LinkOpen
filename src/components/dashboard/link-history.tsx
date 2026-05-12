@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe, Heart, Pin, AlertCircle } from 'lucide-react'
+import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe, Heart, Pin, AlertCircle, CheckSquare, Square } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -52,13 +52,14 @@ function truncateUrl(url: string, maxLen: number = 35): string {
 type FilterTab = 'all' | 'favorites'
 
 export function LinkHistory() {
-  const { history, removeFromHistory, toggleFavorite, setDeepLinkResult, setInputUrl, clearHistory, selectedCategory, categories } =
+  const { history, removeFromHistory, toggleFavorite, setDeepLinkResult, setInputUrl, clearHistory, selectedCategory, categories, selectedLinkIds, toggleSelect, selectAll, clearSelection } =
     useLinkStore()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [heartAnimatingId, setHeartAnimatingId] = useState<string | null>(null)
+  const [selectionMode, setSelectionMode] = useState(false)
 
   const handleItemClick = useCallback(
     (item: (typeof history)[0]) => {
@@ -119,7 +120,60 @@ export function LinkHistory() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground">Recent Links</h3>
-        <span className="text-xs text-muted-foreground">{history.length} links</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (selectionMode) {
+                clearSelection()
+              }
+              setSelectionMode(!selectionMode)
+            }}
+            className={`flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${
+              selectionMode
+                ? 'bg-primary/10 text-primary border border-primary/20'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
+            }`}
+          >
+            {selectionMode ? (
+              <>
+                <CheckSquare className="h-3 w-3" />
+                Done
+              </>
+            ) : (
+              <>
+                <Square className="h-3 w-3" />
+                Select
+              </>
+            )}
+          </button>
+          {selectionMode && selectedLinkIds.length > 0 && (
+            <button
+              onClick={() => {
+                const allFilteredIds = filteredHistory.map((item) => item.id)
+                const allSel = allFilteredIds.every((id) => selectedLinkIds.includes(id))
+                if (allSel) {
+                  clearSelection()
+                } else {
+                  selectAll(allFilteredIds)
+                }
+              }}
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-primary hover:bg-primary/10 transition-colors"
+            >
+              {filteredHistory.length > 0 && filteredHistory.every((item) => selectedLinkIds.includes(item.id)) ? (
+                <>
+                  <CheckSquare className="h-3 w-3" />
+                  Deselect
+                </>
+              ) : (
+                <>
+                  <Square className="h-3 w-3" />
+                  All
+                </>
+              )}
+            </button>
+          )}
+          <span className="text-xs text-muted-foreground">{history.length} links</span>
+        </div>
       </div>
 
       {/* Category filter */}
@@ -245,11 +299,19 @@ export function LinkHistory() {
 
                     <div
                       className={`flex items-center gap-3 rounded-lg p-2.5 ml-8 transition-all cursor-pointer relative overflow-hidden ${
-                        item.isFavorite
-                          ? 'bg-amber-500/5 border border-amber-500/10'
-                          : 'hover:bg-accent/50 border border-transparent'
+                        selectedLinkIds.includes(item.id)
+                          ? 'bg-primary/5 border border-primary/15'
+                          : item.isFavorite
+                            ? 'bg-amber-500/5 border border-amber-500/10'
+                            : 'hover:bg-accent/50 border border-transparent'
                       } ${expandedId === item.id ? 'bg-accent/50' : ''}`}
-                      onClick={() => handleItemClick(item)}
+                      onClick={() => {
+                        if (selectionMode) {
+                          toggleSelect(item.id)
+                        } else {
+                          handleItemClick(item)
+                        }
+                      }}
                     >
                       {/* Hover glow effect */}
                       <div
@@ -258,6 +320,17 @@ export function LinkHistory() {
                           background: `radial-gradient(ellipse at left, ${item.platform.color}08, transparent 60%)`,
                         }}
                       />
+
+                      {/* Checkbox (when selection mode is active) */}
+                      {selectionMode && (
+                        <div className="shrink-0 relative z-10" onClick={(e) => { e.stopPropagation(); toggleSelect(item.id) }}>
+                          {selectedLinkIds.includes(item.id) ? (
+                            <CheckSquare className="h-4 w-4 text-primary" />
+                          ) : (
+                            <Square className="h-4 w-4 text-muted-foreground/50 hover:text-foreground transition-colors" />
+                          )}
+                        </div>
+                      )}
 
                       {/* Platform Icon */}
                       <div
@@ -344,8 +417,9 @@ export function LinkHistory() {
                         </AnimatePresence>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 relative z-10">
+                      {/* Actions - hidden in selection mode */}
+                      {!selectionMode && (
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 relative z-10">
                         {/* Favorite / Heart button with animation */}
                         <button
                           onClick={(e) => handleToggleFavorite(item.id, e)}
@@ -387,7 +461,8 @@ export function LinkHistory() {
                         >
                           <X className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
                         </button>
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 ))}

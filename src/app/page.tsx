@@ -15,7 +15,7 @@ import FAQ from '@/components/landing/faq'
 import Footer from '@/components/landing/footer'
 import { DashboardMain } from '@/components/dashboard/dashboard-main'
 import { ThemeToggle } from '@/components/dashboard/theme-toggle'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, Sparkles, Link2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 function SectionDivider() {
@@ -69,13 +69,19 @@ function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void })
               variant="ghost"
               size="sm"
               onClick={onSwitchToLanding}
-              className="text-muted-foreground hover:text-foreground"
+              className="btn-ghost-shine text-muted-foreground hover:text-foreground focus-visible-ring"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Back
             </Button>
             <div className="h-6 w-px bg-border" />
-            <h1 className="text-lg font-semibold gradient-text">LinkVerse</h1>
+            {/* Shared logo element with layoutId for morph animation */}
+            <motion.div layoutId="linkverse-logo" className="flex items-center gap-2">
+              <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/25">
+                <Link2 className="size-4 text-emerald-400" />
+              </div>
+              <h1 className="text-lg font-semibold gradient-text">LinkVerse</h1>
+            </motion.div>
             <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">Dashboard</span>
           </div>
           <div className="flex items-center gap-2">
@@ -106,18 +112,18 @@ export default function Home() {
           key="landing"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <LandingView onSwitchToDashboard={() => setActiveView('dashboard')} />
         </motion.div>
       ) : (
         <motion.div
           key="dashboard"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
+          initial={{ opacity: 0, scale: 1.02 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95, filter: 'blur(4px)' }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
           <DashboardView onSwitchToLanding={() => setActiveView('landing')} />
         </motion.div>

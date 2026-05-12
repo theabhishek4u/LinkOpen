@@ -2215,3 +2215,252 @@
     transform: none !important;
   }
 }
+
+/* ============================================================
+   TASK 6-a: PREMIUM STYLING POLISH & ACCESSIBILITY
+   ============================================================ */
+
+/* ── Primary CTA button with expanding glow on hover ────────── */
+.btn-primary-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at center, oklch(0.696 0.17 162.48 / 30%) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.btn-primary-glow:hover::after {
+  opacity: 1;
+  transform: scale(1.5);
+}
+
+.btn-primary-glow:hover {
+  box-shadow:
+    0 0 20px oklch(0.696 0.17 162.48 / 25%),
+    0 0 40px oklch(0.696 0.17 162.48 / 10%);
+}
+
+/* ── Ghost button with shine sweep on hover ─────────────────── */
+.btn-ghost-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ghost-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 15%) 50%,
+    transparent 100%
+  );
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+
+.btn-ghost-shine:hover::after {
+  left: 120%;
+}
+
+/* ── Secondary button with subtle lift + shadow on hover ────── */
+.btn-secondary-lift {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s ease;
+}
+
+.btn-secondary-lift:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px oklch(0 0 0 / 25%),
+    0 0 0 1px oklch(0.696 0.17 162.48 / 15%);
+}
+
+.dark .btn-secondary-lift:hover {
+  box-shadow:
+    0 6px 20px oklch(0 0 0 / 50%),
+    0 0 0 1px oklch(0.696 0.17 162.48 / 20%);
+}
+
+/* ── Focus-visible ring for WCAG 2.1 AA compliance ─────────── */
+.focus-visible-ring:focus-visible {
+  outline: 2px solid oklch(0.696 0.17 162.48 / 60%);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px oklch(0.696 0.17 162.48 / 15%);
+  border-radius: inherit;
+}
+
+/* Focus-visible for navbar links */
+nav button:focus-visible,
+nav a:focus-visible {
+  outline: 2px solid oklch(0.696 0.17 162.48 / 60%);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px oklch(0.696 0.17 162.48 / 15%);
+  border-radius: 4px;
+}
+
+/* Focus-visible for command palette items */
+[role="navigation"] button:focus-visible {
+  outline: 2px solid oklch(0.696 0.17 162.48 / 60%);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px oklch(0.696 0.17 162.48 / 12%);
+}
+
+/* ── Responsive typography utilities ────────────────────────── */
+.text-responsive-xs {
+  font-size: clamp(0.625rem, 0.6rem + 0.25vw, 0.75rem);
+}
+
+.text-responsive-sm {
+  font-size: clamp(0.75rem, 0.7rem + 0.3vw, 0.875rem);
+}
+
+.text-responsive-base {
+  font-size: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);
+}
+
+.text-responsive-lg {
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+}
+
+.text-responsive-xl {
+  font-size: clamp(1.125rem, 1rem + 0.7vw, 1.25rem);
+}
+
+.text-responsive-2xl {
+  font-size: clamp(1.25rem, 1rem + 1.2vw, 1.5rem);
+}
+
+.text-responsive-3xl {
+  font-size: clamp(1.5rem, 1rem + 2vw, 1.875rem);
+}
+
+/* Text balance for better wrapping on headings */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Hero heading fix for very small screens (below 375px) */
+@media (max-width: 374px) {
+  .text-responsive-3xl {
+    font-size: 1.25rem;
+  }
+}
+
+/* ── Sonner toast premium styling ───────────────────────────── */
+[data-sonner-toaster] {
+  --normal-bg: oklch(1 0.003 160 / 85%) !important;
+  --normal-text: oklch(0.14 0.02 162) !important;
+  --normal-border: oklch(0.696 0.17 162.48 / 15%) !important;
+}
+
+.dark [data-sonner-toaster] {
+  --normal-bg: oklch(0.12 0.02 275 / 85%) !important;
+  --normal-text: oklch(0.93 0.01 270) !important;
+  --normal-border: oklch(0.93 0.01 270 / 8%) !important;
+}
+
+[data-sonner-toast] {
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border: 1px solid oklch(0.696 0.17 162.48 / 10%) !important;
+  box-shadow:
+    0 0 0 1px oklch(0.696 0.17 162.48 / 3%),
+    0 8px 32px oklch(0 0 0 / 20%) !important;
+  border-radius: var(--radius-lg) !important;
+  font-size: 0.8125rem !important;
+}
+
+.dark [data-sonner-toast] {
+  box-shadow:
+    0 0 0 1px oklch(0.93 0.01 270 / 2%),
+    0 8px 32px oklch(0 0 0 / 60%) !important;
+}
+
+/* Success toast — emerald accent */
+[data-sonner-toast][data-type="success"] {
+  border-color: oklch(0.696 0.17 162.48 / 25%) !important;
+  box-shadow:
+    0 0 0 1px oklch(0.696 0.17 162.48 / 10%),
+    0 0 16px oklch(0.696 0.17 162.48 / 8%),
+    0 8px 32px oklch(0 0 0 / 20%) !important;
+}
+
+.dark [data-sonner-toast][data-type="success"] {
+  box-shadow:
+    0 0 0 1px oklch(0.696 0.17 162.48 / 10%),
+    0 0 16px oklch(0.696 0.17 162.48 / 12%),
+    0 8px 32px oklch(0 0 0 / 60%) !important;
+}
+
+/* Info toast — violet accent */
+[data-sonner-toast][data-type="info"] {
+  border-color: oklch(0.488 0.243 264.376 / 25%) !important;
+  box-shadow:
+    0 0 0 1px oklch(0.488 0.243 264.376 / 10%),
+    0 0 16px oklch(0.488 0.243 264.376 / 8%),
+    0 8px 32px oklch(0 0 0 / 20%) !important;
+}
+
+.dark [data-sonner-toast][data-type="info"] {
+  box-shadow:
+    0 0 0 1px oklch(0.488 0.243 264.376 / 10%),
+    0 0 16px oklch(0.488 0.243 264.376 / 12%),
+    0 8px 32px oklch(0 0 0 / 60%) !important;
+}
+
+/* Warning toast — amber accent */
+[data-sonner-toast][data-type="warning"] {
+  border-color: oklch(0.769 0.188 70.08 / 25%) !important;
+  box-shadow:
+    0 0 0 1px oklch(0.769 0.188 70.08 / 10%),
+    0 0 16px oklch(0.769 0.188 70.08 / 8%),
+    0 8px 32px oklch(0 0 0 / 20%) !important;
+}
+
+.dark [data-sonner-toast][data-type="warning"] {
+  box-shadow:
+    0 0 0 1px oklch(0.769 0.188 70.08 / 10%),
+    0 0 16px oklch(0.769 0.188 70.08 / 12%),
+    0 8px 32px oklch(0 0 0 / 60%) !important;
+}
+
+/* Toast icon animation */
+[data-sonner-toast] [data-icon] {
+  animation: toast-icon-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes toast-icon-pop {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Extended reduced motion support for Task 6-a ───────────── */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary-glow::after,
+  .btn-ghost-shine::after,
+  .btn-secondary-lift,
+  .focus-visible-ring:focus-visible,
+  [data-sonner-toast] [data-icon] {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .btn-secondary-lift:hover {
+    transform: none;
+  }
+}

@@ -24,6 +24,10 @@ import { LinkPreviewSimulator } from './link-preview-simulator'
 import { CustomAlias } from './custom-alias'
 import { CategorySelector } from './link-categories'
 import { DashboardSkeleton } from './dashboard-skeleton'
+import { DashboardSidebar, type SidebarSection } from './dashboard-sidebar'
+import { LinkComparison } from './link-comparison'
+import { BatchOperationsBar } from './batch-operations'
+import { PerformanceDashboard } from './performance-dashboard'
 import { useLinkStore } from '@/store/link-store'
 
 type SectionId = 'input' | 'analytics' | 'history' | 'tools'
@@ -135,6 +139,17 @@ export function DashboardMain() {
     document.getElementById(`section-${sectionId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
+  // Handle sidebar section navigation
+  const handleSidebarNav = useCallback((sectionId: SidebarSection) => {
+    if (sectionId === 'settings') {
+      setShowSettings(true)
+      return
+    }
+    setActiveSection(sectionId)
+    setSectionTransition(sectionId)
+    document.getElementById(`section-${sectionId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
+
   if (isLoading) {
     return <DashboardSkeleton />
   }
@@ -149,270 +164,282 @@ export function DashboardMain() {
 
       <OnboardingOverlay />
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8 relative z-10">
-        {/* Header */}
-        <motion.div
-          custom={0}
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col sm:flex-row items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
-              LinkVerse
-            </h1>
-            <Sparkles className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex items-center gap-2">
-            {/* Command Palette Trigger */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowCommandPalette(true)}
-              className="animate-cmdk-glow flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              <Search className="h-3 w-3" />
-              <span className="hidden sm:inline">Search commands...</span>
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded bg-background/50 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/60 border border-border/30">
-                <Command className="h-2.5 w-2.5" />K
-              </kbd>
-            </motion.button>
-            {/* Notification Center */}
-            <NotificationCenter />
-            {/* Settings Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowSettings(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Settings className="h-4 w-4" />
-            </motion.button>
-            <ThemeToggle />
-          </div>
-        </motion.div>
+      <div className="flex">
+        {/* Sidebar - visible on lg+ screens */}
+        <DashboardSidebar
+          activeSection={activeSection}
+          onSectionChange={handleSidebarNav}
+        />
 
-        {/* Quick Stats Floating Bar */}
-        <motion.div
-          custom={1}
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-          className="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none"
-        >
-          <div className="flex items-center gap-3 sm:gap-5 text-xs shrink-0">
-            <div className="flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5 text-primary" />
-              <span className="text-foreground font-medium">{totalLinks.toLocaleString()}</span>
-              <span className="text-muted-foreground hidden sm:inline">links</span>
+        {/* Main content */}
+        <div className="flex-1 min-w-0 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8 relative z-10">
+          {/* Header */}
+          <motion.div
+            custom={0}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            className="flex flex-col sm:flex-row items-center justify-between gap-4"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
+                LinkVerse
+              </h1>
+              <Sparkles className="h-5 w-5 text-primary" />
             </div>
-            <div className="h-3 w-px bg-border/40" />
-            <div className="flex items-center gap-1.5">
-              <Activity className="h-3.5 w-3.5 text-violet-400" />
-              <span className="text-foreground font-medium">{conversionRate}%</span>
-              <span className="text-muted-foreground hidden sm:inline">conversion</span>
+            <div className="flex items-center gap-2">
+              {/* Command Palette Trigger */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowCommandPalette(true)}
+                className="animate-cmdk-glow flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible-ring"
+              >
+                <Search className="h-3 w-3" />
+                <span className="hidden sm:inline">Search commands...</span>
+                <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded bg-background/50 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/60 border border-border/30">
+                  <Command className="h-2.5 w-2.5" />K
+                </kbd>
+              </motion.button>
+              {/* Notification Center */}
+              <NotificationCenter />
+              {/* Settings Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowSettings(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground hover:text-foreground transition-colors focus-visible-ring"
+                aria-label="Open settings"
+              >
+                <Settings className="h-4 w-4" />
+              </motion.button>
+              <ThemeToggle />
             </div>
-            <div className="h-3 w-px bg-border/40" />
-            <div className="flex items-center gap-1.5">
-              <Radio className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 font-medium">Live</span>
-            </div>
-          </div>
+          </motion.div>
 
-          {/* Section Navigation */}
-          <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5 shrink-0">
-            {SECTIONS.map((section) => (
+          {/* Quick Stats Floating Bar */}
+          <motion.div
+            custom={1}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            className="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none"
+          >
+            <div className="flex items-center gap-3 sm:gap-5 text-xs shrink-0">
+              <div className="flex items-center gap-1.5">
+                <Zap className="h-3.5 w-3.5 text-primary" />
+                <span className="text-foreground font-medium">{totalLinks.toLocaleString()}</span>
+                <span className="text-muted-foreground hidden sm:inline">links</span>
+              </div>
+              <div className="h-3 w-px bg-border/40" />
+              <div className="flex items-center gap-1.5">
+                <Activity className="h-3.5 w-3.5 text-violet-400" />
+                <span className="text-foreground font-medium">{conversionRate}%</span>
+                <span className="text-muted-foreground hidden sm:inline">conversion</span>
+              </div>
+              <div className="h-3 w-px bg-border/40" />
+              <div className="flex items-center gap-1.5">
+                <Radio className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
+                <span className="text-emerald-400 font-medium">Live</span>
+              </div>
+            </div>
+
+            {/* Section Navigation */}
+            <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5 shrink-0">
+              {SECTIONS.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => handleSectionNav(section.id)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all focus-visible-ring ${
+                    activeSection === section.id
+                      ? 'bg-accent text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <section.icon className="h-3 w-3" />
+                  <span className="hidden sm:inline">{section.label}</span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Platform Quick Actions */}
+          <motion.div
+            custom={2}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <PlatformQuickActions />
+          </motion.div>
+
+          {/* Smart Input Section */}
+          <motion.div
+            custom={3}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            id="section-input"
+            className="relative"
+          >
+            <SmartInput ref={smartInputRef} />
+
+            {/* Category selector */}
+            <div className="mt-2">
+              <CategorySelector />
+            </div>
+
+            {/* Custom Alias */}
+            <div className="mt-2">
+              <CustomAlias />
+            </div>
+
+            {/* Extra action buttons row */}
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex items-center gap-2 mt-3"
+            >
               <button
-                key={section.id}
-                onClick={() => handleSectionNav(section.id)}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all ${
-                  activeSection === section.id
-                    ? 'bg-accent text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+                onClick={() => setBulkOpen(true)}
+                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring"
+              >
+                <Layers className="h-3.5 w-3.5" />
+                Bulk Open
+              </button>
+              <button
+                onClick={() => setShowShortcuts(true)}
+                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring"
+              >
+                <Keyboard className="h-3.5 w-3.5" />
+                Shortcuts
+              </button>
+              <button
+                onClick={() => setShowHealthChecker(!showHealthChecker)}
+                className={`btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors focus-visible-ring ${
+                  showHealthChecker
+                    ? 'text-primary bg-primary/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
                 }`}
               >
-                <section.icon className="h-3 w-3" />
-                <span className="hidden sm:inline">{section.label}</span>
+                <HeartPulse className="h-3.5 w-3.5" />
+                Health Check
               </button>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Platform Quick Actions */}
-        <motion.div
-          custom={2}
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <PlatformQuickActions />
-        </motion.div>
-
-        {/* Smart Input Section */}
-        <motion.div
-          custom={3}
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-          id="section-input"
-          className="relative"
-        >
-          <SmartInput ref={smartInputRef} />
-
-          {/* Category selector */}
-          <div className="mt-2">
-            <CategorySelector />
-          </div>
-
-          {/* Custom Alias */}
-          <div className="mt-2">
-            <CustomAlias />
-          </div>
-
-          {/* Extra action buttons row */}
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex items-center gap-2 mt-3"
-          >
-            <button
-              onClick={() => setBulkOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
-            >
-              <Layers className="h-3.5 w-3.5" />
-              Bulk Open
-            </button>
-            <button
-              onClick={() => setShowShortcuts(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
-            >
-              <Keyboard className="h-3.5 w-3.5" />
-              Shortcuts
-            </button>
-            <button
-              onClick={() => setShowHealthChecker(!showHealthChecker)}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors ${
-                showHealthChecker
-                  ? 'text-primary bg-primary/10'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
-              }`}
-            >
-              <HeartPulse className="h-3.5 w-3.5" />
-              Health Check
-            </button>
-          </motion.div>
-        </motion.div>
-
-        {/* Link Result Section */}
-        <motion.div
-          custom={4}
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <LinkResult />
-        </motion.div>
-
-        {/* Link Preview Simulator */}
-        <motion.div
-          custom={5}
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <LinkPreviewSimulator />
-        </motion.div>
-
-        {/* Gradient Divider */}
-        <div className="flex items-center justify-center py-2">
-          <div className="h-px w-32 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        </div>
-
-        {/* Health Checker (toggleable) */}
-        <AnimatePresence>
-          {showHealthChecker && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <LinkHealthChecker urlToCheck={inputUrl} />
             </motion.div>
-          )}
-        </AnimatePresence>
+          </motion.div>
 
-        {/* Two-Column Layout */}
-        <div id="section-analytics" className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Left Column (wider) */}
+          {/* Link Result Section */}
           <motion.div
-            custom={6}
+            custom={4}
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
-            className="lg:col-span-2 space-y-4 sm:space-y-6"
           >
-            <AnalyticsCards />
-            <MiniChart />
+            <LinkResult />
           </motion.div>
 
-          {/* Right Column (narrower) */}
+          {/* Link Preview Simulator */}
           <motion.div
-            custom={7}
+            custom={5}
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
-            id="section-history"
-            className="lg:col-span-1 space-y-4 sm:space-y-6"
           >
-            <LinkHistory />
-            <ActivityFeed />
+            <LinkPreviewSimulator />
           </motion.div>
-        </div>
 
-        {/* Tools Section */}
-        <motion.div
-          custom={8}
-          variants={sectionVariants}
-          initial="hidden"
-          animate="visible"
-          id="section-tools"
-          className="space-y-4 sm:space-y-6"
-        >
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">Tools & Utilities</h2>
+          {/* Gradient Divider */}
+          <div className="flex items-center justify-center py-2">
+            <div className="h-px w-32 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <LinkHealthChecker />
-            <LinkScheduler />
-            <ExportPanel />
-          </div>
-        </motion.div>
 
-        {/* Footer */}
-        <motion.footer
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="text-center py-6 mt-auto border-t border-border/20"
-        >
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary/60" />
-              <span className="text-sm font-medium gradient-text-green">LinkVerse</span>
+          {/* Health Checker (toggleable) */}
+          <AnimatePresence>
+            {showHealthChecker && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <LinkHealthChecker urlToCheck={inputUrl} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Two-Column Layout */}
+          <div id="section-analytics" className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Left Column (wider) */}
+            <motion.div
+              custom={6}
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              className="lg:col-span-2 space-y-4 sm:space-y-6"
+            >
+              <AnalyticsCards />
+              <PerformanceDashboard />
+              <MiniChart />
+            </motion.div>
+
+            {/* Right Column (narrower) */}
+            <motion.div
+              custom={7}
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              id="section-history"
+              className="lg:col-span-1 space-y-4 sm:space-y-6"
+            >
+              <LinkHistory />
+              <ActivityFeed />
+            </motion.div>
+          </div>
+
+          {/* Tools Section */}
+          <motion.div
+            custom={8}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            id="section-tools"
+            className="space-y-4 sm:space-y-6"
+          >
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold text-foreground">Tools & Utilities</h2>
             </div>
-            <p className="text-xs text-muted-foreground/40">
-              Intelligent deep linking platform &middot; 13 platforms &middot; AI-powered detection
-            </p>
-            <p className="text-[10px] text-muted-foreground/25">
-              &copy; {new Date().getFullYear()} LinkVerse. All rights reserved.
-            </p>
-          </div>
-        </motion.footer>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <LinkComparison />
+              <LinkHealthChecker />
+              <LinkScheduler />
+              <ExportPanel />
+            </div>
+          </motion.div>
+
+          {/* Footer */}
+          <motion.footer
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="text-center py-6 mt-auto border-t border-border/20"
+          >
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary/60" />
+                <span className="text-sm font-medium gradient-text-green">LinkVerse</span>
+              </div>
+              <p className="text-xs text-muted-foreground/40">
+                Intelligent deep linking platform &middot; 13 platforms &middot; AI-powered detection
+              </p>
+              <p className="text-[10px] text-muted-foreground/25">
+                &copy; {new Date().getFullYear()} LinkVerse. All rights reserved.
+              </p>
+            </div>
+          </motion.footer>
+        </div>
       </div>
 
       {/* QR Code Dialog */}
@@ -433,6 +460,9 @@ export function DashboardMain() {
 
       {/* Settings Panel */}
       <SettingsPanel open={showSettings} onOpenChange={setShowSettings} />
+
+      {/* Batch Operations Bar */}
+      <BatchOperationsBar />
 
       {/* Command Palette Modal */}
       <AnimatePresence>
@@ -458,7 +488,7 @@ export function DashboardMain() {
                   <input
                     type="text"
                     placeholder="Type a command..."
-                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible-ring"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Escape') setShowCommandPalette(false)
@@ -492,7 +522,7 @@ export function DashboardMain() {
                         else if (cmd.actionId === 'settings') setShowSettings(true)
                         setShowCommandPalette(false)
                       }}
-                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-accent/50 transition-colors group"
+                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-accent/50 transition-colors group focus-visible-ring"
                     >
                       <cmd.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
                       <div className="flex-1 min-w-0">

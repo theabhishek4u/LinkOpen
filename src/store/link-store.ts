@@ -140,6 +140,11 @@ interface LinkState {
   // Custom Alias
   customAlias: string
   setCustomAlias: (alias: string) => void
+  // Batch Selection
+  selectedLinkIds: string[]
+  toggleSelect: (id: string) => void
+  selectAll: (ids: string[]) => void
+  clearSelection: () => void
 }
 
 const defaultAnalytics: AnalyticsData = {
@@ -331,4 +336,16 @@ export const useLinkStore = create<LinkState>((set, get) => ({
   // Custom Alias
   customAlias: '',
   setCustomAlias: (alias) => set({ customAlias: alias }),
+  // Batch Selection
+  selectedLinkIds: [],
+  toggleSelect: (id) => set((state) => {
+    const isSelected = state.selectedLinkIds.includes(id)
+    return {
+      selectedLinkIds: isSelected
+        ? state.selectedLinkIds.filter((sid) => sid !== id)
+        : [...state.selectedLinkIds, id],
+    }
+  }),
+  selectAll: (ids) => set({ selectedLinkIds: ids }),
+  clearSelection: () => set({ selectedLinkIds: [] }),
 }))
