@@ -3076,7 +3076,452 @@ nav a:focus-visible {
   .arrow-flow,
   .sparkline-draw,
   .download-progress-bar,
-  .tier-reveal {
+  .tier-reveal,
+  .gradient-stat-border::after,
+  .suggestion-card-hover,
+  .line-draw-animation,
+  .sidebar-active-pill,
+  .animate-stat-glow,
+  .animate-whats-new-pulse {
     animation: none !important;
+  }
+}
+
+/* ============================================================
+   TASK 4-b: DASHBOARD MICRO-INTERACTIONS & VISUAL POLISH
+   ============================================================ */
+
+/* ── Animated gradient border for stats bar ──────────────── */
+.gradient-stat-border {
+  position: relative;
+}
+
+.gradient-stat-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 60%) 20%,
+    oklch(0.488 0.243 264.376 / 50%) 50%,
+    oklch(0.769 0.188 70.08 / 40%) 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: stat-border-shift 4s ease-in-out infinite;
+  border-radius: 0 0 inherit inherit;
+}
+
+@keyframes stat-border-shift {
+  0% { background-position: 0% 50%; opacity: 0.6; }
+  50% { background-position: 100% 50%; opacity: 1; }
+  100% { background-position: 0% 50%; opacity: 0.6; }
+}
+
+/* ── Stat value glow on change ───────────────────────────── */
+@keyframes stat-glow-pulse {
+  0% { text-shadow: none; }
+  20% {
+    text-shadow:
+      0 0 12px oklch(0.696 0.17 162.48 / 50%),
+      0 0 24px oklch(0.696 0.17 162.48 / 20%);
+  }
+  100% { text-shadow: none; }
+}
+
+.animate-stat-glow {
+  animation: stat-glow-pulse 1.2s ease-out;
+}
+
+/* ── What's New badge pulse ──────────────────────────────── */
+@keyframes whats-new-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 oklch(0.696 0.17 162.48 / 40%);
+  }
+  50% {
+    box-shadow: 0 0 0 6px oklch(0.696 0.17 162.48 / 0%);
+  }
+}
+
+.animate-whats-new-pulse {
+  animation: whats-new-pulse 2s ease-in-out infinite;
+}
+
+/* ── Suggestion card hover effect ────────────────────────── */
+.suggestion-card-hover {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.suggestion-card-hover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48 / 0%),
+    oklch(0.488 0.243 264.376 / 0%),
+    oklch(0.696 0.17 162.48 / 0%)
+  );
+  background-size: 300% 300%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.suggestion-card-hover:hover::before {
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48 / 50%),
+    oklch(0.488 0.243 264.376 / 40%),
+    oklch(0.696 0.17 162.48 / 50%)
+  );
+  background-size: 300% 300%;
+  animation: border-rotate 3s linear infinite;
+  opacity: 1;
+}
+
+.suggestion-card-hover:hover {
+  box-shadow: 0 4px 16px oklch(0.696 0.17 162.48 / 10%);
+}
+
+/* ── SVG line drawing animation ──────────────────────────── */
+.line-draw-animation {
+  stroke-dasharray: var(--line-length, 1000);
+  stroke-dashoffset: var(--line-length, 1000);
+  animation: line-draw 1.5s ease-out forwards;
+}
+
+@keyframes line-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── Animated gradient pill for active sidebar item ──────── */
+.sidebar-active-pill {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-active-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    oklch(0.696 0.17 162.48 / 15%),
+    oklch(0.488 0.243 264.376 / 10%),
+    oklch(0.696 0.17 162.48 / 15%)
+  );
+  background-size: 200% 100%;
+  animation: pill-gradient-shift 3s ease-in-out infinite;
+}
+
+@keyframes pill-gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Gauge color based on range ──────────────────────────── */
+.gauge-range-color-poor {
+  color: oklch(0.637 0.237 25.331);
+}
+
+.gauge-range-color-good {
+  color: oklch(0.769 0.188 70.08);
+}
+
+.gauge-range-color-excellent {
+  color: oklch(0.696 0.17 162.48);
+}
+
+/* ── Pulsing dot for latest data point ───────────────────── */
+@keyframes data-point-pulse {
+  0%, 100% {
+    r: 4;
+    opacity: 1;
+  }
+  50% {
+    r: 7;
+    opacity: 0.5;
+  }
+}
+
+.animate-data-point-pulse {
+  animation: data-point-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   TASK 4-a (Round 6): LANDING PAGE STYLING POLISH & MICRO-INTERACTIONS
+   ============================================================ */
+
+/* ── Cookie consent banner slide-up animation ─────────────── */
+@keyframes cookie-slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes cookie-fade-out {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+
+.cookie-banner-slide {
+  animation: cookie-slide-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.cookie-banner-dismiss {
+  animation: cookie-fade-out 0.35s ease-in both;
+}
+
+/* ── Floating gradient orb animation ──────────────────────── */
+@keyframes orb-float-keyframes {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(-45%, -55%) scale(1.1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -60%) scale(1);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translate(-55%, -50%) scale(1.05);
+    opacity: 0.7;
+  }
+}
+
+.orb-float {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.696 0.17 162.48 / 25%) 0%, oklch(0.488 0.243 264.376 / 10%) 50%, transparent 70%);
+  filter: blur(20px);
+  animation: orb-float-keyframes 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .orb-float {
+  background: radial-gradient(circle, oklch(0.696 0.17 162.48 / 35%) 0%, oklch(0.488 0.243 264.376 / 15%) 50%, transparent 70%);
+}
+
+/* ── Animated price counter transition ─────────────────────── */
+@keyframes price-counter-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes price-counter-down {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.price-counter {
+  display: inline-block;
+  overflow: hidden;
+}
+
+.price-counter-enter-up {
+  animation: price-counter-up 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.price-counter-enter-down {
+  animation: price-counter-down 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* ── Subtle 3D card tilt on hover ──────────────────────────── */
+.card-tilt-hover {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-style: preserve-3d;
+}
+
+.card-tilt-hover:hover {
+  transform: perspective(600px) rotateY(-2deg) rotateX(1.5deg) translateZ(6px);
+}
+
+/* ── Most Popular shimmer effect (pricing Pro card) ────────── */
+@keyframes popular-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.most-popular-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.most-popular-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 8%) 30%,
+    oklch(0.488 0.243 264.376 / 6%) 50%,
+    oklch(0.696 0.17 162.48 / 8%) 70%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: popular-shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.dark .most-popular-shimmer::after {
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 12%) 30%,
+    oklch(0.488 0.243 264.376 / 8%) 50%,
+    oklch(0.696 0.17 162.48 / 12%) 70%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ── Save badge pop animation ──────────────────────────────── */
+@keyframes save-badge-pop {
+  0% {
+    transform: scale(0) rotate(-10deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.save-badge-animate {
+  animation: save-badge-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Demo card result gradient border ──────────────────────── */
+@keyframes result-border-glow {
+  0%, 100% {
+    border-color: oklch(0.696 0.17 162.48 / 30%);
+    box-shadow: 0 0 15px oklch(0.696 0.17 162.48 / 10%);
+  }
+  50% {
+    border-color: oklch(0.488 0.243 264.376 / 40%);
+    box-shadow: 0 0 25px oklch(0.696 0.17 162.48 / 15%), 0 0 50px oklch(0.488 0.243 264.376 / 5%);
+  }
+}
+
+.demo-card-result-glow {
+  animation: result-border-glow 3s ease-in-out infinite;
+}
+
+/* ── New badge pulse ───────────────────────────────────────── */
+@keyframes new-badge-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+.new-badge-pulse {
+  animation: new-badge-pulse 2s ease-in-out infinite;
+}
+
+/* ── Sample pill hover scale ───────────────────────────────── */
+.sample-pill-hover {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.2s ease,
+              background-color 0.2s ease,
+              color 0.2s ease;
+}
+
+.sample-pill-hover:hover {
+  transform: scale(1.08);
+}
+
+/* ── Reduced motion for Task 4-a Round 6 animations ────────── */
+@media (prefers-reduced-motion: reduce) {
+  .cookie-banner-slide,
+  .cookie-banner-dismiss,
+  .orb-float,
+  .price-counter-enter-up,
+  .price-counter-enter-down,
+  .card-tilt-hover,
+  .card-tilt-hover:hover,
+  .most-popular-shimmer::after,
+  .dark .most-popular-shimmer::after,
+  .save-badge-animate,
+  .demo-card-result-glow,
+  .new-badge-pulse,
+  .sample-pill-hover:hover {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .cookie-banner-slide {
+    transform: none;
+    opacity: 1;
+  }
+
+  .card-tilt-hover:hover {
+    transform: none;
+  }
+
+  .sample-pill-hover:hover {
+    transform: none;
   }
 }

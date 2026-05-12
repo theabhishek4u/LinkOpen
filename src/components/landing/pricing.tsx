@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -115,7 +115,16 @@ const plansAnnual = [
 
 export default function Pricing() {
   const [isAnnual, setIsAnnual] = useState(false)
+  const [showSaveBadges, setShowSaveBadges] = useState(false)
   const plans = isAnnual ? plansAnnual : plansMonthly
+
+  // Derive price direction from isAnnual (no useEffect needed)
+  const priceDirection = isAnnual ? 'down' : 'up'
+
+  const handleToggle = (value: boolean) => {
+    setIsAnnual(value)
+    setShowSaveBadges(value)
+  }
 
   return (
     <section className="relative py-20 sm:py-28 mesh-gradient-subtle">
@@ -141,7 +150,7 @@ export default function Pricing() {
               Monthly
             </span>
             <button
-              onClick={() => setIsAnnual(!isAnnual)}
+              onClick={() => handleToggle(!isAnnual)}
               className="relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50"
               style={{
                 background: isAnnual
@@ -185,7 +194,7 @@ export default function Pricing() {
             >
               <div
                 className={`glass-card p-6 sm:p-8 h-full flex flex-col ${
-                  plan.highlighted ? 'ring-1 ring-emerald-500/30 glow-green' : ''
+                  plan.highlighted ? 'ring-1 ring-emerald-500/30 glow-green most-popular-shimmer' : ''
                 }`}
               >
                 {plan.highlighted && (
@@ -197,14 +206,14 @@ export default function Pricing() {
                   </div>
                 )}
 
-                {/* Annual savings badge */}
-                {plan.savings && (
+                {/* Annual savings badge with pop animation */}
+                {plan.savings && showSaveBadges && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="absolute top-4 right-4"
                   >
-                    <span className="px-2 py-1 rounded-md bg-violet-500/15 border border-violet-500/25 text-[10px] font-bold text-violet-400">
+                    <span className="px-2 py-1 rounded-md bg-violet-500/15 border border-violet-500/25 text-[10px] font-bold text-violet-400 save-badge-animate">
                       {plan.savings}
                     </span>
                   </motion.div>
@@ -216,15 +225,20 @@ export default function Pricing() {
                 </div>
 
                 <div className="mb-6">
-                  <motion.span
-                    key={plan.price}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-4xl sm:text-5xl font-bold text-foreground"
-                  >
-                    {plan.price}
-                  </motion.span>
+                  <span className="text-4xl sm:text-5xl font-bold text-foreground price-counter">
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={plan.price}
+                        initial={{ opacity: 0, y: priceDirection === 'up' ? 20 : -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: priceDirection === 'up' ? -20 : 20 }}
+                        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        className={`inline-block ${priceDirection === 'up' ? 'price-counter-enter-up' : 'price-counter-enter-down'}`}
+                      >
+                        {plan.price}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
                   <span className="text-muted-foreground text-sm">{plan.period}</span>
                   {isAnnual && plan.price !== '$0' && (
                     <p className="text-xs text-muted-foreground/50 mt-1">billed annually</p>

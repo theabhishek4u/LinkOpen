@@ -173,13 +173,33 @@ function PerformanceGauge({ score }: { score: number }) {
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (animatedScore / 100) * circumference
 
+  // Score-based labels: 0-40 Poor, 40-70 Good, 70-100 Excellent
+  const getScoreLabel = (s: number) => {
+    if (s >= 70) return 'Excellent'
+    if (s >= 40) return 'Good'
+    return 'Poor'
+  }
+
+  // Gradient colors for different score ranges: red → amber → green
   const getColor = (s: number) => {
-    if (s >= 80) return '#10b981'
-    if (s >= 60) return '#f59e0b'
+    if (s >= 70) return '#10b981'
+    if (s >= 40) return '#f59e0b'
     return '#ef4444'
   }
+
+  const getGradientEnd = (s: number) => {
+    if (s >= 70) return '#34d399'
+    if (s >= 40) return '#fbbf24'
+    return '#f87171'
+  }
+
   const color = getColor(score)
+  const gradientEnd = getGradientEnd(score)
+  const label = getScoreLabel(score)
   const gradientId = `gauge-${Math.random().toString(36).slice(2, 8)}`
+
+  // Needle angle: 0 score = -90deg (left), 100 score = 90deg (right)
+  const needleAngle = -90 + (animatedScore / 100) * 180
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -188,11 +208,41 @@ function PerformanceGauge({ score }: { score: number }) {
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor={color} />
-              <stop offset="100%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor={gradientEnd} />
             </linearGradient>
           </defs>
-          {/* Background circle */}
+          {/* Background circle with range segments */}
           <circle cx="60" cy="60" r={radius} fill="none" stroke="currentColor" strokeWidth="8" className="text-muted/20" />
+          {/* Subtle range markers: Poor (0-40%), Good (40-70%), Excellent (70-100%) */}
+          <circle
+            cx="60" cy="60" r={radius + 8}
+            fill="none"
+            stroke="#ef4444"
+            strokeWidth="2"
+            strokeOpacity="0.15"
+            strokeDasharray={`${0.4 * circumference} ${0.6 * circumference}`}
+            transform="rotate(0 60 60)"
+          />
+          <circle
+            cx="60" cy="60" r={radius + 8}
+            fill="none"
+            stroke="#f59e0b"
+            strokeWidth="2"
+            strokeOpacity="0.15"
+            strokeDasharray={`${0.3 * circumference} ${0.7 * circumference}`}
+            strokeDashoffset={`${-0.4 * circumference}`}
+            transform="rotate(0 60 60)"
+          />
+          <circle
+            cx="60" cy="60" r={radius + 8}
+            fill="none"
+            stroke="#10b981"
+            strokeWidth="2"
+            strokeOpacity="0.15"
+            strokeDasharray={`${0.3 * circumference} ${0.7 * circumference}`}
+            strokeDashoffset={`${-0.7 * circumference}`}
+            transform="rotate(0 60 60)"
+          />
           {/* Glow track */}
           <motion.circle
             cx="60"
@@ -234,6 +284,30 @@ function PerformanceGauge({ score }: { score: number }) {
             animate={{ scale: 1 }}
             transition={{ delay: 1.5, type: 'spring', stiffness: 400 }}
           />
+          {/* Animated gauge needle */}
+          <g transform={`rotate(90 60 60)`}>
+            <motion.line
+              x1="60"
+              y1="60"
+              x2="60"
+              y2="20"
+              stroke={color}
+              strokeWidth="2"
+              strokeLinecap="round"
+              initial={{ transform: `rotate(${-90})`, transformOrigin: '60px 60px' }}
+              animate={{ transform: `rotate(${needleAngle})`, transformOrigin: '60px 60px' }}
+              transition={{ duration: 1.5, ease: 'easeOut' }}
+            />
+            <motion.circle
+              cx="60"
+              cy="60"
+              r="4"
+              fill={color}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring', stiffness: 300 }}
+            />
+          </g>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.span
@@ -244,13 +318,17 @@ function PerformanceGauge({ score }: { score: number }) {
           >
             {animatedScore}
           </motion.span>
-          <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Score</span>
+          <span className={`text-[9px] uppercase tracking-wider font-medium ${
+            score >= 70 ? 'gauge-range-color-excellent' : score >= 40 ? 'gauge-range-color-good' : 'gauge-range-color-poor'
+          }`}>
+            {label}
+          </span>
         </div>
       </div>
       <div className="flex items-center gap-1">
         <Zap className="h-3 w-3" style={{ color }} />
         <p className="text-[10px] text-muted-foreground text-center">
-          {score >= 80 ? 'Excellent link health' : score >= 60 ? 'Good, room to improve' : 'Needs attention'}
+          {score >= 70 ? 'Excellent link health' : score >= 40 ? 'Good, room to improve' : 'Needs attention'}
         </p>
       </div>
     </div>

@@ -33,22 +33,30 @@ interface TopPerformingLink {
 // Helpers
 // ============================================================================
 
-function getDateFromRange(range: string): Date {
+function getDateFromRange(range: string, from?: string, to?: string): { startDate: Date; endDate: Date } {
   const now = new Date()
+  const endDate = to ? new Date(to + 'T23:59:59.999Z') : now
+
+  if (range === 'custom' && from) {
+    const startDate = new Date(from + 'T00:00:00.000Z')
+    return { startDate, endDate }
+  }
+
+  const startDate = new Date()
   switch (range) {
     case '7d':
-      now.setDate(now.getDate() - 7)
-      return now
+      startDate.setDate(startDate.getDate() - 7)
+      break
     case '30d':
-      now.setDate(now.getDate() - 30)
-      return now
+      startDate.setDate(startDate.getDate() - 30)
+      break
     case '90d':
-      now.setDate(now.getDate() - 90)
-      return now
+      startDate.setDate(startDate.getDate() - 90)
+      break
     default:
-      now.setDate(now.getDate() - 30)
-      return now
+      startDate.setDate(startDate.getDate() - 30)
   }
+  return { startDate, endDate }
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
@@ -75,16 +83,20 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const days = parseInt(searchParams.get('days') || '30')
-    const range = searchParams.get('range') || '' // '7d', '30d', '90d'
+    const range = searchParams.get('range') || '' // '7d', '30d', '90d', 'custom'
+    const fromParam = searchParams.get('from') || undefined
+    const toParam = searchParams.get('to') || undefined
 
     // Calculate date filter based on range parameter
-    const rangeDate = range ? getDateFromRange(range) : null
+    const { startDate: rangeStartDate, endDate: rangeEndDate } = range
+      ? getDateFromRange(range, fromParam, toParam)
+      : { startDate: new Date(), endDate: new Date() }
     const daysDate = new Date()
     daysDate.setDate(daysDate.getDate() - days)
 
     // Use the more restrictive date filter
     const filterDate =
-      rangeDate && rangeDate > daysDate ? rangeDate : daysDate
+      range ? (rangeStartDate > daysDate ? rangeStartDate : daysDate) : daysDate
 
     // Get total links count
     const totalLinks = await db.link.count()
@@ -96,10 +108,16 @@ export async function GET(request: NextRequest) {
     const totalOpens = links.reduce((sum, l) => sum + l.openCount, 0)
 
     // Get analytics records with date filtering
+    const analyticsWhere = range
+      ? {
+          createdAt: {
+            gte: filterDate,
+            ...(range === 'custom' && toParam ? { lte: rangeEndDate } : {}),
+          },
+        }
+      : undefined
     const analytics = await db.analytics.findMany({
-      where: range
-        ? { createdAt: { gte: filterDate } }
-        : undefined,
+      where: analyticsWhere,
       take: 5000,
       orderBy: { createdAt: 'desc' },
     })
@@ -144,12 +162,21 @@ export async function GET(request: NextRequest) {
       .slice(0, 10)
 
     // Recent activity (based on actual analytics data when available)
-    const rangeDays = range
-      ? parseInt(range.replace('d', ''))
-      : days
+    let rangeDays: number
+    if (range === 'custom' && fromParam && toParam) {
+      const fromDate = new Date(fromParam)
+      const toDate = new Date(toParam)
+      rangeDays = Math.max(1, Math.ceil((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)) + 1)
+    } else if (range) {
+      rangeDays = parseInt(range.replace('d', ''))
+    } else {
+      rangeDays = days
+    }
     const recentActivity = Array.from({ length: Math.min(rangeDays, 90) }, (_, i) => {
-      const date = new Date()
-      date.setDate(date.getDate() - (Math.min(rangeDays, 90) - 1 - i))
+      const date = range === 'custom' && fromParam
+        ? new Date(fromParam + 'T00:00:00.000Z')
+        : new Date()
+      date.setDate(date.getDate() + i)
       const dayStr = date.toISOString().split('T')[0]
       // Count actual analytics for this day
       const dayOpens = analytics.filter(
@@ -247,6 +274,10 @@ export async function GET(request: NextRequest) {
     if (range) {
       responseData.range = range
       responseData.rangeStartDate = filterDate.toISOString()
+      if (range === 'custom' && fromParam) {
+        responseData.from = fromParam
+        responseData.to = toParam || new Date().toISOString().split('T')[0]
+      }
     }
 
     return NextResponse.json({

@@ -2,7 +2,8 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen } from 'lucide-react'
+import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen, Bell } from 'lucide-react'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { SmartInput, SmartInputHandle } from './smart-input'
 import { LinkResult } from './link-result'
 import { QRGenerator } from './qr-generator'
@@ -31,6 +32,7 @@ import { LinkComparison } from './link-comparison'
 import { BatchOperationsBar } from './batch-operations'
 import { PerformanceDashboard } from './performance-dashboard'
 import { ApiDocsModal } from './api-docs-modal'
+import { LinkInsights } from './link-insights'
 import { useLinkStore } from '@/store/link-store'
 
 type SectionId = 'input' | 'analytics' | 'history' | 'tools'
@@ -76,6 +78,8 @@ export function DashboardMain() {
   const [activeSection, setActiveSection] = useState<SectionId>('input')
   const [isLoading, setIsLoading] = useState(true)
   const [sectionTransition, setSectionTransition] = useState<SectionId>('input')
+  const [whatsNewDismissed, setWhatsNewDismissed] = useState(false)
+  const [statGlowKey, setStatGlowKey] = useState(0)
   const { inputUrl, analytics, addNotification, history } = useLinkStore()
 
   // Loading skeleton with 1.5s delay
@@ -135,6 +139,18 @@ export function DashboardMain() {
   const conversionRate = totalLinks > 0
     ? ((nativeOpens / (nativeOpens + (analytics.browserOpens || 355))) * 100).toFixed(1)
     : '94.2'
+
+  // Trigger stat glow when values change
+  const prevTotalLinks = useRef(totalLinks)
+  const prevConversionRate = useRef(conversionRate)
+  useEffect(() => {
+    if (prevTotalLinks.current !== totalLinks || prevConversionRate.current !== conversionRate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStatGlowKey(k => k + 1)
+      prevTotalLinks.current = totalLinks
+      prevConversionRate.current = conversionRate
+    }
+  }, [totalLinks, conversionRate])
 
   // Handle section navigation with background color shift
   const handleSectionNav = useCallback((sectionId: SectionId) => {
@@ -239,18 +255,30 @@ export function DashboardMain() {
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
-            className="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none"
+            className="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none gradient-stat-border"
           >
             <div className="flex items-center gap-3 sm:gap-5 text-xs shrink-0">
               <div className="flex items-center gap-1.5">
                 <Zap className="h-3.5 w-3.5 text-primary" />
-                <span className="text-foreground font-medium">{totalLinks.toLocaleString()}</span>
+                <motion.span
+                  key={`links-${statGlowKey}`}
+                  className="text-foreground font-medium animate-stat-glow"
+                  initial={false}
+                >
+                  {totalLinks.toLocaleString()}
+                </motion.span>
                 <span className="text-muted-foreground hidden sm:inline">links</span>
               </div>
               <div className="h-3 w-px bg-border/40" />
               <div className="flex items-center gap-1.5">
                 <Activity className="h-3.5 w-3.5 text-violet-400" />
-                <span className="text-foreground font-medium">{conversionRate}%</span>
+                <motion.span
+                  key={`conv-${statGlowKey}`}
+                  className="text-foreground font-medium animate-stat-glow"
+                  initial={false}
+                >
+                  {conversionRate}%
+                </motion.span>
                 <span className="text-muted-foreground hidden sm:inline">conversion</span>
               </div>
               <div className="h-3 w-px bg-border/40" />
@@ -260,22 +288,64 @@ export function DashboardMain() {
               </div>
             </div>
 
-            {/* Section Navigation */}
-            <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5 shrink-0">
-              {SECTIONS.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => handleSectionNav(section.id)}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all focus-visible-ring ${
-                    activeSection === section.id
-                      ? 'bg-accent text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <section.icon className="h-3 w-3" />
-                  <span className="hidden sm:inline">{section.label}</span>
-                </button>
-              ))}
+            {/* What's New badge + Section Navigation */}
+            <div className="flex items-center gap-2 shrink-0">
+              {!whatsNewDismissed && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="animate-whats-new-pulse flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary border border-primary/20 cursor-pointer focus-visible-ring"
+                    >
+                      <Bell className="h-3 w-3" />
+                      What&apos;s New
+                    </motion.button>
+                  </PopoverTrigger>
+                  <PopoverContent className="glass-card w-72 p-3 space-y-2" sideOffset={8}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground">Recent Updates</span>
+                      <button
+                        onClick={() => setWhatsNewDismissed(true)}
+                        className="text-[10px] text-muted-foreground hover:text-foreground transition-colors focus-visible-ring"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {[
+                        { title: 'Link Health Checker', desc: 'Monitor your link health in real-time', icon: HeartPulse },
+                        { title: 'Link Scheduling', desc: 'Set expiry dates on generated links', icon: Timer },
+                        { title: 'Export Dashboard', desc: 'Export your data in CSV or JSON format', icon: Layers },
+                      ].map((item) => (
+                        <div key={item.title} className="flex items-start gap-2 rounded-lg p-1.5 hover:bg-accent/30 transition-colors">
+                          <item.icon className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-[11px] font-medium text-foreground">{item.title}</p>
+                            <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
+              <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5">
+                {SECTIONS.map((section) => (
+                  <button
+                    key={section.id}
+                    onClick={() => handleSectionNav(section.id)}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all focus-visible-ring ${
+                      activeSection === section.id
+                        ? 'bg-accent text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <section.icon className="h-3 w-3" />
+                    <span className="hidden sm:inline">{section.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
 
@@ -363,6 +433,16 @@ export function DashboardMain() {
             animate="visible"
           >
             <LinkResult />
+          </motion.div>
+
+          {/* Link Insights (appears below LinkResult) */}
+          <motion.div
+            custom={4.5}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <LinkInsights />
           </motion.div>
 
           {/* Link Preview Simulator */}

@@ -43,6 +43,7 @@ export interface LinkHistoryItem {
   expiry?: string | null
   category?: string | null
   tags?: string[]
+  note?: string | null
 }
 
 export interface AnalyticsData {
@@ -172,6 +173,10 @@ interface LinkState {
   recentUrls: string[]
   addRecentUrl: (url: string) => void
   clearRecentUrls: () => void
+  // Link Notes
+  addNoteToLink: (linkId: string, note: string) => void
+  removeNoteFromLink: (linkId: string) => void
+  updateNoteOnLink: (linkId: string, note: string) => void
 }
 
 const defaultAnalytics: AnalyticsData = {
@@ -472,5 +477,27 @@ export const useLinkStore = create<LinkState>((set, get) => ({
   clearRecentUrls: () => {
     saveRecentUrls([])
     set({ recentUrls: [] })
+  },
+  // Link Notes
+  addNoteToLink: (linkId, note) => {
+    const newHistory = get().history.map((item) =>
+      item.id === linkId ? { ...item, note } : item
+    )
+    saveHistory(newHistory)
+    set({ history: newHistory })
+  },
+  removeNoteFromLink: (linkId) => {
+    const newHistory = get().history.map((item) =>
+      item.id === linkId ? { ...item, note: null } : item
+    )
+    saveHistory(newHistory)
+    set({ history: newHistory })
+  },
+  updateNoteOnLink: (linkId, note) => {
+    const newHistory = get().history.map((item) =>
+      item.id === linkId ? { ...item, note } : item
+    )
+    saveHistory(newHistory)
+    set({ history: newHistory })
   },
 }))

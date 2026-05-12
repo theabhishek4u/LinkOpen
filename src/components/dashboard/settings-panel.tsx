@@ -1,10 +1,10 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Settings, X, Monitor, Sparkles, Copy, QrCode,
-  Bell, Volume2, Shield, Trash2, Download, Palette, Zap,
+  Bell, Volume2, Shield, Trash2, Download, Palette, Zap, Keyboard, RotateCcw, AlertTriangle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -29,15 +29,84 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useLinkStore } from '@/store/link-store'
 import { toast } from 'sonner'
+import { DEFAULT_SHORTCUTS, type ShortcutBinding } from './keyboard-shortcuts'
 
 interface SettingsPanelProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
+const SHORTCUTS_STORAGE_KEY = 'linkverse-shortcuts'
+
+function loadCustomShortcuts(): ShortcutBinding[] {
+  if (typeof window === 'undefined') return DEFAULT_SHORTCUTS
+  try {
+    const stored = localStorage.getItem(SHORTCUTS_STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored) as ShortcutBinding[]
+      return DEFAULT_SHORTCUTS.map((def) => {
+        const custom = parsed.find((p) => p.id === def.id)
+        return custom || def
+      })
+    }
+  } catch {
+    // Ignore
+  }
+  return DEFAULT_SHORTCUTS
+}
+
+function saveCustomShortcuts(shortcuts: ShortcutBinding[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(SHORTCUTS_STORAGE_KEY, JSON.stringify(shortcuts))
+  } catch {
+    // Ignore
+  }
+}
+
 export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
   const { settings, updateSettings, clearHistory, history } = useLinkStore()
   const [exporting, setExporting] = useState(false)
+  const [shortcuts, setShortcuts] = useState<ShortcutBinding[]>(DEFAULT_SHORTCUTS)
+  const [recordingId, setRecordingId] = useState<string | null>(null)
+
+  // Load custom shortcuts
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setShortcuts(loadCustomShortcuts())
+    setMounted(true)
+  }, [])
+
+  // Handle keyboard recording
+  useEffect(() => {
+    if (!recordingId) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      const key = e.key === 'Enter' ? '↵' : e.key === 'Escape' ? 'Escape' : e.key
+      const mod = e.metaKey || e.ctrlKey
+
+      if (mod || ['/', '↵'].includes(key)) {
+        const newKeys = mod ? ['Ctrl', key] : [key]
+        setShortcuts((prev) => {
+          const updated = prev.map((s) =>
+            s.id === recordingId ? { ...s, keys: newKeys } : s
+          )
+          saveCustomShortcuts(updated)
+          return updated
+        })
+        setRecordingId(null)
+      } else if (key === 'Escape') {
+        setRecordingId(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
+  }, [recordingId])
 
   const handleClearHistory = useCallback(() => {
     clearHistory()
@@ -281,6 +350,91 @@ export function SettingsPanel({ open, onOpenChange }: SettingsPanelProps) {
                   className="data-[state=checked]:bg-primary"
                 />
               </div>
+            </div>
+          </div>
+
+          <Separator className="bg-border/30" />
+
+          {/* Shortcuts Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Keyboard className="h-4 w-4 text-primary/70" />
+              <h3 className="text-sm font-medium text-foreground">Keyboard Shortcuts</h3>
+            </div>
+
+            <div className="space-y-2 pl-6">
+              {/* Conflict Warning */}
+              {(() => {
+                const keyMap = new Map<string, string[]>()
+                shortcuts.forEach((s) => {
+                  const keyStr = s.keys.join('+')
+                  const existing = keyMap.get(keyStr) || []
+                  existing.push(s.id)
+                  keyMap.set(keyStr, existing)
+                })
+                const hasConflicts = Array.from(keyMap.values()).some((ids) => ids.length > 1)
+                if (!hasConflicts) return null
+                return (
+                  <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-2.5">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <div className="text-[10px] text-amber-600 dark:text-amber-400">
+                      <p className="font-medium">Shortcut conflict</p>
+                      <p className="text-amber-500/80">Multiple actions use the same key binding.</p>
+                    </div>
+                  </div>
+                )
+              })()}
+
+              {shortcuts.map((shortcut) => (
+                <div key={shortcut.id} className="flex items-center justify-between">
+                  <p className="text-xs text-foreground">{shortcut.description}</p>
+                  <div className="flex items-center gap-1">
+                    {recordingId === shortcut.id ? (
+                      <span className="inline-flex h-6 min-w-[60px] items-center justify-center rounded-md border border-primary/50 bg-primary/10 px-2 text-[10px] font-mono text-primary animate-pulse">
+                        Press keys...
+                      </span>
+                    ) : (
+                      shortcut.keys.map((key, i) => (
+                        <span key={i} className="flex items-center gap-1">
+                          <button
+                            onClick={() => setRecordingId(shortcut.id)}
+                            className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-md border border-border/50 bg-muted/50 px-1.5 text-[10px] font-mono text-muted-foreground hover:bg-accent/50 transition-colors"
+                            title="Click to remap"
+                          >
+                            {key === '↵' ? 'Enter' : key}
+                          </button>
+                          {i < shortcut.keys.length - 1 && (
+                            <span className="text-muted-foreground/40 text-xs">+</span>
+                          )}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Recording hint */}
+              {recordingId && (
+                <p className="text-[10px] text-primary/70 text-center">
+                  Press Ctrl + key to set, or Esc to cancel
+                </p>
+              )}
+
+              {/* Reset to Defaults */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start h-8 text-xs text-muted-foreground hover:text-foreground gap-2"
+                onClick={() => {
+                  setShortcuts(DEFAULT_SHORTCUTS)
+                  saveCustomShortcuts(DEFAULT_SHORTCUTS)
+                  setRecordingId(null)
+                  toast.success('Shortcuts reset to defaults')
+                }}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset to Defaults
+              </Button>
             </div>
           </div>
 

@@ -2,10 +2,11 @@
 
 import { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, TrendingUp, Zap, ExternalLink, Trash2 } from 'lucide-react'
+import { Clock, TrendingUp, Zap, ExternalLink, Trash2, Info, Globe } from 'lucide-react'
 import { useLinkStore } from '@/store/link-store'
 import { getAllPlatforms } from '@/lib/platform-detect'
 import { Button } from '@/components/ui/button'
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
 
 // ─── Quick Action Cards ────────────────────────────────────────────
 
@@ -27,6 +28,7 @@ function SuggestionCard({
   color,
   onClick,
   index,
+  hoverDetails,
 }: {
   label: string
   sublabel?: string
@@ -34,40 +36,70 @@ function SuggestionCard({
   color: string
   onClick: () => void
   index: number
+  hoverDetails?: { platform?: string; description?: string }
 }) {
   return (
-    <motion.button
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{
-        duration: 0.3,
-        delay: index * 0.05,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      }}
-      whileHover={{ scale: 1.02, x: 4 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className="flex items-center gap-2.5 w-full rounded-lg px-3 py-2 text-left hover:bg-accent/50 transition-colors group focus-visible-ring"
-    >
-      <div
-        className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 transition-transform group-hover:scale-110"
-        style={{ backgroundColor: `${color}15` }}
-      >
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-foreground truncate group-hover:text-primary transition-colors">
-          {label}
-        </p>
-        {sublabel && (
-          <p className="text-[10px] text-muted-foreground truncate">
-            {sublabel}
-          </p>
-        )}
-      </div>
-      <ExternalLink className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary/60 transition-colors shrink-0" />
-    </motion.button>
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{
+            duration: 0.3,
+            delay: index * 0.05,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+          whileHover={{ scale: 1.02, x: 4 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onClick}
+          className="suggestion-card-hover flex items-center gap-2.5 w-full rounded-lg px-3 py-2 text-left hover:bg-accent/50 transition-colors group focus-visible-ring"
+          style={{ background: `linear-gradient(135deg, ${color}06, ${color}02)` }}
+        >
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 transition-transform group-hover:scale-110"
+            style={{ backgroundColor: `${color}15` }}
+          >
+            {icon}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-foreground truncate group-hover:text-primary transition-colors">
+              {label}
+            </p>
+            {sublabel && (
+              <p className="text-[10px] text-muted-foreground truncate">
+                {sublabel}
+              </p>
+            )}
+          </div>
+          <ExternalLink className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary/60 transition-colors shrink-0" />
+        </motion.button>
+      </HoverCardTrigger>
+      {hoverDetails && (
+        <HoverCardContent className="glass-card w-56 p-3 space-y-2" sideOffset={6}>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-6 h-6 rounded-md flex items-center justify-center text-xs"
+              style={{ backgroundColor: `${color}20` }}
+            >
+              {icon}
+            </div>
+            <span className="text-xs font-medium text-foreground">
+              {hoverDetails.platform || label}
+            </span>
+          </div>
+          {hoverDetails.description && (
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              {hoverDetails.description}
+            </p>
+          )}
+          <div className="flex items-center gap-1 text-[9px] text-muted-foreground/60">
+            <Globe className="h-2.5 w-2.5" />
+            Click to open
+          </div>
+        </HoverCardContent>
+      )}
+    </HoverCard>
   )
 }
 
@@ -135,15 +167,26 @@ export function UrlSuggestions() {
                 <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Recent URLs</span>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearRecentUrls}
-                className="h-6 px-2 text-[10px] text-muted-foreground hover:text-red-400"
-              >
-                <Trash2 className="h-3 w-3 mr-1" />
-                Clear
-              </Button>
+              <AnimatePresence>
+                {recentUrls.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearRecentUrls}
+                      className="h-6 px-2 text-[10px] text-muted-foreground hover:text-red-400"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Clear All
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             <div className="space-y-0.5 max-h-40 overflow-y-auto scrollbar-thin">
               <AnimatePresence>
@@ -156,6 +199,7 @@ export function UrlSuggestions() {
                     color="#6b7280"
                     onClick={() => setInputUrl(url)}
                     index={i}
+                    hoverDetails={{ platform: 'Recent URL', description: 'A URL you previously used for deep link generation' }}
                   />
                 ))}
               </AnimatePresence>
@@ -214,8 +258,8 @@ export function UrlSuggestions() {
                   whileHover={{ scale: 1.03, y: -2 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setInputUrl(action.url)}
-                  className="flex items-center gap-2 rounded-lg px-2.5 py-2 border border-border/20 hover:border-primary/20 transition-all group focus-visible-ring"
-                  style={{ backgroundColor: `${action.color}06` }}
+                  className="suggestion-card-hover flex items-center gap-2 rounded-lg px-2.5 py-2 border border-border/20 hover:border-primary/20 transition-all group focus-visible-ring"
+                  style={{ background: `linear-gradient(135deg, ${action.color}08, ${action.color}02)` }}
                 >
                   <span className="text-sm shrink-0">{action.icon}</span>
                   <span className="text-[10px] font-medium text-foreground/70 group-hover:text-primary transition-colors truncate">

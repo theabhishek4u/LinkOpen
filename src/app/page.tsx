@@ -17,6 +17,7 @@ import { DashboardMain } from '@/components/dashboard/dashboard-main'
 import { ThemeToggle } from '@/components/dashboard/theme-toggle'
 import { ArrowLeft, Sparkles, Link2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { CookieConsent } from '@/components/landing/cookie-consent'
 
 function SectionDivider() {
   return <div className="section-divider mx-auto max-w-4xl" />
@@ -54,6 +55,7 @@ function LandingView({ onSwitchToDashboard }: { onSwitchToDashboard: () => void 
         </div>
       </main>
       <Footer />
+      <CookieConsent />
     </div>
   )
 }

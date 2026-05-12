@@ -21,6 +21,7 @@ import { useLinkStore } from '@/store/link-store'
 import { Badge } from '@/components/ui/badge'
 import { LinkCategories } from './link-categories'
 import { LinkTags, LinkTagBadges, TagAssignPopover } from './link-tags'
+import { LinkNotes } from './link-notes'
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date()
@@ -408,6 +409,11 @@ export function LinkHistory() {
                             })}
                           </div>
                         )}
+
+                        {/* Link Notes */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity" style={item.note ? { opacity: 1 } : undefined}>
+                          <LinkNotes linkId={item.id} currentNote={item.note} />
+                        </div>
 
                         {/* Expanded details */}
                         <AnimatePresence>

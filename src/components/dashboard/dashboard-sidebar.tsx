@@ -11,12 +11,12 @@ interface DashboardSidebarProps {
   onSectionChange: (section: SidebarSection) => void
 }
 
-const sidebarItems: { id: SidebarSection; label: string; icon: typeof Link2 }[] = [
-  { id: 'input', label: 'Create', icon: Link2 },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'tools', label: 'Tools', icon: Shield },
-  { id: 'history', label: 'History', icon: Clock },
-  { id: 'settings', label: 'Settings', icon: Settings },
+const sidebarItems: { id: SidebarSection; label: string; icon: typeof Link2; gradient: string }[] = [
+  { id: 'input', label: 'Create', icon: Link2, gradient: 'from-emerald-500/20 to-emerald-500/5' },
+  { id: 'analytics', label: 'Analytics', icon: BarChart3, gradient: 'from-violet-500/20 to-violet-500/5' },
+  { id: 'tools', label: 'Tools', icon: Shield, gradient: 'from-amber-500/20 to-amber-500/5' },
+  { id: 'history', label: 'History', icon: Clock, gradient: 'from-emerald-500/20 to-emerald-500/5' },
+  { id: 'settings', label: 'Settings', icon: Settings, gradient: 'from-violet-500/20 to-violet-500/5' },
 ]
 
 export function DashboardSidebar({ activeSection, onSectionChange }: DashboardSidebarProps) {
@@ -47,31 +47,40 @@ export function DashboardSidebar({ activeSection, onSectionChange }: DashboardSi
           const Icon = item.icon
 
           return (
-            <button
+            <motion.button
               key={item.id}
               onClick={() => onSectionChange(item.id)}
+              whileHover={{ scale: 1.03, x: 2 }}
+              whileTap={{ scale: 0.97 }}
               className={`w-full flex items-center gap-2.5 rounded-lg transition-all duration-200 focus-visible-ring group relative ${
                 collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5'
               } ${
                 isActive
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  ? `sidebar-active-pill text-emerald-400 border border-emerald-500/20 bg-gradient-to-r ${item.gradient}`
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/40 border border-transparent'
               }`}
               aria-current={isActive ? 'page' : undefined}
               title={collapsed ? item.label : undefined}
             >
-              {/* Active indicator bar */}
+              {/* Active indicator pill with animated gradient */}
               {isActive && (
                 <motion.div
-                  layoutId="sidebar-active-indicator"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-emerald-400"
+                  layoutId="sidebar-active-pill-indicator"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full"
+                  style={{
+                    background: 'linear-gradient(180deg, oklch(0.696 0.17 162.48), oklch(0.488 0.243 264.376))',
+                  }}
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 />
               )}
 
-              <Icon className={`w-4 h-4 shrink-0 transition-transform duration-200 ${
-                isActive ? 'scale-110' : 'group-hover:scale-105'
-              }`} />
+              <Icon
+                className={`w-4 h-4 shrink-0 transition-all duration-300 ${
+                  isActive
+                    ? 'text-emerald-400 scale-110'
+                    : 'text-muted-foreground group-hover:text-emerald-400/70 group-hover:scale-105'
+                }`}
+              />
 
               <AnimatePresence>
                 {!collapsed && (
@@ -86,7 +95,7 @@ export function DashboardSidebar({ activeSection, onSectionChange }: DashboardSi
                   </motion.span>
                 )}
               </AnimatePresence>
-            </button>
+            </motion.button>
           )
         })}
       </nav>

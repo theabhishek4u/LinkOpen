@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Play, ExternalLink, Loader2, Copy, Check, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -108,27 +108,38 @@ function useCounter(end: number, duration: number = 2000) {
   return { count, displayDigits, ref }
 }
 
-// Generate deterministic stars using a simple seeded PRNG to avoid hydration mismatch
-function seededRandom(seed: number): number {
-  const x = Math.sin(seed * 9301 + 49297) * 49297
-  return x - Math.floor(x)
-}
-
+// Generate stars client-side only to avoid SSR/client hydration mismatch
+// We use a ref + suppressHydrationWarning to avoid rendering stars on SSR
 function useStars(count: number) {
-  return useMemo(() => {
-    const stars = []
+  const [stars, setStars] = useState<Array<{
+    id: number
+    x: string
+    y: string
+    duration: string
+    delay: string
+    bright: boolean
+  }> | null>(null)
+  const generatedRef = useRef(false)
+
+  // Generate stars lazily on first client render
+  if (!generatedRef.current && typeof window !== 'undefined') {
+    generatedRef.current = true
+    const generated = []
     for (let i = 0; i < count; i++) {
-      stars.push({
+      generated.push({
         id: i,
-        x: `${seededRandom(i * 2) * 100}%`,
-        y: `${seededRandom(i * 2 + 1) * 100}%`,
-        duration: `${2 + seededRandom(i * 3) * 4}s`,
-        delay: `${seededRandom(i * 3 + 1) * 4}s`,
-        bright: seededRandom(i * 4) > 0.85,
+        x: `${Math.random() * 100}%`,
+        y: `${Math.random() * 100}%`,
+        duration: `${2 + Math.random() * 4}s`,
+        delay: `${Math.random() * 4}s`,
+        bright: Math.random() > 0.85,
       })
     }
-    return stars
-  }, [count])
+    // Schedule state update outside of render
+    queueMicrotask(() => setStars(generated))
+  }
+
+  return stars
 }
 
 // Confetti burst component
@@ -300,7 +311,7 @@ export default function Hero({ onTryNow }: HeroProps) {
 
       {/* Particle / stars field + parallax */}
       <div className="stars-field" style={{ transform: `translateY(${scrollY * 0.08}px)` }}>
-        {stars.map((star) => (
+        {stars && stars.map((star) => (
           <div
             key={star.id}
             className={`star ${star.bright ? 'bright' : ''}`}
@@ -380,13 +391,19 @@ export default function Hero({ onTryNow }: HeroProps) {
           className="flex flex-col items-center text-center"
         >
           {/* Badge */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="mb-6 px-4 py-1.5 text-xs sm:text-sm border-emerald-500/30 text-emerald-400 bg-emerald-500/10 backdrop-blur-sm"
+              className="px-4 py-1.5 text-xs sm:text-sm border-emerald-500/30 text-emerald-400 bg-emerald-500/10 backdrop-blur-sm"
             >
               <span className="mr-1.5 inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               AI-Powered Deep Linking Platform
+            </Badge>
+            <Badge
+              variant="outline"
+              className="px-2.5 py-1 text-[10px] border-violet-500/25 text-violet-400 bg-violet-500/10 backdrop-blur-sm"
+            >
+              ⚡ powered by AI
             </Badge>
           </motion.div>
 
@@ -429,7 +446,7 @@ export default function Hero({ onTryNow }: HeroProps) {
               </div>
             </div>
 
-            <div className="glass-card dramatic-input-glow animate-path-border p-4 sm:p-6 relative" style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
+            <div className={`glass-card dramatic-input-glow animate-path-border p-4 sm:p-6 relative ${result ? 'demo-card-result-glow' : ''}`} style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
               {/* Confetti burst on success */}
               <ConfettiBurst active={showConfetti} />
 
@@ -458,23 +475,27 @@ export default function Hero({ onTryNow }: HeroProps) {
                     </Badge>
                   )}
                 </div>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={loading || !url.trim()}
-                  className="h-11 px-6 glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition-all duration-300"
-                >
-                  {loading ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <>
-                      <ExternalLink className="size-4" />
-                      Open in App
-                    </>
-                  )}
-                </Button>
+                <div className="relative">
+                  {/* Floating gradient orb behind the button */}
+                  <div className="orb-float w-32 h-32 left-1/2 top-1/2" style={{ animationDelay: '0.5s' }} />
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={loading || !url.trim()}
+                    className="h-11 px-6 glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition-all duration-300 relative z-10"
+                  >
+                    {loading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <>
+                        <ExternalLink className="size-4" />
+                        Open in App
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
 
-              {/* Empty state hint — pill-style sample buttons */}
+              {/* Empty state hint — pill-style sample buttons with hover scale */}
               {!result && !loading && (
                 <div className="mt-3 flex items-center gap-2 flex-wrap relative z-10">
                   <span className="text-xs text-muted-foreground/40">Try:</span>
@@ -482,7 +503,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                     <button
                       key={sample.url}
                       onClick={() => { setUrl(sample.url); setResult(null) }}
-                      className="px-3 py-1 rounded-full bg-background/30 border border-border/20 hover:border-emerald-500/30 hover:bg-emerald-500/8 hover:text-emerald-400/80 transition-all duration-200 text-xs text-muted-foreground/50 font-medium"
+                      className="px-3 py-1 rounded-full bg-background/30 border border-border/20 hover:border-emerald-500/30 hover:bg-emerald-500/8 hover:text-emerald-400/80 transition-all duration-200 text-xs text-muted-foreground/50 font-medium sample-pill-hover"
                     >
                       {sample.label}
                     </button>

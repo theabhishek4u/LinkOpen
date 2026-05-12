@@ -30,7 +30,7 @@ const platformStats: Record<string, string> = {
   tiktok: '1.5B users',
   linkedin: '950M users',
   discord: '200M users',
-  reddit: '1.7B users',
+  reddit: '100M+ users',
   telegram: '800M users',
   snapchat: '750M users',
   pinterest: '480M users',
@@ -186,14 +186,14 @@ export default function Platforms() {
             viewport={{ once: true, margin: '-50px' }}
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 relative z-10"
           >
-            {platforms.map((platform) => (
+            {platforms.map((platform, index) => (
               <motion.div
                 key={platform.id}
                 variants={cardVariants}
                 className={`glass-card platform-dramatic-hover p-4 sm:p-5 cursor-default relative overflow-hidden group animated-border-glow scroll-reveal ${isVisible ? 'is-visible' : ''}`}
                 style={{
                   borderLeft: `3px solid ${platform.color}40`,
-                  transitionDelay: `${Math.random() * 0.3}s`,
+                  transitionDelay: `${(index * 0.05) % 0.3}s`,
                 }}
                 onMouseEnter={(e) => {
                   setHoveredId(platform.id)
@@ -227,10 +227,10 @@ export default function Platforms() {
                   }}
                 />
 
-                <div className="relative z-10">
+                <div className="relative z-10 overflow-hidden">
                   <div className="flex items-center gap-3 mb-3">
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0"
                       style={{
                         background: `${platform.color}15`,
                         boxShadow: `0 0 0 0 ${platform.color}00`,
@@ -239,7 +239,7 @@ export default function Platforms() {
                     >
                       {platform.icon}
                     </div>
-                    <span className="font-semibold text-sm sm:text-base text-foreground">
+                    <span className="font-semibold text-sm sm:text-base text-foreground truncate">
                       {platform.name}
                     </span>
                   </div>
@@ -250,7 +250,7 @@ export default function Platforms() {
                   >
                     {categoryLabels[platform.category]}
                   </Badge>
-                  <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed">
+                  <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed truncate">
                     Open {platform.name} links directly in the native app
                   </p>
                   {/* Platform stats with ping animation */}
@@ -261,8 +261,8 @@ export default function Platforms() {
                     </span>
                   </div>
                   {/* Deep link scheme */}
-                  <div className="mt-2.5 px-2 py-1 rounded bg-background/30 border border-border/10">
-                    <code className="text-[10px] text-emerald-400/60 font-mono">
+                  <div className="mt-2.5 px-2 py-1 rounded bg-background/30 border border-border/10 overflow-hidden">
+                    <code className="text-[10px] text-emerald-400/60 font-mono truncate block">
                       {platform.deepLinkScheme}
                     </code>
                   </div>

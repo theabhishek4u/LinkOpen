@@ -27,6 +27,7 @@ const features = [
     glowColor: 'oklch(0.696 0.17 162.48)',
     iconAnimation: 'bounce' as IconAnimation,
     featured: true,
+    isNew: false,
   },
   {
     icon: Brain,
@@ -37,6 +38,7 @@ const features = [
     glowColor: 'oklch(0.488 0.243 264.376)',
     iconAnimation: 'pulse' as IconAnimation,
     featured: true,
+    isNew: false,
   },
   {
     icon: QrCode,
@@ -47,6 +49,7 @@ const features = [
     glowColor: 'oklch(0.769 0.188 70.08)',
     iconAnimation: 'spin' as IconAnimation,
     featured: true,
+    isNew: false,
   },
   {
     icon: BarChart3,
@@ -57,6 +60,7 @@ const features = [
     glowColor: 'oklch(0.65 0.2 200)',
     iconAnimation: 'bounce' as IconAnimation,
     featured: false,
+    isNew: false,
   },
   {
     icon: History,
@@ -67,6 +71,7 @@ const features = [
     glowColor: 'oklch(0.645 0.246 16.439)',
     iconAnimation: 'pulse' as IconAnimation,
     featured: false,
+    isNew: false,
   },
   {
     icon: Link2,
@@ -77,6 +82,7 @@ const features = [
     glowColor: 'oklch(0.696 0.17 162.48)',
     iconAnimation: 'spin' as IconAnimation,
     featured: false,
+    isNew: false,
   },
   {
     icon: Monitor,
@@ -87,6 +93,7 @@ const features = [
     glowColor: 'oklch(0.55 0.2 250)',
     iconAnimation: 'bounce' as IconAnimation,
     featured: false,
+    isNew: false,
   },
   {
     icon: Globe,
@@ -97,6 +104,7 @@ const features = [
     glowColor: 'oklch(0.7 0.18 55)',
     iconAnimation: 'pulse' as IconAnimation,
     featured: false,
+    isNew: true,
   },
   {
     icon: Code2,
@@ -107,6 +115,7 @@ const features = [
     glowColor: 'oklch(0.488 0.243 264.376)',
     iconAnimation: 'spin' as IconAnimation,
     featured: false,
+    isNew: true,
   },
 ]
 
@@ -162,9 +171,14 @@ export default function Features() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12 sm:mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-            <span className="gradient-text-smooth">Powerful Features</span>
-          </h2>
+          <div className="flex items-center justify-center gap-3">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+              <span className="gradient-text-smooth">Powerful Features</span>
+            </h2>
+            <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+              9 features
+            </span>
+          </div>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Everything you need for seamless social media deep linking
           </p>
@@ -193,7 +207,7 @@ export default function Features() {
             return (
               <div
                 key={feature.title}
-                className={`scroll-reveal ${staggerClass} rotating-gradient-border glass-card card-shimmer hover-lift p-5 sm:p-6 group relative`}
+                className={`scroll-reveal ${staggerClass} rotating-gradient-border glass-card card-shimmer card-tilt-hover p-5 sm:p-6 group relative`}
               >
                 {/* Featured badge with rotating gradient */}
                 {feature.featured && (
@@ -203,8 +217,15 @@ export default function Features() {
                   </div>
                 )}
 
-                {/* Gradient number badge in top-right (hidden on featured items) */}
-                {!feature.featured && (
+                {/* New badge with pulse animation */}
+                {feature.isNew && !feature.featured && (
+                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full new-badge-pulse bg-amber-500/15 border border-amber-500/25">
+                    <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">New</span>
+                  </div>
+                )}
+
+                {/* Gradient number badge in top-right (hidden on featured/new items) */}
+                {!feature.featured && !feature.isNew && (
                   <div
                     className="absolute top-4 right-4 text-xs font-bold opacity-30 group-hover:opacity-60 transition-opacity duration-300"
                     style={{

@@ -222,7 +222,7 @@ export function AnalyticsCards() {
     {
       title: 'Native Opens',
       value: nativeOpens,
-      subtitle: `${((nativeOpens / Math.max(totalLinks, 1)) * 100).toFixed(0)}% of total`,
+      subtitle: `${(nativeOpens + browserOpens) > 0 ? ((nativeOpens / (nativeOpens + browserOpens)) * 100).toFixed(0) : '0'}% native rate`,
       icon: <Smartphone className="h-4 w-4" />,
       iconBg: 'rgba(139, 92, 246, 0.15)',
       iconColor: '#8b5cf6',
@@ -235,7 +235,7 @@ export function AnalyticsCards() {
     {
       title: 'Browser Opens',
       value: browserOpens,
-      subtitle: `${((browserOpens / Math.max(totalLinks, 1)) * 100).toFixed(0)}% of total`,
+      subtitle: `${(nativeOpens + browserOpens) > 0 ? ((browserOpens / (nativeOpens + browserOpens)) * 100).toFixed(0) : '0'}% browser rate`,
       icon: <Globe className="h-4 w-4" />,
       iconBg: 'rgba(59, 130, 246, 0.15)',
       iconColor: '#3b82f6',

@@ -21,21 +21,27 @@ const socialLinks = [
   { icon: Youtube, label: 'YouTube', brandColor: '#FF0000', hoverBg: 'hover:bg-[#FF0000]/15', hoverText: 'hover:text-[#FF0000]', glowColor: '0 0 12px #FF000040' },
 ]
 
-// Cookie consent banner component
+// Cookie consent banner component — enhanced with slide-up, glow buttons, localStorage
 function CookieConsentBanner() {
   const [visible, setVisible] = useState(false)
+  const [dismissing, setDismissing] = useState(false)
 
   useEffect(() => {
-    const dismissed = localStorage.getItem('linkverse-cookie-consent')
-    if (!dismissed) {
+    const accepted = localStorage.getItem('linkverse-cookies-accepted')
+    if (!accepted) {
       const timer = setTimeout(() => setVisible(true), 2000)
       return () => clearTimeout(timer)
     }
   }, [])
 
-  const handleDismiss = () => {
-    localStorage.setItem('linkverse-cookie-consent', 'dismissed')
-    setVisible(false)
+  const handleDismiss = (accepted: boolean) => {
+    setDismissing(true)
+    localStorage.setItem('linkverse-cookies-accepted', accepted ? 'true' : 'false')
+    // Allow dismiss animation to play before removing
+    setTimeout(() => {
+      setVisible(false)
+      setDismissing(false)
+    }, 350)
   }
 
   return (
@@ -44,13 +50,17 @@ function CookieConsentBanner() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 40 }}
+          exit={{ opacity: 0, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="fixed bottom-0 left-0 right-0 z-50 p-4"
         >
-          <div className="max-w-4xl mx-auto glass-card rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+          <div className={`max-w-4xl mx-auto glass-card rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 cookie-banner-slide ${dismissing ? 'cookie-banner-dismiss' : ''}`}>
+            {/* Cookie icon */}
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            </div>
             <div className="flex-1 text-center sm:text-left">
-              <p className="text-sm text-foreground font-medium">We value your privacy</p>
+              <p className="text-sm text-foreground font-semibold">We value your privacy</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 We use cookies to enhance your experience. By continuing, you agree to our{' '}
                 <a href="#" className="text-emerald-400 hover:underline focus-visible-ring">Cookie Policy</a>.
@@ -60,20 +70,24 @@ function CookieConsentBanner() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleDismiss}
-                className="text-xs text-muted-foreground hover:text-foreground btn-ghost-shine focus-visible-ring"
+                onClick={() => handleDismiss(false)}
+                className="text-xs text-muted-foreground hover:text-foreground border border-border/20 hover:border-border/40 btn-ghost-shine focus-visible-ring"
               >
                 Decline
               </Button>
               <Button
                 size="sm"
-                onClick={handleDismiss}
-                className="text-xs bg-emerald-500 hover:bg-emerald-400 text-white btn-primary-glow focus-visible-ring"
+                onClick={() => handleDismiss(true)}
+                className="text-xs font-semibold text-white focus-visible-ring"
+                style={{
+                  background: 'linear-gradient(135deg, oklch(0.696 0.17 162.48), oklch(0.55 0.2 170))',
+                  boxShadow: '0 0 12px oklch(0.696 0.17 162.48 / 20%), 0 0 24px oklch(0.696 0.17 162.48 / 8%)',
+                }}
               >
-                Accept
+                Accept All
               </Button>
               <button
-                onClick={handleDismiss}
+                onClick={() => handleDismiss(false)}
                 className="ml-1 p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors focus-visible-ring"
                 aria-label="Dismiss"
               >
@@ -268,7 +282,7 @@ export default function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <p className="text-xs text-muted-foreground/60">
-                &copy; 2025 LinkVerse. All rights reserved.
+                &copy; {new Date().getFullYear()} LinkVerse. All rights reserved.
               </p>
               <div
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-2/50 border border-emerald-500/10"
