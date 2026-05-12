@@ -13,6 +13,19 @@ export const DEFAULT_CATEGORIES: LinkCategory[] = [
   { id: 'favorites', name: 'Favorites', color: '#ef4444' },
 ]
 
+export interface LinkTag {
+  id: string
+  name: string
+  color: string
+}
+
+export const DEFAULT_TAGS: LinkTag[] = [
+  { id: 'important', name: 'Important', color: '#ef4444' },
+  { id: 'work', name: 'Work', color: '#3b82f6' },
+  { id: 'personal', name: 'Personal', color: '#f59e0b' },
+  { id: 'client', name: 'Client', color: '#8b5cf6' },
+]
+
 export interface LinkHistoryItem {
   id: string
   originalUrl: string
@@ -29,6 +42,7 @@ export interface LinkHistoryItem {
   createdAt: string
   expiry?: string | null
   category?: string | null
+  tags?: string[]
 }
 
 export interface AnalyticsData {
@@ -145,6 +159,19 @@ interface LinkState {
   toggleSelect: (id: string) => void
   selectAll: (ids: string[]) => void
   clearSelection: () => void
+  // Link Tags
+  linkTags: LinkTag[]
+  addTag: (tag: Omit<LinkTag, 'id'>) => void
+  removeTag: (id: string) => void
+  updateTag: (id: string, updates: Partial<Omit<LinkTag, 'id'>>) => void
+  addTagToLink: (linkId: string, tagId: string) => void
+  removeTagFromLink: (linkId: string, tagId: string) => void
+  filterByTag: string | null
+  setFilterByTag: (tagId: string | null) => void
+  // Recent URLs for suggestions
+  recentUrls: string[]
+  addRecentUrl: (url: string) => void
+  clearRecentUrls: () => void
 }
 
 const defaultAnalytics: AnalyticsData = {
@@ -228,6 +255,44 @@ function saveCategories(categories: LinkCategory[]) {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem('linkverse-categories', JSON.stringify(categories))
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+function loadRecentUrls(): string[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const stored = localStorage.getItem('linkverse-recent-urls')
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+function saveRecentUrls(urls: string[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem('linkverse-recent-urls', JSON.stringify(urls))
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+function loadTags(): LinkTag[] {
+  if (typeof window === 'undefined') return DEFAULT_TAGS
+  try {
+    const stored = localStorage.getItem('linkverse-tags')
+    return stored ? JSON.parse(stored) : DEFAULT_TAGS
+  } catch {
+    return DEFAULT_TAGS
+  }
+}
+
+function saveTags(tags: LinkTag[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem('linkverse-tags', JSON.stringify(tags))
   } catch {
     // Ignore storage errors
   }
@@ -348,4 +413,64 @@ export const useLinkStore = create<LinkState>((set, get) => ({
   }),
   selectAll: (ids) => set({ selectedLinkIds: ids }),
   clearSelection: () => set({ selectedLinkIds: [] }),
+  // Link Tags
+  linkTags: loadTags(),
+  addTag: (tag) => {
+    const newTag: LinkTag = { ...tag, id: tag.name.toLowerCase().replace(/[^a-z0-9]/g, '-') }
+    const updated = [...get().linkTags, newTag]
+    saveTags(updated)
+    set({ linkTags: updated })
+  },
+  removeTag: (id) => {
+    const updated = get().linkTags.filter((t) => t.id !== id)
+    saveTags(updated)
+    // Also remove this tag from all links
+    const newHistory = get().history.map((item) => ({
+      ...item,
+      tags: item.tags?.filter((t) => t !== id) || [],
+    }))
+    saveHistory(newHistory)
+    set({ linkTags: updated, history: newHistory })
+  },
+  updateTag: (id, updates) => {
+    const updated = get().linkTags.map((t) =>
+      t.id === id ? { ...t, ...updates } : t
+    )
+    saveTags(updated)
+    set({ linkTags: updated })
+  },
+  addTagToLink: (linkId, tagId) => {
+    const newHistory = get().history.map((item) =>
+      item.id === linkId
+        ? { ...item, tags: [...new Set([...(item.tags || []), tagId])] }
+        : item
+    )
+    saveHistory(newHistory)
+    set({ history: newHistory })
+  },
+  removeTagFromLink: (linkId, tagId) => {
+    const newHistory = get().history.map((item) =>
+      item.id === linkId
+        ? { ...item, tags: (item.tags || []).filter((t) => t !== tagId) }
+        : item
+    )
+    saveHistory(newHistory)
+    set({ history: newHistory })
+  },
+  filterByTag: null,
+  setFilterByTag: (tagId) => set({ filterByTag: tagId }),
+  // Recent URLs
+  recentUrls: loadRecentUrls(),
+  addRecentUrl: (url) => {
+    const trimmed = url.trim()
+    if (!trimmed) return
+    const existing = get().recentUrls.filter((u) => u !== trimmed)
+    const updated = [trimmed, ...existing].slice(0, 20)
+    saveRecentUrls(updated)
+    set({ recentUrls: updated })
+  },
+  clearRecentUrls: () => {
+    saveRecentUrls([])
+    set({ recentUrls: [] })
+  },
 }))

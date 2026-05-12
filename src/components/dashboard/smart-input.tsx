@@ -6,6 +6,7 @@ import { Globe, ExternalLink, Copy, Share2, QrCode, Loader2, Link2, ClipboardPas
 import { Button } from '@/components/ui/button'
 import { useLinkStore } from '@/store/link-store'
 import { detectPlatform, validateUrl } from '@/lib/platform-detect'
+import { extractPathFromUrl, buildDeepLinkUrl } from '@/lib/deep-link'
 import { PlatformBadge } from './platform-badge'
 import { toast } from 'sonner'
 
@@ -33,6 +34,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
     addNotification,
     customAlias,
     selectedCategory,
+    addRecentUrl,
   } = useLinkStore()
 
   const [error, setError] = useState<string | null>(null)
@@ -168,16 +170,24 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         description: `${result.platform?.name || 'Unknown'} deep link created`,
       })
 
+      addRecentUrl(validation.normalizedUrl)
+
       toast.success('Deep link generated successfully!', {
         description: `Opened via ${result.platform?.name || 'app'}`,
+        action: {
+          label: 'Open in App',
+          onClick: () => window.open(result.deepLink, '_blank'),
+        },
       })
     } catch (err) {
       setError('Failed to process link. Please try again.')
-      toast.error('Failed to process link')
+      toast.error('Failed to process link', {
+        description: 'Please check the URL and try again',
+      })
     } finally {
       setIsProcessing(false)
     }
-  }, [inputUrl, setDeepLinkResult, setIsProcessing, addToHistory, customAlias, selectedCategory])
+  }, [inputUrl, setDeepLinkResult, setIsProcessing, addToHistory, customAlias, selectedCategory, addNotification, addRecentUrl])
 
   const handleOpenInBrowser = useCallback(() => {
     const validation = validateUrl(inputUrl)
@@ -204,7 +214,10 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
 
     try {
       await navigator.clipboard.writeText(linkToCopy)
-      toast.success('Link copied to clipboard!')
+      toast.success('Link copied to clipboard!', {
+        description: 'Deep link URL is ready to paste',
+        duration: 3000,
+      })
     } catch {
       toast.error('Failed to copy link')
     }
@@ -226,7 +239,9 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
       }
     } else {
       await navigator.clipboard.writeText(linkToShare)
-      toast.success('Link copied (Share not supported)')
+      toast.info('Link copied (Share not supported)', {
+        description: 'Your browser does not support the Share API',
+      })
     }
   }, [deepLinkResult, inputUrl])
 
@@ -242,7 +257,10 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
       if (text) {
         setInputUrl(text)
         setError(null)
-        toast.success('Pasted from clipboard')
+        toast.success('Pasted from clipboard', {
+          description: 'URL ready for processing',
+          duration: 2000,
+        })
       }
     } catch {
       toast.error('Unable to access clipboard')
@@ -268,9 +286,17 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
   const charCount = inputUrl.length
   const maxChars = 2048
 
-  // Compute deep link preview with syntax highlighting
+  // Compute deep link preview with proper path extraction from deep-link.ts
   const deepLinkPreview = detectedPlatform
-    ? inputUrl.replace(/^https?:\/\/(www\.)?/i, detectedPlatform.deepLinkScheme)
+    ? (() => {
+        try {
+          const normalizedUrl = inputUrl.startsWith('http') ? inputUrl : `https://${inputUrl}`
+          const path = extractPathFromUrl(normalizedUrl, detectedPlatform)
+          return buildDeepLinkUrl(detectedPlatform.deepLinkScheme, path)
+        } catch {
+          return inputUrl.replace(/^https?:\/\/(www\.)?/i, detectedPlatform.deepLinkScheme)
+        }
+      })()
     : null
 
   // Parse the deep link preview into syntax-highlighted segments

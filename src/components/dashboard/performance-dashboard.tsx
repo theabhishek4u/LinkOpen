@@ -13,7 +13,7 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { RefreshCw, BarChart3, TrendingUp, Link2, ExternalLink } from 'lucide-react'
+import { RefreshCw, BarChart3, TrendingUp, Link2, ExternalLink, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useLinkStore } from '@/store/link-store'
 
@@ -69,6 +69,103 @@ function useAnimatedNumber(target: number, duration = 1200) {
   return current
 }
 
+// Sparkline mini-chart for stat cards
+function SparklineMini({ data, color = '#10b981', width = 60, height = 24 }: { data: number[]; color?: string; width?: number; height?: number }) {
+  if (data.length < 2) return null
+
+  const min = Math.min(...data)
+  const max = Math.max(...data)
+  const range = max - min || 1
+
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * width
+    const y = height - ((v - min) / range) * height
+    return `${x},${y}`
+  }).join(' ')
+
+  const gradientId = `sparkline-${Math.random().toString(36).slice(2, 8)}`
+
+  return (
+    <svg width={width} height={height} className="overflow-visible">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      {/* Fill area */}
+      <polygon
+        points={`0,${height} ${points} ${width},${height}`}
+        fill={`url(#${gradientId})`}
+      />
+      {/* Line */}
+      <motion.polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="sparkline-draw"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 1, ease: 'easeOut' }}
+      />
+      {/* End dot */}
+      <motion.circle
+        cx={width}
+        cy={height - ((data[data.length - 1] - min) / range) * height}
+        r={2}
+        fill={color}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 1, type: 'spring', stiffness: 400 }}
+      />
+    </svg>
+  )
+}
+
+// Animated progress bar with gradient fill
+function AnimatedProgressBar({ value, max, color = '#10b981', label }: { value: number; max: number; color?: string; label?: string }) {
+  const percentage = Math.min((value / max) * 100, 100)
+  const gradientId = `progress-${Math.random().toString(36).slice(2, 8)}`
+
+  return (
+    <div className="w-full">
+      {label && <span className="text-[10px] text-muted-foreground/60 mb-1 block">{label}</span>}
+      <div className="h-2 w-full rounded-full bg-muted/20 overflow-hidden">
+        <motion.div
+          className="h-full rounded-full relative overflow-hidden"
+          style={{ background: `linear-gradient(90deg, ${color}, ${color}aa, ${color})`, backgroundSize: '200% 100%' }}
+          initial={{ width: '0%' }}
+          animate={{ width: `${percentage}%` }}
+          transition={{ duration: 1.2, ease: [0.34, 1.56, 0.64, 1] as const }}
+        >
+          <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#10b981" />
+                <stop offset="50%" stopColor="#8b5cf6" stopOpacity={0.6} />
+                <stop offset="100%" stopColor="#10b981" />
+              </linearGradient>
+            </defs>
+          </svg>
+          {/* Shimmer overlay */}
+          <motion.div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)',
+              backgroundSize: '200% 100%',
+            }}
+            animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          />
+        </motion.div>
+      </div>
+    </div>
+  )
+}
+
 // Circular gauge for performance score
 function PerformanceGauge({ score }: { score: number }) {
   const animatedScore = useAnimatedNumber(score)
@@ -82,71 +179,162 @@ function PerformanceGauge({ score }: { score: number }) {
     return '#ef4444'
   }
   const color = getColor(score)
+  const gradientId = `gauge-${Math.random().toString(36).slice(2, 8)}`
 
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="relative w-32 h-32">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor={color} />
+              <stop offset="100%" stopColor="#8b5cf6" />
+            </linearGradient>
+          </defs>
           {/* Background circle */}
           <circle cx="60" cy="60" r={radius} fill="none" stroke="currentColor" strokeWidth="8" className="text-muted/20" />
-          {/* Progress arc */}
+          {/* Glow track */}
           <motion.circle
             cx="60"
             cy="60"
             r={radius}
             fill="none"
             stroke={color}
+            strokeWidth="12"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset }}
+            transition={{ duration: 1.5, ease: 'easeOut' }}
+            opacity={0.1}
+            style={{ filter: `blur(6px)` }}
+          />
+          {/* Progress arc with gradient */}
+          <motion.circle
+            cx="60"
+            cy="60"
+            r={radius}
+            fill="none"
+            stroke={`url(#${gradientId})`}
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={circumference}
             initial={{ strokeDashoffset: circumference }}
             animate={{ strokeDashoffset }}
             transition={{ duration: 1.5, ease: 'easeOut' }}
+            className="gauge-fill"
+          />
+          {/* Animated dot at end of arc */}
+          <motion.circle
+            cx={60 + radius * Math.cos((animatedScore / 100) * 2 * Math.PI - Math.PI / 2)}
+            cy={60 + radius * Math.sin((animatedScore / 100) * 2 * Math.PI - Math.PI / 2)}
+            r={4}
+            fill={color}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 1.5, type: 'spring', stiffness: 400 }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-foreground" style={{ color }}>
+          <motion.span
+            className="text-2xl font-bold text-foreground"
+            style={{ color }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          >
             {animatedScore}
-          </span>
+          </motion.span>
           <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Score</span>
         </div>
       </div>
-      <p className="text-[10px] text-muted-foreground text-center">
-        {score >= 80 ? 'Excellent link health' : score >= 60 ? 'Good, room to improve' : 'Needs attention'}
-      </p>
+      <div className="flex items-center gap-1">
+        <Zap className="h-3 w-3" style={{ color }} />
+        <p className="text-[10px] text-muted-foreground text-center">
+          {score >= 80 ? 'Excellent link health' : score >= 60 ? 'Good, room to improve' : 'Needs attention'}
+        </p>
+      </div>
     </div>
   )
 }
 
-// Funnel step
-function FunnelStep({ label, value, percentage, color, isLast }: {
+// Funnel step with animated transitions
+function FunnelStep({ label, value, percentage, color, index, isLast }: {
   label: string
   value: number
   percentage: number
   color: string
+  index: number
   isLast?: boolean
 }) {
   const animatedValue = useAnimatedNumber(value)
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <div
-        className="rounded-lg transition-all duration-500 flex items-center justify-center min-h-[36px]"
+      <motion.div
+        className="rounded-lg transition-all duration-500 flex items-center justify-center min-h-[36px] funnel-step relative overflow-hidden"
         style={{
           width: `${Math.max(percentage, 15)}%`,
           backgroundColor: `${color}20`,
           border: `1px solid ${color}30`,
+          animationDelay: `${index * 0.2}s`,
         }}
+        initial={{ scaleX: 0, opacity: 0 }}
+        animate={{ scaleX: 1, opacity: 1 }}
+        transition={{ duration: 0.6, delay: index * 0.2, ease: [0.34, 1.56, 0.64, 1] as const }}
       >
-        <span className="text-xs font-bold" style={{ color }}>
+        {/* Shimmer inside funnel step */}
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${color}15, transparent)`,
+            backgroundSize: '200% 100%',
+          }}
+          animate={{ backgroundPosition: ['200% 0', '-200% 0'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'linear', delay: index * 0.3 }}
+        />
+        <span className="text-xs font-bold relative z-10" style={{ color }}>
           {animatedValue.toLocaleString()}
         </span>
-      </div>
+      </motion.div>
       <span className="text-[10px] text-muted-foreground">{label}</span>
       {!isLast && (
-        <div className="w-px h-3 bg-border/30" />
+        <motion.div
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ duration: 0.3, delay: index * 0.2 + 0.3 }}
+          className="w-px h-3 bg-border/30 origin-top"
+        />
       )}
     </div>
+  )
+}
+
+// Stat card with sparkline
+function StatCardWithSparkline({ label, value, color, data, index }: {
+  label: string
+  value: number
+  color: string
+  data: number[]
+  index: number
+}) {
+  const animatedValue = useAnimatedNumber(value)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.34, 1.56, 0.64, 1] as const }}
+      className="glass-card rounded-xl p-4 space-y-2 metric-gradient-border group hover:scale-[1.02] transition-transform duration-300"
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">{label}</span>
+        <SparklineMini data={data} color={color} />
+      </div>
+      <span className="text-lg font-bold text-foreground animate-number-glow" style={{ color }}>
+        {animatedValue.toLocaleString()}
+      </span>
+      <AnimatedProgressBar value={animatedValue} max={Math.max(...data, animatedValue, 1)} color={color} />
+    </motion.div>
   )
 }
 
@@ -213,18 +401,16 @@ export function PerformanceDashboard() {
   const browserOpens = data?.browserOpens || analytics.browserOpens || 355
   const conversionRate = data?.conversionRate || (nativeOpens > 0 ? Math.round((nativeOpens / (nativeOpens + browserOpens)) * 10000) / 100 : 71.5)
 
-  // Performance score: based on conversion rate and total usage
+  // Performance score
   const performanceScore = useMemo(() => {
     let score = Math.min(conversionRate, 100)
-    // Boost for high volume
     if (totalLinks > 100) score = Math.min(score + 5, 100)
     if (totalLinks > 500) score = Math.min(score + 5, 100)
-    // Penalty for low volume
     if (totalLinks < 10) score = Math.max(score - 10, 0)
     return Math.round(score)
   }, [conversionRate, totalLinks])
 
-  // Line chart data: performance over time
+  // Line chart data
   const lineChartData = useMemo(() => {
     if (data?.recentActivity && data.recentActivity.length > 0) {
       return data.recentActivity.map((item) => ({
@@ -238,7 +424,6 @@ export function PerformanceDashboard() {
         opens: item.opens,
       }))
     }
-    // Fallback mock data
     const days = range === '7d' ? 7 : range === '90d' ? 90 : 30
     return Array.from({ length: days }, (_, i) => {
       const date = new Date()
@@ -250,7 +435,7 @@ export function PerformanceDashboard() {
     })
   }, [data, analytics, range])
 
-  // Platform distribution for horizontal bar chart
+  // Platform bar data
   const platformBarData = useMemo(() => {
     if (data?.topPlatforms && data.topPlatforms.length > 0) {
       return data.topPlatforms.slice(0, 8).map((p) => ({
@@ -278,7 +463,7 @@ export function PerformanceDashboard() {
     ]
   }, [data, analytics])
 
-  // Top performing links table
+  // Top performing links
   const topLinks = useMemo(() => {
     if (data?.topPerformingLinks && data.topPerformingLinks.length > 0) {
       return data.topPerformingLinks.slice(0, 5)
@@ -297,6 +482,12 @@ export function PerformanceDashboard() {
   const nativePercent = (nativeOpens / funnelTotal) * 100
   const browserPercent = (browserOpens / funnelTotal) * 100
 
+  // Sparkline data generators
+  const linksSparkline = useMemo(() => Array.from({ length: 10 }, () => Math.floor(Math.random() * 50) + totalLinks * 0.08), [totalLinks])
+  const opensSparkline = useMemo(() => Array.from({ length: 10 }, () => Math.floor(Math.random() * 40) + totalOpens * 0.06), [totalOpens])
+  const nativeSparkline = useMemo(() => Array.from({ length: 10 }, () => Math.floor(Math.random() * 30) + nativeOpens * 0.07), [nativeOpens])
+  const browserSparkline = useMemo(() => Array.from({ length: 10 }, () => Math.floor(Math.random() * 20) + browserOpens * 0.08), [browserOpens])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -311,7 +502,6 @@ export function PerformanceDashboard() {
           <h3 className="text-sm font-semibold text-foreground">Link Performance</h3>
         </div>
         <div className="flex items-center gap-2">
-          {/* Date range pills */}
           <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5">
             {RANGE_OPTIONS.map((opt) => (
               <button
@@ -327,7 +517,6 @@ export function PerformanceDashboard() {
               </button>
             ))}
           </div>
-          {/* Refresh button */}
           <Button
             variant="ghost"
             size="sm"
@@ -340,6 +529,14 @@ export function PerformanceDashboard() {
         </div>
       </div>
 
+      {/* Stat cards with sparklines */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCardWithSparkline label="Total Links" value={totalLinks} color="#10b981" data={linksSparkline} index={0} />
+        <StatCardWithSparkline label="Total Opens" value={totalOpens} color="#8b5cf6" data={opensSparkline} index={1} />
+        <StatCardWithSparkline label="Native Opens" value={nativeOpens} color="#10b981" data={nativeSparkline} index={2} />
+        <StatCardWithSparkline label="Browser Opens" value={browserOpens} color="#f59e0b" data={browserSparkline} index={3} />
+      </div>
+
       {/* Top row: Performance Score + Funnel */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Performance Score Gauge */}
@@ -347,7 +544,7 @@ export function PerformanceDashboard() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="glass-card rounded-xl p-4 flex flex-col items-center justify-center border border-border/20"
+          className="glass-card rounded-xl p-4 flex flex-col items-center justify-center border border-border/20 metric-gradient-border"
         >
           <h4 className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium mb-3">
             Performance Score
@@ -371,18 +568,21 @@ export function PerformanceDashboard() {
               value={totalLinks}
               percentage={100}
               color="#10b981"
+              index={0}
             />
             <FunnelStep
               label="Native Opens"
               value={nativeOpens}
               percentage={nativePercent}
               color="#8b5cf6"
+              index={1}
             />
             <FunnelStep
               label="Browser Opens"
               value={browserOpens}
               percentage={browserPercent}
-              color="#3b82f6"
+              color="#f59e0b"
+              index={2}
               isLast
             />
           </div>
@@ -447,7 +647,7 @@ export function PerformanceDashboard() {
 
       {/* Bottom row: Platform Distribution + Top Links */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Platform Distribution - Horizontal Bar Chart */}
+        {/* Platform Distribution */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -495,8 +695,11 @@ export function PerformanceDashboard() {
           <h4 className="text-xs font-semibold text-foreground mb-3">Top Performing Links</h4>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {topLinks.map((link, index) => (
-              <div
+              <motion.div
                 key={link.id}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.35 + index * 0.06 }}
                 className="flex items-center gap-2 rounded-lg p-2 hover:bg-accent/30 transition-colors"
               >
                 <span className="text-[10px] font-bold text-muted-foreground/50 w-4 shrink-0">
@@ -514,7 +717,7 @@ export function PerformanceDashboard() {
                   <span className="text-xs font-bold text-foreground">{link.openCount}</span>
                   <span className="text-[9px] text-muted-foreground/50">opens</span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, AlertTriangle, XCircle, ExternalLink, Monitor, Smartphone, Link2, Play, ArrowRight } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, XCircle, ExternalLink, Monitor, Smartphone, Link2, Play, ArrowRight, ChevronRight } from 'lucide-react'
 import { useLinkStore } from '@/store/link-store'
 import { Button } from '@/components/ui/button'
 
@@ -15,6 +15,9 @@ interface ComparisonColumn {
   expectedBehavior: string
   appInstalled: ComparisonStatus
   description: string
+  tier: 'original' | 'deep' | 'short'
+  tierColor: string
+  tierBg: string
 }
 
 function StatusIndicator({ status }: { status: ComparisonStatus }) {
@@ -54,6 +57,48 @@ function StatusBg({ status }: { status: ComparisonStatus }) {
   }
 }
 
+// Animated flow arrow between tiers
+function FlowArrow({ from, to }: { from: string; to: string }) {
+  return (
+    <div className="flex items-center justify-center py-1">
+      <motion.div
+        className="flex items-center gap-1"
+        initial={{ opacity: 0, x: -8 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
+      >
+        <div className="h-px w-6 bg-gradient-to-r from-muted-foreground/20 to-muted-foreground/40" />
+        <motion.div
+          className="arrow-flow"
+        >
+          <ChevronRight className="h-4 w-4 text-primary/50" />
+        </motion.div>
+        <div className="h-px w-6 bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/20" />
+      </motion.div>
+    </div>
+  )
+}
+
+// Tier label badge
+function TierLabel({ tier, color }: { tier: 'original' | 'deep' | 'short'; color: string }) {
+  const labels = { original: 'Original URL', deep: 'Deep Link', short: 'Short Link' }
+  return (
+    <motion.span
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="inline-flex items-center text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+      style={{
+        color,
+        backgroundColor: `${color}15`,
+        border: `1px solid ${color}25`,
+      }}
+    >
+      {labels[tier]}
+    </motion.span>
+  )
+}
+
 export function LinkComparison() {
   const { detectedPlatform, deepLinkResult, inputUrl } = useLinkStore()
   const [testingColumn, setTestingColumn] = useState<string | null>(null)
@@ -71,6 +116,9 @@ export function LinkComparison() {
           expectedBehavior: 'Opens directly in the native app',
           appInstalled: 'partial' as ComparisonStatus,
           description: 'Requires the app to be installed on the device',
+          tier: 'original',
+          tierColor: '#94a3b8',
+          tierBg: 'bg-slate-500/5',
         },
         {
           title: 'Browser',
@@ -79,6 +127,9 @@ export function LinkComparison() {
           expectedBehavior: 'Opens in the default web browser',
           appInstalled: 'works' as ComparisonStatus,
           description: 'Always works but suboptimal UX',
+          tier: 'deep',
+          tierColor: '#8b5cf6',
+          tierBg: 'bg-violet-500/5',
         },
         {
           title: 'Deep Link',
@@ -87,6 +138,9 @@ export function LinkComparison() {
           expectedBehavior: 'Opens in app with fallback to browser',
           appInstalled: 'works' as ComparisonStatus,
           description: 'Best of both worlds with intelligent fallback',
+          tier: 'short',
+          tierColor: '#10b981',
+          tierBg: 'bg-emerald-500/5',
         },
       ]
     }
@@ -100,6 +154,9 @@ export function LinkComparison() {
         expectedBehavior: `Opens directly in ${detectedPlatform.name} app`,
         appInstalled: 'partial' as ComparisonStatus,
         description: `Requires ${detectedPlatform.name} to be installed on the device`,
+        tier: 'original',
+        tierColor: '#94a3b8',
+        tierBg: 'bg-slate-500/5',
       },
       {
         title: 'Browser',
@@ -108,6 +165,9 @@ export function LinkComparison() {
         expectedBehavior: 'Opens in the default web browser',
         appInstalled: 'works' as ComparisonStatus,
         description: 'Always works but may lack native features',
+        tier: 'deep',
+        tierColor: '#8b5cf6',
+        tierBg: 'bg-violet-500/5',
       },
       {
         title: 'Deep Link',
@@ -116,6 +176,9 @@ export function LinkComparison() {
         expectedBehavior: `Opens in ${detectedPlatform.name} with browser fallback`,
         appInstalled: 'works' as ComparisonStatus,
         description: 'Intelligent routing: tries app first, falls back to browser',
+        tier: 'short',
+        tierColor: '#10b981',
+        tierBg: 'bg-emerald-500/5',
       },
     ]
   }, [hasResult, detectedPlatform, deepLinkResult])
@@ -126,7 +189,6 @@ export function LinkComparison() {
       setTestingColumn(null)
       setTestedColumns((prev) => new Set(prev).add(columnTitle))
     }, 1200)
-    // Attempt to open the URL
     try {
       if (columnTitle === 'Native App' || columnTitle === 'Deep Link') {
         window.open(urlScheme, '_blank')
@@ -148,7 +210,12 @@ export function LinkComparison() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ArrowRight className="h-4 w-4 text-primary" />
+          <motion.div
+            animate={{ x: [0, 3, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <ArrowRight className="h-4 w-4 text-primary" />
+          </motion.div>
           <h3 className="text-sm font-semibold text-foreground">Link Comparison</h3>
         </div>
         {!hasResult && (
@@ -156,82 +223,117 @@ export function LinkComparison() {
         )}
       </div>
 
-      {/* 3 Column Comparison */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Side-by-side animated comparison with flow arrows */}
+      <div className="space-y-0">
         <AnimatePresence>
           {columns.map((col, index) => (
             <motion.div
               key={col.title}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              className={`rounded-xl border p-3 sm:p-4 space-y-3 ${StatusBg({ status: col.appInstalled })}`}
+              initial={{ opacity: 0, x: -20, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 20, scale: 0.95 }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.15,
+                ease: [0.34, 1.56, 0.64, 1] as const,
+              }}
+              className="tier-reveal"
+              style={{ animationDelay: `${index * 0.15}s` }}
             >
-              {/* Column Header */}
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-background/60">
-                  {col.icon}
-                </div>
-                <span className="text-xs font-semibold text-foreground">{col.title}</span>
-              </div>
-
-              {/* URL Scheme */}
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">
-                  URL Scheme
-                </span>
-                <div className="rounded-md bg-background/40 p-2 border border-border/20">
-                  <p className="text-[11px] font-mono text-foreground/80 truncate" title={col.urlScheme}>
-                    {col.urlScheme}
-                  </p>
-                </div>
-              </div>
-
-              {/* Expected Behavior */}
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">
-                  Behavior
-                </span>
-                <p className="text-xs text-muted-foreground">{col.expectedBehavior}</p>
-              </div>
-
-              {/* App Installed Status */}
-              <div className="space-y-1">
-                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">
-                  App Available
-                </span>
-                <StatusIndicator status={col.appInstalled} />
-              </div>
-
-              {/* Description */}
-              <p className="text-[10px] text-muted-foreground/50 leading-relaxed">
-                {col.description}
-              </p>
-
-              {/* Test Button */}
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full text-[10px] h-7 gap-1.5 border-border/30"
-                onClick={() => handleTest(col.title, col.urlScheme)}
-                disabled={testingColumn === col.title || !hasResult}
+              <motion.div
+                className={`rounded-xl border p-3 sm:p-4 space-y-3 ${StatusBg({ status: col.appInstalled })} ${col.tierBg}`}
+                whileHover={{ scale: 1.01, y: -2 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               >
-                {testingColumn === col.title ? (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                {/* Column Header with Tier Label */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-background/60">
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: index * 0.3 }}
+                      >
+                        {col.icon}
+                      </motion.div>
+                    </div>
+                    <span className="text-xs font-semibold text-foreground">{col.title}</span>
+                  </div>
+                  <TierLabel tier={col.tier} color={col.tierColor} />
+                </div>
+
+                {/* URL Scheme with color-coded background */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">
+                    URL Scheme
+                  </span>
+                  <div
+                    className="rounded-md p-2 border transition-all"
+                    style={{
+                      backgroundColor: `${col.tierColor}08`,
+                      borderColor: `${col.tierColor}20`,
+                    }}
                   >
-                    <ExternalLink className="h-3 w-3" />
-                  </motion.div>
-                ) : (
-                  <Play className="h-3 w-3" />
-                )}
-                {testingColumn === col.title
-                  ? 'Opening...'
-                  : testedColumns.has(col.title)
-                    ? 'Test Again'
-                    : 'Test'}
-              </Button>
+                    <p
+                      className="text-[11px] font-mono truncate"
+                      style={{ color: col.tierColor }}
+                      title={col.urlScheme}
+                    >
+                      {col.urlScheme}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Expected Behavior */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">
+                    Behavior
+                  </span>
+                  <p className="text-xs text-muted-foreground">{col.expectedBehavior}</p>
+                </div>
+
+                {/* App Installed Status */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium">
+                    App Available
+                  </span>
+                  <StatusIndicator status={col.appInstalled} />
+                </div>
+
+                {/* Description */}
+                <p className="text-[10px] text-muted-foreground/50 leading-relaxed">
+                  {col.description}
+                </p>
+
+                {/* Test Button */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full text-[10px] h-7 gap-1.5 border-border/30"
+                  onClick={() => handleTest(col.title, col.urlScheme)}
+                  disabled={testingColumn === col.title || !hasResult}
+                >
+                  {testingColumn === col.title ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </motion.div>
+                  ) : (
+                    <Play className="h-3 w-3" />
+                  )}
+                  {testingColumn === col.title
+                    ? 'Opening...'
+                    : testedColumns.has(col.title)
+                      ? 'Test Again'
+                      : 'Test'}
+                </Button>
+              </motion.div>
+
+              {/* Flow arrow between tiers */}
+              {index < columns.length - 1 && (
+                <FlowArrow from={columns[index].tier} to={columns[index + 1].tier} />
+              )}
             </motion.div>
           ))}
         </AnimatePresence>

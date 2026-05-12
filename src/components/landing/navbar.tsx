@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, ArrowRight, Link2, ArrowUp } from 'lucide-react'
+import { ArrowRight, Link2, ArrowUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -36,7 +36,6 @@ function LinkVerseLogo() {
         i++
       } else {
         clearInterval(interval)
-        // Hide cursor after typing is complete
         setTimeout(() => setShowCursor(false), 1500)
       }
     }, 80)
@@ -59,12 +58,29 @@ function LinkVerseLogo() {
   )
 }
 
+// Animated hamburger button that transforms to X
+function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-emerald-400 hover:bg-accent/50 transition-colors focus-visible-ring ${isOpen ? 'hamburger-open' : ''}`}
+      aria-label={isOpen ? 'Close menu' : 'Open menu'}
+      aria-expanded={isOpen}
+    >
+      <div className="flex flex-col gap-[5px] w-5">
+        <span className="hamburger-line block h-[2px] w-full bg-current rounded-full" />
+        <span className="hamburger-line block h-[2px] w-full bg-current rounded-full" />
+        <span className="hamburger-line block h-[2px] w-full bg-current rounded-full" />
+      </div>
+    </button>
+  )
+}
+
 // Back-to-top FAB with circular progress indicator
 function BackToTopFAB({ scrollProgress }: { scrollProgress: number }) {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // Show after scrolling 50% of the page
     setIsVisible(scrollProgress >= 50)
   }, [scrollProgress])
 
@@ -72,7 +88,6 @@ function BackToTopFAB({ scrollProgress }: { scrollProgress: number }) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
-  // SVG circular progress — radius=20, circumference = 2*PI*20 ≈ 125.66
   const radius = 20
   const circumference = 2 * Math.PI * radius
   const strokeDashoffset = circumference - (scrollProgress / 100) * circumference
@@ -89,13 +104,11 @@ function BackToTopFAB({ scrollProgress }: { scrollProgress: number }) {
           className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full glass-card flex items-center justify-center focus-visible-ring group hover:scale-110 transition-transform duration-200"
           aria-label="Back to top"
         >
-          {/* Circular progress ring */}
           <svg
             className="absolute inset-0 w-full h-full -rotate-90"
             viewBox="0 0 48 48"
             aria-hidden="true"
           >
-            {/* Background track */}
             <circle
               cx="24"
               cy="24"
@@ -105,7 +118,6 @@ function BackToTopFAB({ scrollProgress }: { scrollProgress: number }) {
               strokeWidth="2.5"
               className="dark:stroke-[oklch(0.93_0.01_270/6%)]"
             />
-            {/* Progress arc */}
             <circle
               cx="24"
               cy="24"
@@ -120,7 +132,6 @@ function BackToTopFAB({ scrollProgress }: { scrollProgress: number }) {
               style={{ filter: 'drop-shadow(0 0 3px oklch(0.696 0.17 162.48 / 40%))' }}
             />
           </svg>
-          {/* Arrow icon */}
           <ArrowUp className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
         </motion.button>
       )}
@@ -133,6 +144,7 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeLink, setActiveLink] = useState<string | null>(null)
+  const [currentSection, setCurrentSection] = useState<string | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -140,6 +152,20 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight
       const progress = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0
       setScrollProgress(progress)
+
+      // Track which section is currently in view for active indicator
+      const sections = navLinks.map(l => l.href.replace('#', ''))
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sections[i])
+        if (el) {
+          const rect = el.getBoundingClientRect()
+          if (rect.top <= 100) {
+            setCurrentSection(sections[i])
+            return
+          }
+        }
+      }
+      setCurrentSection(null)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
@@ -152,7 +178,6 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' })
     }
-    // Reset active link after animation
     setTimeout(() => setActiveLink(null), 600)
   }, [])
 
@@ -164,7 +189,7 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? 'glass-card rounded-none border-x-0 border-t-0 nav-scroll-glow'
+            ? 'nav-glass'
             : 'bg-transparent'
         }`}
       >
@@ -175,32 +200,34 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
               <LinkVerseLogo />
             </a>
 
-            {/* Desktop nav links */}
+            {/* Desktop nav links with active indicator */}
             <div className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <button
-                  key={link.label}
-                  onClick={() => handleNavClick(link.href)}
-                  className={`text-sm text-muted-foreground hover:text-emerald-400 transition-colors duration-200 relative group focus-visible-ring rounded-sm px-1 ${
-                    activeLink === link.href ? 'nav-link-active' : ''
-                  }`}
-                >
-                  {link.label}
-                  <span className="absolute -bottom-1 left-0 w-0 h-px bg-gradient-to-r from-emerald-400 to-violet-400 group-hover:w-full transition-all duration-300" />
-                  {/* Swipe underline on click */}
-                  {activeLink === link.href && (
-                    <span className="nav-link-underline" />
-                  )}
-                </button>
-              ))}
+              {navLinks.map((link) => {
+                const sectionId = link.href.replace('#', '')
+                const isActive = currentSection === sectionId || activeLink === link.href
+                return (
+                  <button
+                    key={link.label}
+                    onClick={() => handleNavClick(link.href)}
+                    className={`text-sm transition-colors duration-200 relative group focus-visible-ring rounded-sm px-1 ${
+                      isActive ? 'text-emerald-400 nav-active-indicator' : 'text-muted-foreground hover:text-emerald-400'
+                    }`}
+                  >
+                    {link.label}
+                    {/* Hover underline */}
+                    {!isActive && (
+                      <span className="absolute -bottom-1 left-0 w-0 h-px bg-gradient-to-r from-emerald-400 to-violet-400 group-hover:w-full transition-all duration-300" />
+                    )}
+                  </button>
+                )
+              })}
             </div>
 
-            {/* Desktop CTA */}
+            {/* Desktop CTA with glow effect */}
             <div className="hidden md:block">
               <Button
                 onClick={onGetStarted}
-                className="btn-primary-glow bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 glow-green-sm relative overflow-hidden focus-visible-ring"
-                style={{ animation: 'glow-pulse 4s ease-in-out infinite' }}
+                className="launch-btn-glow bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 relative overflow-hidden focus-visible-ring btn-primary-glow"
               >
                 <span className="relative z-10 flex items-center gap-1.5">
                   Launch App
@@ -209,14 +236,11 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
               </Button>
             </div>
 
-            {/* Mobile menu */}
+            {/* Mobile hamburger menu */}
             <div className="md:hidden">
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground focus-visible-ring">
-                    <Menu className="size-5" />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
+                  <HamburgerButton isOpen={false} onClick={() => setMobileOpen(true)} />
                 </SheetTrigger>
                 <SheetContent
                   side="right"
@@ -235,7 +259,11 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.05 }}
                         onClick={() => handleNavClick(link.href)}
-                        className="text-base text-muted-foreground hover:text-emerald-400 transition-colors py-3 px-3 rounded-lg hover:bg-accent/50 text-left focus-visible-ring"
+                        className={`text-base transition-colors py-3 px-3 rounded-lg text-left focus-visible-ring ${
+                          currentSection === link.href.replace('#', '')
+                            ? 'text-emerald-400 bg-emerald-500/10'
+                            : 'text-muted-foreground hover:text-emerald-400 hover:bg-accent/50'
+                        }`}
                       >
                         {link.label}
                       </motion.button>

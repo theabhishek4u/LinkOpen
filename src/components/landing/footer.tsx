@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Github, Twitter, MessageCircle, ArrowUp, Mail, Sparkles, Heart, X, ShieldCheck, Linkedin, Youtube } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,11 +14,11 @@ const footerLinks = {
 }
 
 const socialLinks = [
-  { icon: Twitter, label: 'Twitter', color: 'hover:text-sky-400', glowColor: 'hover:shadow-[0_0_12px_oklch(0.65_0.15_220/40%)]' },
-  { icon: Github, label: 'GitHub', color: 'hover:text-foreground', glowColor: 'hover:shadow-[0_0_12px_oklch(0.93_0.01_270/20%)]' },
-  { icon: MessageCircle, label: 'Discord', color: 'hover:text-violet-400', glowColor: 'hover:shadow-[0_0_12px_oklch(0.488_0.243_264.376/40%)]' },
-  { icon: Linkedin, label: 'LinkedIn', color: 'hover:text-blue-400', glowColor: 'hover:shadow-[0_0_12px_oklch(0.55_0.18_250/40%)]' },
-  { icon: Youtube, label: 'YouTube', color: 'hover:text-red-400', glowColor: 'hover:shadow-[0_0_12px_oklch(0.645_0.246_16.439/40%)]' },
+  { icon: Twitter, label: 'Twitter', brandColor: '#1DA1F2', hoverBg: 'hover:bg-[#1DA1F2]/15', hoverText: 'hover:text-[#1DA1F2]', glowColor: '0 0 12px #1DA1F240' },
+  { icon: Github, label: 'GitHub', brandColor: '#f0f0f0', hoverBg: 'hover:bg-[#f0f0f0]/10', hoverText: 'hover:text-[#f0f0f0]', glowColor: '0 0 12px #f0f0f020' },
+  { icon: MessageCircle, label: 'Discord', brandColor: '#5865F2', hoverBg: 'hover:bg-[#5865F2]/15', hoverText: 'hover:text-[#5865F2]', glowColor: '0 0 12px #5865F240' },
+  { icon: Linkedin, label: 'LinkedIn', brandColor: '#0A66C2', hoverBg: 'hover:bg-[#0A66C2]/15', hoverText: 'hover:text-[#0A66C2]', glowColor: '0 0 12px #0A66C240' },
+  { icon: Youtube, label: 'YouTube', brandColor: '#FF0000', hoverBg: 'hover:bg-[#FF0000]/15', hoverText: 'hover:text-[#FF0000]', glowColor: '0 0 12px #FF000040' },
 ]
 
 // Cookie consent banner component
@@ -26,10 +26,8 @@ function CookieConsentBanner() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    // Check if user has already dismissed
     const dismissed = localStorage.getItem('linkverse-cookie-consent')
     if (!dismissed) {
-      // Show after a short delay so it doesn't appear immediately
       const timer = setTimeout(() => setVisible(true), 2000)
       return () => clearTimeout(timer)
     }
@@ -89,6 +87,36 @@ function CookieConsentBanner() {
   )
 }
 
+// Footer background particles
+function FooterParticles() {
+  const dots = useMemo(() => {
+    return Array.from({ length: 24 }, (_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      duration: `${3 + Math.random() * 4}s`,
+      delay: `${Math.random() * 5}s`,
+    }))
+  }, [])
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      {dots.map((dot) => (
+        <div
+          key={dot.id}
+          className="footer-dot"
+          style={{
+            left: dot.left,
+            top: dot.top,
+            '--dot-duration': dot.duration,
+            '--dot-delay': dot.delay,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function Footer() {
   const [email, setEmail] = useState('')
   const [subscribed, setSubscribed] = useState(false)
@@ -109,17 +137,20 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="relative gradient-mesh-bg">
+      <footer className="relative gradient-mesh-bg overflow-hidden">
+        {/* Footer particle dots decoration */}
+        <FooterParticles />
+
         {/* Enhanced gradient top border line */}
         <div
-          className="h-px"
+          className="h-px relative z-10"
           style={{
             background: 'linear-gradient(90deg, transparent 0%, oklch(0.696 0.17 162.48 / 50%) 20%, oklch(0.488 0.243 264.376 / 40%) 50%, oklch(0.769 0.188 70.08 / 30%) 80%, transparent 100%)',
             boxShadow: '0 0 8px oklch(0.696 0.17 162.48 / 20%)',
           }}
         />
 
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
           {/* Prominent Newsletter Section */}
           <div className="mb-14">
             <div className="newsletter-card glass-card p-6 sm:p-8 rounded-xl text-center max-w-2xl mx-auto">
@@ -139,7 +170,7 @@ export default function Footer() {
                   onBlur={() => setEmailFocused(false)}
                   placeholder="your@email.com"
                   className={`h-11 text-sm bg-surface-2 border-border/30 placeholder:text-muted-foreground/40 transition-all duration-300 focus-visible-ring ${
-                    emailFocused ? 'border-emerald-500/40 glow-green-sm' : ''
+                    emailFocused ? 'newsletter-input-glow border-emerald-500/40' : ''
                   }`}
                 />
                 <Button
@@ -165,27 +196,42 @@ export default function Footer() {
                 AI-powered deep linking platform that opens social media links in their native apps.
               </p>
 
-              {/* Social links with hover glow effects */}
+              {/* Social links with brand colors on hover */}
               <div className="flex gap-3 mt-5">
                 {socialLinks.map((social) => {
                   const Icon = social.icon
                   return (
-                    <a
+                    <motion.a
                       key={social.label}
                       href="#"
                       aria-label={social.label}
-                      className={`w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center text-muted-foreground transition-all duration-300 social-icon-hover ${social.color} ${social.glowColor} focus-visible-ring`}
+                      whileHover={{ y: -3, scale: 1.15 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`w-9 h-9 rounded-lg bg-surface-2 flex items-center justify-center text-muted-foreground social-icon-brand ${social.hoverText} ${social.hoverBg} focus-visible-ring`}
+                      style={{
+                        transition: 'color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, box-shadow 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.boxShadow = social.glowColor
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.boxShadow = 'none'
+                      }}
                     >
                       <Icon className="size-4" />
-                    </a>
+                    </motion.a>
                   )
                 })}
               </div>
             </div>
 
-            {/* Link columns */}
-            {Object.entries(footerLinks).map(([category, links]) => (
-              <div key={category}>
+            {/* Link columns with gradient separators */}
+            {Object.entries(footerLinks).map(([category, links], catIndex, arr) => (
+              <div key={category} className="relative">
+                {/* Gradient separator on desktop (between columns) */}
+                {catIndex > 0 && (
+                  <div className="hidden lg:block absolute -left-6 top-0 bottom-0 gradient-separator" aria-hidden="true" />
+                )}
                 <h4 className="text-sm font-semibold text-foreground mb-4">{category}</h4>
                 <ul className="flex flex-col gap-3">
                   {links.map((link) => (
@@ -240,15 +286,17 @@ export default function Footer() {
                 Made with <Heart className="size-3 text-rose-400/60 fill-rose-400/60" /> and AI
               </span>
 
-              {/* Back to top button */}
-              <button
+              {/* Back to top button with bounce animation */}
+              <motion.button
                 onClick={scrollToTop}
-                className="back-to-top-hover flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-2/40 border border-border/10 text-xs text-muted-foreground/40 hover:text-emerald-400 hover:border-emerald-500/20 transition-all duration-300 group focus-visible-ring"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className="back-to-top-bounce flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-2/40 border border-border/10 text-xs text-muted-foreground/40 hover:text-emerald-400 hover:border-emerald-500/20 transition-all duration-300 group focus-visible-ring"
                 aria-label="Back to top"
               >
                 Back to top
                 <ArrowUp className="size-3 group-hover:-translate-y-0.5 transition-transform" />
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>

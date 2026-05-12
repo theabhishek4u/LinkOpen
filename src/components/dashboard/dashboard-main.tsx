@@ -2,13 +2,15 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer } from 'lucide-react'
+import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen } from 'lucide-react'
 import { SmartInput, SmartInputHandle } from './smart-input'
 import { LinkResult } from './link-result'
 import { QRGenerator } from './qr-generator'
 import { LinkHistory } from './link-history'
 import { AnalyticsCards } from './analytics-cards'
 import { MiniChart } from './mini-chart'
+import { AnalyticsChart } from './analytics-chart'
+import { UrlSuggestions } from './url-suggestions'
 import { ThemeToggle } from './theme-toggle'
 import { BulkOpener } from './bulk-opener'
 import { KeyboardShortcuts } from './keyboard-shortcuts'
@@ -28,6 +30,7 @@ import { DashboardSidebar, type SidebarSection } from './dashboard-sidebar'
 import { LinkComparison } from './link-comparison'
 import { BatchOperationsBar } from './batch-operations'
 import { PerformanceDashboard } from './performance-dashboard'
+import { ApiDocsModal } from './api-docs-modal'
 import { useLinkStore } from '@/store/link-store'
 
 type SectionId = 'input' | 'analytics' | 'history' | 'tools'
@@ -69,6 +72,7 @@ export function DashboardMain() {
   const [showCommandPalette, setShowCommandPalette] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showHealthChecker, setShowHealthChecker] = useState(false)
+  const [showApiDocs, setShowApiDocs] = useState(false)
   const [activeSection, setActiveSection] = useState<SectionId>('input')
   const [isLoading, setIsLoading] = useState(true)
   const [sectionTransition, setSectionTransition] = useState<SectionId>('input')
@@ -204,6 +208,17 @@ export function DashboardMain() {
               </motion.button>
               {/* Notification Center */}
               <NotificationCenter />
+              {/* API Docs Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowApiDocs(true)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground hover:text-foreground transition-colors focus-visible-ring"
+                aria-label="API Documentation"
+                title="API Docs"
+              >
+                <BookOpen className="h-4 w-4" />
+              </motion.button>
               {/* Settings Button */}
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -285,6 +300,9 @@ export function DashboardMain() {
           >
             <SmartInput ref={smartInputRef} />
 
+            {/* URL Suggestions (only when input is empty) */}
+            <UrlSuggestions />
+
             {/* Category selector */}
             <div className="mt-2">
               <CategorySelector />
@@ -326,6 +344,13 @@ export function DashboardMain() {
               >
                 <HeartPulse className="h-3.5 w-3.5" />
                 Health Check
+              </button>
+              <button
+                onClick={() => setShowApiDocs(true)}
+                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                API Docs
               </button>
             </motion.div>
           </motion.div>
@@ -380,6 +405,7 @@ export function DashboardMain() {
               className="lg:col-span-2 space-y-4 sm:space-y-6"
             >
               <AnalyticsCards />
+              <AnalyticsChart />
               <PerformanceDashboard />
               <MiniChart />
             </motion.div>
@@ -461,6 +487,9 @@ export function DashboardMain() {
       {/* Settings Panel */}
       <SettingsPanel open={showSettings} onOpenChange={setShowSettings} />
 
+      {/* API Docs Modal */}
+      <ApiDocsModal open={showApiDocs} onOpenChange={setShowApiDocs} />
+
       {/* Batch Operations Bar */}
       <BatchOperationsBar />
 
@@ -509,6 +538,7 @@ export function DashboardMain() {
                     { icon: Layers, label: 'Bulk Open', desc: 'Open multiple links at once', actionId: 'bulkOpen' as const },
                     { icon: BarChart3, label: 'View Analytics', desc: 'Open full analytics dashboard', actionId: 'viewAnalytics' as const },
                     { icon: HeartPulse, label: 'Health Check', desc: 'Check link health status', actionId: 'healthCheck' as const },
+                    { icon: BookOpen, label: 'API Docs', desc: 'View API documentation', actionId: 'apiDocs' as const },
                     { icon: Settings, label: 'Settings', desc: 'Open settings panel', actionId: 'settings' as const },
                   ].map((cmd) => (
                     <button
@@ -519,6 +549,7 @@ export function DashboardMain() {
                         else if (cmd.actionId === 'showShortcuts') setShowShortcuts(true)
                         else if (cmd.actionId === 'bulkOpen') setBulkOpen(true)
                         else if (cmd.actionId === 'healthCheck') setShowHealthChecker(true)
+                        else if (cmd.actionId === 'apiDocs') setShowApiDocs(true)
                         else if (cmd.actionId === 'settings') setShowSettings(true)
                         setShowCommandPalette(false)
                       }}

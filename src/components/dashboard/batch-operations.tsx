@@ -1,10 +1,58 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Trash2, Download, ExternalLink, X, CheckSquare, Square, Loader2 } from 'lucide-react'
 import { useLinkStore } from '@/store/link-store'
 import { Button } from '@/components/ui/button'
+
+// Ripple button component with click ripple effect
+function RippleButton({
+  children,
+  onClick,
+  disabled,
+  className = '',
+}: {
+  children: React.ReactNode
+  onClick: () => void
+  disabled?: boolean
+  className?: string
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null)
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Create ripple effect
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect()
+      const x = e.clientX - rect.left
+      const y = e.clientY - rect.top
+      const size = Math.max(rect.width, rect.height) * 2
+
+      const ripple = document.createElement('span')
+      ripple.className = 'ripple-effect'
+      ripple.style.width = `${size}px`
+      ripple.style.height = `${size}px`
+      ripple.style.left = `${x - size / 2}px`
+      ripple.style.top = `${y - size / 2}px`
+
+      btnRef.current.appendChild(ripple)
+      setTimeout(() => ripple.remove(), 600)
+    }
+
+    onClick()
+  }
+
+  return (
+    <button
+      ref={btnRef}
+      onClick={handleClick}
+      disabled={disabled}
+      className={`ripple-btn ${className}`}
+    >
+      {children}
+    </button>
+  )
+}
 
 export function BatchOperationsBar() {
   const {
@@ -27,14 +75,12 @@ export function BatchOperationsBar() {
     if (selectedLinkIds.length === 0) return
     setIsDeleting(true)
     try {
-      // Delete via API
       const res = await fetch('/api/links/batch-delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: selectedLinkIds }),
       }).catch(() => null)
 
-      // Remove from local store regardless of API result
       for (const id of selectedLinkIds) {
         removeFromHistory(id)
       }
@@ -116,27 +162,53 @@ export function BatchOperationsBar() {
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-xl"
         >
-          <div className="glass-card rounded-xl border border-emerald-500/20 shadow-lg shadow-emerald-500/5 px-4 py-3">
+          <div
+            className="rounded-xl border border-emerald-500/20 shadow-lg shadow-emerald-500/5 px-4 py-3 overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, oklch(0.12 0.02 275 / 80%), oklch(0.08 0.03 162 / 60%))',
+              backdropFilter: 'blur(16px) saturate(180%)',
+            }}
+          >
+            {/* Gradient accent line at top */}
+            <div
+              className="absolute top-0 left-0 right-0 h-px"
+              style={{
+                background: 'linear-gradient(90deg, transparent, oklch(0.696 0.17 162.48 / 40%), oklch(0.488 0.243 264.376 / 30%), oklch(0.696 0.17 162.48 / 40%), transparent)',
+              }}
+            />
+
             <div className="flex items-center gap-3">
-              {/* Selected count */}
+              {/* Selected count with spring animation */}
               <div className="flex items-center gap-2 shrink-0">
-                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                  <span className="text-xs font-bold text-emerald-400">{count}</span>
-                </div>
+                <motion.div
+                  className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10 border border-emerald-500/20"
+                  key={count}
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                >
+                  <motion.span
+                    className="text-xs font-bold text-emerald-400"
+                    key={count}
+                    initial={{ scale: 1.3, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  >
+                    {count}
+                  </motion.span>
+                </motion.div>
                 <span className="text-xs text-muted-foreground hidden sm:inline">selected</span>
               </div>
 
               {/* Separator */}
               <div className="h-5 w-px bg-border/30" />
 
-              {/* Action buttons */}
+              {/* Action buttons with ripple effect */}
               <div className="flex items-center gap-1.5 flex-1 overflow-x-auto scrollbar-none">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-[10px] gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 shrink-0"
+                <RippleButton
                   onClick={handleDeleteSelected}
                   disabled={isDeleting}
+                  className="h-7 px-2 text-[10px] gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md transition-colors disabled:opacity-40 inline-flex items-center shrink-0"
                 >
                   {isDeleting ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -144,14 +216,12 @@ export function BatchOperationsBar() {
                     <Trash2 className="h-3 w-3" />
                   )}
                   Delete
-                </Button>
+                </RippleButton>
 
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-[10px] gap-1 text-primary hover:bg-primary/10 shrink-0"
+                <RippleButton
                   onClick={handleExportSelected}
                   disabled={isExporting}
+                  className="h-7 px-2 text-[10px] gap-1 text-primary hover:bg-primary/10 rounded-md transition-colors disabled:opacity-40 inline-flex items-center shrink-0"
                 >
                   {isExporting ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -159,23 +229,19 @@ export function BatchOperationsBar() {
                     <Download className="h-3 w-3" />
                   )}
                   Export
-                </Button>
+                </RippleButton>
 
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-[10px] gap-1 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 shrink-0"
+                <RippleButton
                   onClick={handleOpenAll}
+                  className="h-7 px-2 text-[10px] gap-1 text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 rounded-md transition-colors inline-flex items-center shrink-0"
                 >
                   <ExternalLink className="h-3 w-3" />
                   Open All
-                </Button>
+                </RippleButton>
 
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 px-2 text-[10px] gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/50 shrink-0"
+                <RippleButton
                   onClick={handleToggleSelectAll}
+                  className="h-7 px-2 text-[10px] gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-md transition-colors inline-flex items-center shrink-0"
                 >
                   {allSelected ? (
                     <CheckSquare className="h-3 w-3 text-emerald-400" />
@@ -183,7 +249,7 @@ export function BatchOperationsBar() {
                     <Square className="h-3 w-3" />
                   )}
                   {allSelected ? 'Deselect All' : 'Select All'}
-                </Button>
+                </RippleButton>
               </div>
 
               {/* Separator */}

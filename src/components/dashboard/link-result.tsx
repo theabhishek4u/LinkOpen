@@ -50,10 +50,15 @@ export function LinkResult() {
     try {
       await navigator.clipboard.writeText(deepLinkResult.deepLink)
       setCopiedDeepLink(true)
-      toast.success('Deep link copied!')
+      toast.success('Deep link copied!', {
+        description: 'Ready to paste',
+        duration: 2000,
+      })
       setTimeout(() => setCopiedDeepLink(false), 2000)
     } catch {
-      toast.error('Failed to copy')
+      toast.error('Failed to copy deep link', {
+        description: 'Could not access clipboard',
+      })
     }
   }, [deepLinkResult])
 
@@ -63,10 +68,15 @@ export function LinkResult() {
     try {
       await navigator.clipboard.writeText(shortUrl)
       setCopiedShortLink(true)
-      toast.success('Short link copied!')
+      toast.success('Short link copied!', {
+        description: 'Ready to share',
+        duration: 2000,
+      })
       setTimeout(() => setCopiedShortLink(false), 2000)
     } catch {
-      toast.error('Failed to copy')
+      toast.error('Failed to copy short link', {
+        description: 'Could not access clipboard',
+      })
     }
   }, [deepLinkResult])
 

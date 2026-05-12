@@ -20,6 +20,7 @@ import {
 import { useLinkStore } from '@/store/link-store'
 import { Badge } from '@/components/ui/badge'
 import { LinkCategories } from './link-categories'
+import { LinkTags, LinkTagBadges, TagAssignPopover } from './link-tags'
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date()
@@ -52,7 +53,7 @@ function truncateUrl(url: string, maxLen: number = 35): string {
 type FilterTab = 'all' | 'favorites'
 
 export function LinkHistory() {
-  const { history, removeFromHistory, toggleFavorite, setDeepLinkResult, setInputUrl, clearHistory, selectedCategory, categories, selectedLinkIds, toggleSelect, selectAll, clearSelection } =
+  const { history, removeFromHistory, toggleFavorite, setDeepLinkResult, setInputUrl, clearHistory, selectedCategory, categories, selectedLinkIds, toggleSelect, selectAll, clearSelection, filterByTag, linkTags } =
     useLinkStore()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -100,6 +101,11 @@ export function LinkHistory() {
       items = items.filter((item) => item.category === selectedCategory)
     }
 
+    // Filter by selected tag
+    if (filterByTag) {
+      items = items.filter((item) => item.tags?.includes(filterByTag))
+    }
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       items = items.filter(
@@ -111,7 +117,7 @@ export function LinkHistory() {
     }
 
     return items
-  }, [history, activeTab, searchQuery, selectedCategory])
+  }, [history, activeTab, searchQuery, selectedCategory, filterByTag])
 
   const favoriteCount = history.filter((item) => item.isFavorite).length
 
@@ -178,6 +184,9 @@ export function LinkHistory() {
 
       {/* Category filter */}
       <LinkCategories />
+
+      {/* Tag filter */}
+      <LinkTags />
 
       {/* Search Input */}
       <div className="relative">
@@ -380,6 +389,26 @@ export function LinkHistory() {
                           )}
                         </div>
 
+                        {/* Tag pills */}
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1 group/tag">
+                            {item.tags.map((tagId) => {
+                              const tag = linkTags.find(t => t.id === tagId)
+                              if (!tag) return null
+                              return (
+                                <Badge
+                                  key={tagId}
+                                  variant="outline"
+                                  className="h-4 text-[8px] px-1.5 border-0"
+                                  style={{ backgroundColor: `${tag.color}20`, color: tag.color }}
+                                >
+                                  {tag.name}
+                                </Badge>
+                              )
+                            })}
+                          </div>
+                        )}
+
                         {/* Expanded details */}
                         <AnimatePresence>
                           {expandedId === item.id && (
@@ -433,6 +462,9 @@ export function LinkHistory() {
                             )}
                           </span>
                         </button>
+
+                        {/* Tag assign popover */}
+                        <TagAssignPopover linkId={item.id} existingTags={item.tags} />
 
                         {/* Expand button */}
                         <button

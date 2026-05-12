@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Download, FileJson, FileSpreadsheet, Share2, Eye,
-  Link2, BarChart3, Loader2, X, Copy, Check,
+  Link2, BarChart3, Loader2, X, Copy, Check, CheckCircle2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -14,6 +14,62 @@ import { toast } from 'sonner'
 type ExportFormat = 'csv' | 'json'
 type ExportType = 'history' | 'analytics'
 
+// Format selection card with hover glow
+function FormatCard({
+  icon,
+  title,
+  subtitle,
+  disabled,
+  onClick,
+  accentColor,
+}: {
+  icon: React.ReactNode
+  title: string
+  subtitle: string
+  disabled: boolean
+  onClick: () => void
+  accentColor: string
+}) {
+  return (
+    <motion.button
+      onClick={onClick}
+      disabled={disabled}
+      className="format-card-glow flex items-center gap-2 rounded-lg p-2.5 bg-background/40 border border-border/30 hover:border-primary/30 hover:bg-accent/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left w-full"
+      style={{
+        ['--glow-color' as string]: accentColor,
+      }}
+      whileHover={{ scale: 1.02, y: -1 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+    >
+      <div
+        className="flex h-8 w-8 items-center justify-center rounded-lg shrink-0"
+        style={{ backgroundColor: `${accentColor}15` }}
+      >
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-medium text-foreground">{title}</p>
+        <p className="text-[9px] text-muted-foreground">{subtitle}</p>
+      </div>
+    </motion.button>
+  )
+}
+
+// Success checkmark animation
+function SuccessCheckmark() {
+  return (
+    <motion.div
+      className="export-check-pop"
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+    >
+      <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+    </motion.div>
+  )
+}
+
 export function ExportPanel() {
   const { history, analytics } = useLinkStore()
   const [exporting, setExporting] = useState(false)
@@ -21,9 +77,25 @@ export function ExportPanel() {
   const [previewFormat, setPreviewFormat] = useState<ExportFormat>('json')
   const [showPreview, setShowPreview] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [exportSuccess, setExportSuccess] = useState(false)
+  const [downloadProgress, setDownloadProgress] = useState(0)
 
   const handleExport = useCallback(async (format: ExportFormat, type: ExportType) => {
     setExporting(true)
+    setDownloadProgress(0)
+    setExportSuccess(false)
+
+    // Simulate progress
+    const progressInterval = setInterval(() => {
+      setDownloadProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(progressInterval)
+          return 90
+        }
+        return prev + Math.random() * 20
+      })
+    }, 200)
+
     try {
       let data: unknown[]
       if (type === 'history') {
@@ -55,6 +127,12 @@ export function ExportPanel() {
 
       const json = await res.json()
 
+      clearInterval(progressInterval)
+      setDownloadProgress(100)
+
+      // Small delay to show 100% before completing
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
       if (format === 'json') {
         const blob = new Blob([JSON.stringify(json.data, null, 2)], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
@@ -77,11 +155,15 @@ export function ExportPanel() {
         URL.revokeObjectURL(url)
       }
 
+      setExportSuccess(true)
+      setTimeout(() => setExportSuccess(false), 2000)
       toast.success(`Exported ${type} as ${format.toUpperCase()}`)
     } catch {
+      clearInterval(progressInterval)
       toast.error('Export failed')
     } finally {
       setExporting(false)
+      setDownloadProgress(0)
     }
   }, [history, analytics])
 
@@ -156,64 +238,83 @@ export function ExportPanel() {
   return (
     <div className="glass-card p-4 sm:p-6 space-y-4">
       {/* Header */}
-      <div className="flex items-center gap-2">
-        <Download className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-semibold text-foreground">Export & Share</h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <motion.div
+            animate={{ y: [0, -2, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <Download className="h-4 w-4 text-primary" />
+          </motion.div>
+          <h3 className="text-sm font-semibold text-foreground">Export & Share</h3>
+        </div>
+        {exportSuccess && <SuccessCheckmark />}
       </div>
 
-      {/* Export Buttons */}
+      {/* Download progress indicator */}
+      <AnimatePresence>
+        {exporting && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-muted-foreground">Preparing export...</span>
+                <span className="text-[10px] text-primary font-medium">{Math.round(downloadProgress)}%</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-muted/20 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full download-progress-bar"
+                  style={{
+                    background: 'linear-gradient(90deg, oklch(0.696 0.17 162.48), oklch(0.488 0.243 264.376 / 60%), oklch(0.696 0.17 162.48))',
+                    backgroundSize: '200% 100%',
+                  }}
+                  animate={{ width: `${downloadProgress}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Export format cards with hover glow */}
       <div className="grid grid-cols-2 gap-2">
-        {/* History JSON */}
-        <button
+        <FormatCard
+          icon={<FileJson className="h-4 w-4 text-primary/70" />}
+          title="History"
+          subtitle="JSON format"
+          disabled={exporting || history.length === 0}
           onClick={() => handleExport('json', 'history')}
+          accentColor="#10b981"
+        />
+        <FormatCard
+          icon={<FileSpreadsheet className="h-4 w-4 text-primary/70" />}
+          title="History"
+          subtitle="CSV format"
           disabled={exporting || history.length === 0}
-          className="flex items-center gap-2 rounded-lg p-2.5 bg-background/40 border border-border/30 hover:border-primary/30 hover:bg-accent/30 transition-all disabled:opacity-40"
-        >
-          <FileJson className="h-4 w-4 text-primary/70 shrink-0" />
-          <div className="text-left">
-            <p className="text-[10px] font-medium text-foreground">History</p>
-            <p className="text-[9px] text-muted-foreground">JSON format</p>
-          </div>
-        </button>
-
-        {/* History CSV */}
-        <button
           onClick={() => handleExport('csv', 'history')}
-          disabled={exporting || history.length === 0}
-          className="flex items-center gap-2 rounded-lg p-2.5 bg-background/40 border border-border/30 hover:border-primary/30 hover:bg-accent/30 transition-all disabled:opacity-40"
-        >
-          <FileSpreadsheet className="h-4 w-4 text-primary/70 shrink-0" />
-          <div className="text-left">
-            <p className="text-[10px] font-medium text-foreground">History</p>
-            <p className="text-[9px] text-muted-foreground">CSV format</p>
-          </div>
-        </button>
-
-        {/* Analytics JSON */}
-        <button
+          accentColor="#10b981"
+        />
+        <FormatCard
+          icon={<BarChart3 className="h-4 w-4 text-violet-400/70" />}
+          title="Analytics"
+          subtitle="JSON report"
+          disabled={exporting || analytics.topPlatforms.length === 0}
           onClick={() => handleExport('json', 'analytics')}
+          accentColor="#8b5cf6"
+        />
+        <FormatCard
+          icon={<FileSpreadsheet className="h-4 w-4 text-violet-400/70" />}
+          title="Analytics"
+          subtitle="CSV report"
           disabled={exporting || analytics.topPlatforms.length === 0}
-          className="flex items-center gap-2 rounded-lg p-2.5 bg-background/40 border border-border/30 hover:border-primary/30 hover:bg-accent/30 transition-all disabled:opacity-40"
-        >
-          <BarChart3 className="h-4 w-4 text-violet-400/70 shrink-0" />
-          <div className="text-left">
-            <p className="text-[10px] font-medium text-foreground">Analytics</p>
-            <p className="text-[9px] text-muted-foreground">JSON report</p>
-          </div>
-        </button>
-
-        {/* Analytics CSV */}
-        <button
           onClick={() => handleExport('csv', 'analytics')}
-          disabled={exporting || analytics.topPlatforms.length === 0}
-          className="flex items-center gap-2 rounded-lg p-2.5 bg-background/40 border border-border/30 hover:border-primary/30 hover:bg-accent/30 transition-all disabled:opacity-40"
-        >
-          <FileSpreadsheet className="h-4 w-4 text-violet-400/70 shrink-0" />
-          <div className="text-left">
-            <p className="text-[10px] font-medium text-foreground">Analytics</p>
-            <p className="text-[9px] text-muted-foreground">CSV report</p>
-          </div>
-        </button>
+          accentColor="#8b5cf6"
+        />
       </div>
 
       {/* Preview & Share Row */}
@@ -235,7 +336,13 @@ export function ExportPanel() {
           onClick={handleShareStats}
         >
           {copied ? (
-            <Check className="h-3 w-3 text-emerald-400" />
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            >
+              <Check className="h-3 w-3 text-emerald-400" />
+            </motion.div>
           ) : (
             <Share2 className="h-3 w-3" />
           )}
@@ -254,7 +361,7 @@ export function ExportPanel() {
         )}
       </div>
 
-      {/* Preview Modal */}
+      {/* Preview Modal with slide-in animation */}
       <AnimatePresence>
         {showPreview && preview && (
           <>
@@ -266,15 +373,22 @@ export function ExportPanel() {
               onClick={() => setShowPreview(false)}
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, x: 40, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 40, scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg"
             >
               <div className="glass-card rounded-xl border border-border/30 overflow-hidden shadow-2xl">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-border/20">
                   <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-primary" />
+                    <motion.div
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      <Eye className="h-4 w-4 text-primary" />
+                    </motion.div>
                     <span className="text-sm font-medium text-foreground">
                       Preview ({previewFormat.toUpperCase()})
                     </span>

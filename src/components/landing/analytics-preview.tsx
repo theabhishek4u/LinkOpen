@@ -100,13 +100,72 @@ function StatCard({ stat, index }: { stat: typeof stats[0]; index: number }) {
           </div>
           <span className="text-xs text-muted-foreground">{stat.label}</span>
         </div>
-        {/* Live indicator on the first card */}
-        {index === 0 && <span className="live-indicator">Live</span>}
+        {/* Live indicator with pulsing green dot on first card */}
+        {index === 0 && (
+          <span className="live-indicator">
+            <span className="sr-only">Live data</span>
+          </span>
+        )}
       </div>
       <span className="text-2xl sm:text-3xl font-bold text-foreground animate-number-glow">
         {displayValue}
       </span>
     </motion.div>
+  )
+}
+
+// Individual bar chart bar with stagger animation
+function ChartBar({ bar, index, animated, hoveredBar, onHover, onLeave }: {
+  bar: typeof barChartData[0]
+  index: number
+  animated: boolean
+  hoveredBar: number | null
+  onHover: () => void
+  onLeave: () => void
+}) {
+  return (
+    <div
+      className="flex-1 flex flex-col items-center gap-2 relative"
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+    >
+      {/* Tooltip */}
+      <motion.div
+        initial={false}
+        animate={{
+          opacity: hoveredBar === index ? 1 : 0,
+          y: hoveredBar === index ? 0 : 4,
+          scale: hoveredBar === index ? 1 : 0.85,
+        }}
+        transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="bar-tooltip"
+      >
+        {bar.value} opens
+      </motion.div>
+      <div className="w-full relative" style={{ height: '120px' }}>
+        <motion.div
+          className={`absolute bottom-0 w-full rounded-t-lg ${bar.color} cursor-pointer`}
+          initial={{ scaleY: 0 }}
+          animate={{
+            scaleY: animated ? 1 : 0,
+            opacity: animated ? (hoveredBar === index ? 1 : 0.85) : 0.3,
+          }}
+          transition={{
+            scaleY: { duration: 0.8, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] },
+            opacity: { duration: 0.3 },
+          }}
+          style={{
+            height: `${bar.value}%`,
+            transformOrigin: 'bottom',
+            borderRadius: '6px 6px 2px 2px',
+            boxShadow: hoveredBar === index ? '0 0 16px oklch(0.696 0.17 162.48 / 30%), 0 -4px 12px oklch(0.696 0.17 162.48 / 15%)' : 'none',
+          }}
+        />
+      </div>
+      <span className={`text-[10px] transition-colors duration-200 ${hoveredBar === index ? 'text-emerald-400 font-medium' : 'text-muted-foreground'}`}>
+        {bar.label}
+      </span>
+    </div>
   )
 }
 
@@ -157,13 +216,13 @@ export default function AnalyticsPreview() {
 
         {/* Charts row */}
         <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
-          {/* Bar chart with tooltips */}
+          {/* Bar chart with tooltips and shimmer */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="glass-card p-5 sm:p-6"
+            className="glass-card p-5 sm:p-6 shimmer-subtle"
           >
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-sm font-semibold text-foreground">
@@ -189,59 +248,39 @@ export default function AnalyticsPreview() {
                 ))}
               </div>
 
-              {/* Bars with tooltips */}
+              {/* Bars with staggered grow animation */}
               <div className="relative flex items-end gap-2 sm:gap-3 h-40 pt-4">
                 {barChartData.map((bar, i) => (
-                  <div
+                  <ChartBar
                     key={bar.label}
-                    className="flex-1 flex flex-col items-center gap-2 relative"
-                    onMouseEnter={() => setHoveredBar(i)}
-                    onMouseLeave={() => setHoveredBar(null)}
-                  >
-                    {/* Tooltip */}
-                    <div
-                      className="bar-tooltip"
-                      style={{
-                        opacity: hoveredBar === i ? 1 : 0,
-                        transform: hoveredBar === i ? 'translateX(-50%) scale(1)' : 'translateX(-50%) scale(0.8)',
-                      }}
-                    >
-                      {bar.value} opens
-                    </div>
-                    <div className="w-full relative" style={{ height: '120px' }}>
-                      <div
-                        className={`absolute bottom-0 w-full rounded-t-lg ${bar.color} transition-all duration-1000 ease-out cursor-pointer`}
-                        style={{
-                          height: animated ? `${bar.value}%` : '0%',
-                          opacity: animated ? (hoveredBar === i ? 1 : 0.85) : 0.3,
-                          transitionDelay: `${i * 120}ms`,
-                          borderRadius: '6px 6px 2px 2px',
-                          boxShadow: hoveredBar === i ? '0 0 12px oklch(0.696 0.17 162.48 / 25%)' : 'none',
-                        }}
-                      />
-                    </div>
-                    <span className={`text-[10px] transition-colors duration-200 ${hoveredBar === i ? 'text-emerald-400' : 'text-muted-foreground'}`}>
-                      {bar.label}
-                    </span>
-                  </div>
+                    bar={bar}
+                    index={i}
+                    animated={animated}
+                    hoveredBar={hoveredBar}
+                    onHover={() => setHoveredBar(i)}
+                    onLeave={() => setHoveredBar(null)}
+                  />
                 ))}
               </div>
             </div>
           </motion.div>
 
-          {/* Platform distribution */}
+          {/* Platform distribution with Live indicator */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="glass-card p-5 sm:p-6"
+            className="glass-card p-5 sm:p-6 shimmer-subtle"
           >
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-sm font-semibold text-foreground">
                 Platform Distribution
               </h3>
-              <span className="live-indicator">Live</span>
+              {/* Live indicator with pulsing green dot */}
+              <span className="live-indicator">
+                <span className="sr-only">Live data</span>
+              </span>
             </div>
             <div className="flex flex-col gap-4">
               {platformDistribution.map((platform, i) => (

@@ -2449,6 +2449,350 @@ nav a:focus-visible {
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* ============================================================
+   TASK 4-a (REVISIT): LANDING PAGE STYLING POLISH
+   ============================================================ */
+
+/* ── FAQ animated gradient left border ─────────────────────── */
+@keyframes faq-border-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.faq-gradient-border {
+  position: relative;
+}
+
+.faq-gradient-border::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(
+    180deg,
+    oklch(0.696 0.17 162.48),
+    oklch(0.488 0.243 264.376),
+    oklch(0.769 0.188 70.08),
+    oklch(0.696 0.17 162.48)
+  );
+  background-size: 100% 300%;
+  animation: faq-border-glow 3s ease infinite;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.faq-gradient-border[data-state="open"]::before,
+.faq-gradient-border.open::before {
+  opacity: 1;
+}
+
+/* ── Chart bar grow animation ──────────────────────────────── */
+@keyframes bar-grow-up {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.chart-bar-grow {
+  transform-origin: bottom;
+  animation: bar-grow-up 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* ── Social icon brand color transition ────────────────────── */
+.social-icon-brand {
+  transition: color 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              background-color 0.3s ease;
+}
+
+.social-icon-brand:hover {
+  transform: translateY(-3px) scale(1.15);
+}
+
+/* ── Glass morphism navbar (scrolled state) ────────────────── */
+.nav-glass {
+  background: oklch(1 0.003 160 / 75%) !important;
+  backdrop-filter: blur(20px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
+  border-bottom: 1px solid oklch(0.696 0.17 162.48 / 12%);
+  box-shadow:
+    0 1px 0 oklch(0.696 0.17 162.48 / 10%),
+    0 4px 24px oklch(0 0 0 / 8%);
+}
+
+.dark .nav-glass {
+  background: oklch(0.058 0.008 280 / 80%) !important;
+  border-bottom: 1px solid oklch(0.93 0.01 270 / 8%);
+  box-shadow:
+    0 1px 0 oklch(0.696 0.17 162.48 / 6%),
+    0 4px 24px oklch(0 0 0 / 30%);
+}
+
+/* ── Subtle gradient shimmer overlay ───────────────────────── */
+@keyframes shimmer-subtle {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer-subtle {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-subtle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 4%) 30%,
+    oklch(0.488 0.243 264.376 / 3%) 50%,
+    oklch(0.696 0.17 162.48 / 4%) 70%,
+    transparent 100%
+  );
+  animation: shimmer-subtle 4s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.dark .shimmer-subtle::after {
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 6%) 30%,
+    oklch(0.488 0.243 264.376 / 4%) 50%,
+    oklch(0.696 0.17 162.48 / 6%) 70%,
+    transparent 100%
+  );
+}
+
+/* ── FAQ hover glow effect ─────────────────────────────────── */
+.faq-hover-glow {
+  transition: all 0.3s ease;
+}
+
+.faq-hover-glow:hover {
+  box-shadow:
+    0 0 20px oklch(0.696 0.17 162.48 / 8%),
+    0 0 40px oklch(0.696 0.17 162.48 / 3%);
+  border-radius: var(--radius-md);
+}
+
+.dark .faq-hover-glow:hover {
+  box-shadow:
+    0 0 20px oklch(0.696 0.17 162.48 / 12%),
+    0 0 40px oklch(0.696 0.17 162.48 / 5%);
+}
+
+/* ── Newsletter input animated border glow ─────────────────── */
+@keyframes newsletter-input-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px oklch(0.696 0.17 162.48 / 30%),
+      0 0 12px oklch(0.696 0.17 162.48 / 8%);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px oklch(0.696 0.17 162.48 / 50%),
+      0 0 24px oklch(0.696 0.17 162.48 / 15%),
+      0 0 48px oklch(0.696 0.17 162.48 / 5%);
+  }
+}
+
+.newsletter-input-glow:focus {
+  animation: newsletter-input-glow 2s ease-in-out infinite;
+  border-color: oklch(0.696 0.17 162.48 / 50%);
+}
+
+/* ── Gradient separator between footer columns ─────────────── */
+.gradient-separator {
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    oklch(0.696 0.17 162.48 / 20%) 30%,
+    oklch(0.488 0.243 264.376 / 15%) 70%,
+    transparent 100%
+  );
+}
+
+/* ── Back to top bounce animation ──────────────────────────── */
+@keyframes back-to-top-bounce {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-6px); }
+  50% { transform: translateY(-2px); }
+  75% { transform: translateY(-4px); }
+}
+
+.back-to-top-bounce:hover {
+  animation: back-to-top-bounce 0.8s ease infinite;
+}
+
+/* ── Footer particle dots ──────────────────────────────────── */
+@keyframes footer-dot-drift {
+  0%, 100% { opacity: 0.15; transform: translateY(0); }
+  50% { opacity: 0.4; transform: translateY(-8px); }
+}
+
+.footer-dot {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: oklch(0.696 0.17 162.48 / 30%);
+  animation: footer-dot-drift var(--dot-duration, 4s) ease-in-out infinite;
+  animation-delay: var(--dot-delay, 0s);
+  pointer-events: none;
+}
+
+.dark .footer-dot {
+  background: oklch(0.696 0.17 162.48 / 25%);
+}
+
+/* ── Launch App button glow effect ─────────────────────────── */
+@keyframes launch-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 12px oklch(0.696 0.17 162.48 / 20%),
+      0 0 24px oklch(0.696 0.17 162.48 / 8%);
+  }
+  50% {
+    box-shadow:
+      0 0 20px oklch(0.696 0.17 162.48 / 35%),
+      0 0 40px oklch(0.696 0.17 162.48 / 15%),
+      0 0 60px oklch(0.696 0.17 162.48 / 5%);
+  }
+}
+
+.launch-btn-glow {
+  animation: launch-glow 3s ease-in-out infinite;
+}
+
+/* ── Active nav link animated underline ────────────────────── */
+@keyframes nav-underline-slide {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  50% {
+    width: 100%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+.nav-active-indicator {
+  position: relative;
+}
+
+.nav-active-indicator::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, oklch(0.696 0.17 162.48), oklch(0.488 0.243 264.376));
+  border-radius: 1px;
+  animation: nav-underline-slide 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ── Hamburger to X transform ──────────────────────────────── */
+.hamburger-line {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center;
+}
+
+.hamburger-open .hamburger-line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.hamburger-open .hamburger-line:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger-open .hamburger-line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* ── FAQ section gradient header ───────────────────────────── */
+.faq-header-gradient {
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48) 0%,
+    oklch(0.82 0.19 160) 20%,
+    oklch(0.488 0.243 264.376) 50%,
+    oklch(0.65 0.25 290) 75%,
+    oklch(0.696 0.17 162.48) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: faq-border-glow 6s ease infinite;
+}
+
+.dark .faq-header-gradient {
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48) 0%,
+    oklch(0.90 0.19 160) 20%,
+    oklch(0.488 0.243 264.376) 50%,
+    oklch(0.72 0.25 290) 75%,
+    oklch(0.696 0.17 162.48) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: faq-border-glow 6s ease infinite;
+}
+
+/* ── Reduced motion support for Task 4-a revisit ──────────── */
+@media (prefers-reduced-motion: reduce) {
+  .faq-gradient-border::before,
+  .chart-bar-grow,
+  .shimmer-subtle::after,
+  .newsletter-input-glow:focus,
+  .footer-dot,
+  .launch-btn-glow,
+  .nav-active-indicator::after,
+  .faq-header-gradient {
+    animation: none !important;
+  }
+
+  .chart-bar-grow {
+    transform: scaleY(1);
+  }
+
+  .faq-gradient-border::before {
+    opacity: 1;
+  }
+}
+
 /* ── Extended reduced motion support for Task 6-a ───────────── */
 @media (prefers-reduced-motion: reduce) {
   .btn-primary-glow::after,
@@ -2462,5 +2806,277 @@ nav a:focus-visible {
 
   .btn-secondary-lift:hover {
     transform: none;
+  }
+}
+
+/* ============================================================
+   TASK 4-b: DASHBOARD STYLING POLISH — Micro-interactions
+   ============================================================ */
+
+/* ── Skeleton gradient shimmer ────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.93 0.01 270 / 0%) 0%,
+    oklch(0.93 0.01 270 / 0%) 30%,
+    oklch(0.696 0.17 162.48 / 8%) 50%,
+    oklch(0.93 0.01 270 / 0%) 70%,
+    oklch(0.93 0.01 270 / 0%) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2.5s ease-in-out infinite;
+}
+
+.dark .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.12 0.02 275 / 0%) 0%,
+    oklch(0.12 0.02 275 / 0%) 30%,
+    oklch(0.696 0.17 162.48 / 12%) 50%,
+    oklch(0.12 0.02 275 / 0%) 70%,
+    oklch(0.12 0.02 275 / 0%) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2.5s ease-in-out infinite;
+}
+
+/* ── Circular gauge fill animation ────────────────────────── */
+@keyframes gauge-fill {
+  0% {
+    stroke-dashoffset: var(--gauge-circumference, 339.292);
+  }
+  100% {
+    stroke-dashoffset: var(--gauge-target-offset, 0);
+  }
+}
+
+.gauge-fill {
+  animation: gauge-fill 1.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── Funnel step animated transition ──────────────────────── */
+@keyframes funnel-step-in {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.3);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+.funnel-step {
+  animation: funnel-step-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: center;
+}
+
+/* ── Button ripple effect on click ────────────────────────── */
+@keyframes btn-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+.ripple-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-btn .ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: oklch(0.696 0.17 162.48 / 25%);
+  animation: btn-ripple 0.6s ease-out both;
+  pointer-events: none;
+}
+
+/* ── Slide-up entrance animation ──────────────────────────── */
+@keyframes slide-up-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up-enter {
+  animation: slide-up-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Gradient border on metric cards ──────────────────────── */
+@keyframes gradient-border-rotate {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.metric-gradient-border {
+  position: relative;
+}
+
+.metric-gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48 / 40%),
+    oklch(0.488 0.243 264.376 / 30%),
+    oklch(0.696 0.17 162.48 / 40%)
+  );
+  background-size: 300% 300%;
+  animation: gradient-border-rotate 4s ease infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── Progress bar gradient fill ───────────────────────────── */
+@keyframes progress-fill {
+  0% {
+    width: 0%;
+  }
+}
+
+.progress-gradient {
+  background: linear-gradient(
+    90deg,
+    oklch(0.696 0.17 162.48),
+    oklch(0.488 0.243 264.376 / 80%),
+    oklch(0.696 0.17 162.48)
+  );
+  background-size: 200% 100%;
+  animation: progress-fill 1s ease-out both, gradient-border-rotate 3s ease infinite;
+}
+
+/* ── Export success checkmark ─────────────────────────────── */
+@keyframes export-check-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.export-check-pop {
+  animation: export-check-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Format card hover glow ──────────────────────────────── */
+@keyframes format-card-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 1px oklch(0.696 0.17 162.48 / 10%), 0 0 8px oklch(0.696 0.17 162.48 / 0%);
+  }
+  50% {
+    box-shadow: 0 0 0 1px oklch(0.696 0.17 162.48 / 25%), 0 0 16px oklch(0.696 0.17 162.48 / 10%);
+  }
+}
+
+.format-card-glow:hover {
+  animation: format-card-glow 2s ease-in-out infinite;
+}
+
+/* ── Arrow flow animation ────────────────────────────────── */
+@keyframes arrow-flow {
+  0% {
+    opacity: 0.3;
+    transform: translateX(-4px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0.3;
+    transform: translateX(4px);
+  }
+}
+
+.arrow-flow {
+  animation: arrow-flow 1.5s ease-in-out infinite;
+}
+
+/* ── Sparkline chart mini animation ───────────────────────── */
+@keyframes sparkline-draw {
+  0% {
+    stroke-dashoffset: 200;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.sparkline-draw {
+  stroke-dasharray: 200;
+  animation: sparkline-draw 1.2s ease-out both;
+}
+
+/* ── Download progress indicator ──────────────────────────── */
+@keyframes download-progress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.download-progress-bar {
+  animation: download-progress 1.5s ease-in-out both;
+}
+
+/* ── Comparison tier reveal ──────────────────────────────── */
+@keyframes tier-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tier-reveal {
+  animation: tier-reveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Reduced motion support for all new animations ────────── */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer,
+  .dark .skeleton-shimmer,
+  .gauge-fill,
+  .funnel-step,
+  .ripple-btn .ripple-effect,
+  .slide-up-enter,
+  .metric-gradient-border::before,
+  .progress-gradient,
+  .export-check-pop,
+  .format-card-glow:hover,
+  .arrow-flow,
+  .sparkline-draw,
+  .download-progress-bar,
+  .tier-reveal {
+    animation: none !important;
   }
 }

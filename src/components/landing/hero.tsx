@@ -108,18 +108,23 @@ function useCounter(end: number, duration: number = 2000) {
   return { count, displayDigits, ref }
 }
 
-// Generate random stars for the particle field
+// Generate deterministic stars using a simple seeded PRNG to avoid hydration mismatch
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9301 + 49297) * 49297
+  return x - Math.floor(x)
+}
+
 function useStars(count: number) {
   return useMemo(() => {
     const stars = []
     for (let i = 0; i < count; i++) {
       stars.push({
         id: i,
-        x: `${Math.random() * 100}%`,
-        y: `${Math.random() * 100}%`,
-        duration: `${2 + Math.random() * 4}s`,
-        delay: `${Math.random() * 4}s`,
-        bright: Math.random() > 0.85,
+        x: `${seededRandom(i * 2) * 100}%`,
+        y: `${seededRandom(i * 2 + 1) * 100}%`,
+        duration: `${2 + seededRandom(i * 3) * 4}s`,
+        delay: `${seededRandom(i * 3 + 1) * 4}s`,
+        bright: seededRandom(i * 4) > 0.85,
       })
     }
     return stars
