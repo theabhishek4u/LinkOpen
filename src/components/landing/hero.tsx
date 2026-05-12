@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Play, ExternalLink, Loader2, Copy, Check, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,10 +47,24 @@ const sampleLinks = [
   { label: 'x.com/user/status/...', url: 'https://x.com/user/status/789' },
 ]
 
+// Confetti colors
+const confettiColors = [
+  'oklch(0.696 0.17 162.48)',
+  'oklch(0.488 0.243 264.376)',
+  'oklch(0.769 0.188 70.08)',
+  'oklch(0.65 0.2 200)',
+  'oklch(0.645 0.246 16.439)',
+]
+
+// Subtitle typing text
+const subtitleText = 'LinkVerse uses AI-powered deep linking to instantly open social media links directly in their native apps. No more browser tabs.'
+
 function useCounter(end: number, duration: number = 2000) {
   const [count, setCount] = useState(0)
+  const [displayDigits, setDisplayDigits] = useState<string[]>([])
   const ref = useRef<HTMLDivElement>(null)
   const started = useRef(false)
+  const prevCount = useRef(0)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -62,7 +76,21 @@ function useCounter(end: number, duration: number = 2000) {
             const elapsed = Date.now() - startTime
             const progress = Math.min(elapsed / duration, 1)
             const eased = 1 - Math.pow(1 - progress, 3)
-            setCount(Math.floor(eased * end))
+            const newCount = Math.floor(eased * end)
+            setCount(newCount)
+
+            // Number flip animation for changed digits
+            const newStr = newCount.toLocaleString()
+            const oldStr = prevCount.current.toLocaleString()
+            const digits = newStr.split('').map((d, i) => {
+              if (d !== (oldStr[i] ?? '') && d !== ',') {
+                return `${d}-flip`
+              }
+              return d
+            })
+            setDisplayDigits(digits)
+            prevCount.current = newCount
+
             if (progress < 1) {
               requestAnimationFrame(animate)
             }
@@ -77,7 +105,7 @@ function useCounter(end: number, duration: number = 2000) {
     return () => observer.disconnect()
   }, [end, duration])
 
-  return { count, ref }
+  return { count, displayDigits, ref }
 }
 
 // Generate random stars for the particle field
@@ -98,6 +126,57 @@ function useStars(count: number) {
   }, [count])
 }
 
+// Confetti burst component
+function ConfettiBurst({ active }: { active: boolean }) {
+  const [particles, setParticles] = useState<Array<{
+    id: number
+    x: number
+    y: number
+    rotate: number
+    color: string
+    delay: number
+  }>>([])
+
+  useEffect(() => {
+    if (active) {
+      const newParticles = Array.from({ length: 12 }, (_, i) => ({
+        id: i,
+        x: (Math.random() - 0.5) * 200,
+        y: -(30 + Math.random() * 120),
+        rotate: Math.random() * 1080,
+        color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+        delay: Math.random() * 0.2,
+      }))
+      setParticles(newParticles)
+      const timer = setTimeout(() => setParticles([]), 1200)
+      return () => clearTimeout(timer)
+    }
+  }, [active])
+
+  return (
+    <>
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="animate-confetti"
+          style={{
+            '--confetti-x': `${p.x}px`,
+            '--confetti-y': `${p.y}px`,
+            '--confetti-rotate': `${p.rotate}deg`,
+            background: p.color,
+            left: '50%',
+            top: '50%',
+            animationDelay: `${p.delay}s`,
+            width: `${4 + Math.random() * 4}px`,
+            height: `${4 + Math.random() * 4}px`,
+            borderRadius: Math.random() > 0.5 ? '50%' : '1px',
+          } as React.CSSProperties}
+        />
+      ))}
+    </>
+  )
+}
+
 interface HeroProps {
   onTryNow?: () => void
 }
@@ -113,9 +192,13 @@ export default function Hero({ onTryNow }: HeroProps) {
   const [copied, setCopied] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [showCursorGlow, setShowCursorGlow] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [typedSubtitle, setTypedSubtitle] = useState('')
+  const [subtitleComplete, setSubtitleComplete] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
 
   const detectedPlatform = url ? detectPlatform(url) : null
-  const { count, ref: counterRef } = useCounter(12847, 2500)
+  const { count, displayDigits, ref: counterRef } = useCounter(12847, 2500)
   const stars = useStars(80)
 
   // Mouse-following cursor glow
@@ -134,6 +217,30 @@ export default function Hero({ onTryNow }: HeroProps) {
     }
   }, [])
 
+  // Parallax on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Typing animation for subtitle
+  useEffect(() => {
+    let i = 0
+    const timer = setInterval(() => {
+      if (i <= subtitleText.length) {
+        setTypedSubtitle(subtitleText.slice(0, i))
+        i++
+      } else {
+        setSubtitleComplete(true)
+        clearInterval(timer)
+      }
+    }, 25)
+    return () => clearInterval(timer)
+  }, [])
+
   const handleSubmit = useCallback(async () => {
     if (!url.trim()) return
     setLoading(true)
@@ -146,6 +253,10 @@ export default function Hero({ onTryNow }: HeroProps) {
       })
       const data = await res.json()
       setResult(data)
+      if (data.success) {
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 1500)
+      }
     } catch {
       setResult({ success: false })
     } finally {
@@ -173,11 +284,17 @@ export default function Hero({ onTryNow }: HeroProps) {
         />
       )}
 
-      {/* Animated mesh gradient background with breathing effect */}
-      <div className="absolute inset-0 mesh-gradient animate-breathing" style={{ animationDuration: '8s' }} />
+      {/* Animated mesh gradient background with breathing effect + parallax */}
+      <div
+        className="absolute inset-0 mesh-gradient animate-breathing parallax-slow"
+        style={{
+          animationDuration: '8s',
+          transform: `translateY(${scrollY * 0.15}px)`,
+        }}
+      />
 
-      {/* Particle / stars field */}
-      <div className="stars-field">
+      {/* Particle / stars field + parallax */}
+      <div className="stars-field" style={{ transform: `translateY(${scrollY * 0.08}px)` }}>
         {stars.map((star) => (
           <div
             key={star.id}
@@ -203,12 +320,17 @@ export default function Hero({ onTryNow }: HeroProps) {
         }}
       />
 
-      {/* Floating social media icons with 3D perspective transforms */}
+      {/* Floating social media icons with 3D perspective transforms + parallax */}
       {floatingIcons.map((icon, i) => (
         <motion.div
           key={i}
-          className="absolute pointer-events-none select-none hidden sm:block"
-          style={{ left: icon.x, top: icon.y, perspective: '600px' }}
+          className="absolute pointer-events-none select-none hidden sm:block parallax-slow"
+          style={{
+            left: icon.x,
+            top: icon.y,
+            perspective: '600px',
+            transform: `translateY(${scrollY * (0.05 + i * 0.01)}px)`,
+          }}
           animate={{
             y: [0, -18, 0],
             rotateX: [icon.rotateX, icon.rotateX + 5, icon.rotateX - 3, icon.rotateX],
@@ -272,16 +394,20 @@ export default function Hero({ onTryNow }: HeroProps) {
             <span className="gradient-text-smooth">In Its Native App</span>
           </motion.h1>
 
-          {/* Subtitle */}
-          <motion.p
+          {/* Subtitle with typing animation */}
+          <motion.div
             variants={itemVariants}
-            className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed"
+            className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed min-h-[3.5rem]"
           >
-            LinkVerse uses AI-powered deep linking to instantly open social media
-            links directly in their native apps. No more browser tabs.
-          </motion.p>
+            <p>
+              {typedSubtitle}
+              {!subtitleComplete && (
+                <span className="inline-block w-0.5 h-5 bg-emerald-400 ml-0.5 align-middle" style={{ animation: 'cursor-blink 1s step-end infinite' }} />
+              )}
+            </p>
+          </motion.div>
 
-          {/* Live link input demo — with orbit ring + dramatic glow */}
+          {/* Live link input demo — with orbit ring + dramatic glow + path border */}
           <motion.div
             variants={itemVariants}
             className="mt-10 w-full max-w-xl relative"
@@ -298,8 +424,11 @@ export default function Hero({ onTryNow }: HeroProps) {
               </div>
             </div>
 
-            <div className="glass-card dramatic-input-glow p-4 sm:p-6 relative" style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
-              <div className="flex flex-col sm:flex-row gap-3">
+            <div className="glass-card dramatic-input-glow animate-path-border p-4 sm:p-6 relative" style={{ boxShadow: '0 0 80px oklch(0.696 0.17 162.48 / 6%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
+              {/* Confetti burst on success */}
+              <ConfettiBurst active={showConfetti} />
+
+              <div className="flex flex-col sm:flex-row gap-3 relative z-10">
                 <div className="relative flex-1">
                   <Input
                     value={url}
@@ -308,7 +437,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                       setResult(null)
                     }}
                     placeholder="Paste any social media link..."
-                    className="h-11 bg-surface-2 border-border/50 text-foreground placeholder:text-muted-foreground/60 pr-20 focus:border-emerald-500/40 focus:ring-emerald-500/20"
+                    className="h-11 bg-background/50 border-border/50 text-foreground placeholder:text-muted-foreground/60 pr-20 focus:border-emerald-500/40 focus:ring-emerald-500/20"
                     onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                   />
                   {detectedPlatform && (
@@ -327,7 +456,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                 <Button
                   onClick={handleSubmit}
                   disabled={loading || !url.trim()}
-                  className="h-11 px-6 glow-green bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold transition-all duration-300"
+                  className="h-11 px-6 glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition-all duration-300"
                 >
                   {loading ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -342,13 +471,13 @@ export default function Hero({ onTryNow }: HeroProps) {
 
               {/* Empty state hint — pill-style sample buttons */}
               {!result && !loading && (
-                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                <div className="mt-3 flex items-center gap-2 flex-wrap relative z-10">
                   <span className="text-xs text-muted-foreground/40">Try:</span>
                   {sampleLinks.map((sample) => (
                     <button
                       key={sample.url}
                       onClick={() => { setUrl(sample.url); setResult(null) }}
-                      className="px-3 py-1 rounded-full bg-surface-2/60 border border-border/20 hover:border-emerald-500/30 hover:bg-emerald-500/8 hover:text-emerald-400/80 transition-all duration-200 text-xs text-muted-foreground/50 font-medium"
+                      className="px-3 py-1 rounded-full bg-background/30 border border-border/20 hover:border-emerald-500/30 hover:bg-emerald-500/8 hover:text-emerald-400/80 transition-all duration-200 text-xs text-muted-foreground/50 font-medium"
                     >
                       {sample.label}
                     </button>
@@ -362,7 +491,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                   initial={{ opacity: 0, height: 0, y: -10 }}
                   animate={{ opacity: 1, height: 'auto', y: 0 }}
                   transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="mt-4 p-4 rounded-xl bg-emerald-500/8 border border-emerald-500/15"
+                  className="mt-4 p-4 rounded-xl bg-emerald-500/8 border border-emerald-500/15 relative z-10"
                 >
                   <div className="flex items-center gap-2 text-sm mb-2">
                     <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
@@ -385,13 +514,13 @@ export default function Hero({ onTryNow }: HeroProps) {
                     )}
                   </div>
                   {result.deepLink && (
-                    <div className="flex items-center gap-2 mt-2 p-2.5 rounded-lg bg-surface-2/70 border border-border/30">
+                    <div className="flex items-center gap-2 mt-2 p-2.5 rounded-lg bg-background/30 border border-border/30">
                       <code className="text-sm text-emerald-400 font-mono break-all flex-1">
                         {result.deepLink}
                       </code>
                       <button
                         onClick={() => handleCopy(result.deepLink!)}
-                        className="flex-shrink-0 p-1.5 rounded-md hover:bg-surface-3 transition-colors"
+                        className="flex-shrink-0 p-1.5 rounded-md hover:bg-accent/50 transition-colors"
                         aria-label="Copy deep link"
                       >
                         {copied ? (
@@ -422,7 +551,7 @@ export default function Hero({ onTryNow }: HeroProps) {
             <Button
               onClick={onTryNow}
               size="lg"
-              className="h-12 px-8 glow-green bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold text-base btn-glow"
+              className="h-12 px-8 glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base btn-glow"
             >
               Get Started Free
               <ArrowRight className="size-4" />
@@ -437,7 +566,7 @@ export default function Hero({ onTryNow }: HeroProps) {
             </Button>
           </motion.div>
 
-          {/* Counter animation — with green glow */}
+          {/* Counter animation — with number flip effect and green glow */}
           <motion.div
             variants={itemVariants}
             ref={counterRef}
@@ -451,7 +580,21 @@ export default function Hero({ onTryNow }: HeroProps) {
                   textShadow: '0 0 20px oklch(0.696 0.17 162.48 / 60%), 0 0 40px oklch(0.696 0.17 162.48 / 25%)',
                 }}
               >
-                {count.toLocaleString()}
+                <AnimatePresence mode="popLayout">
+                  {displayDigits.map((digit, i) => {
+                    const isFlipping = digit.endsWith('-flip')
+                    const char = isFlipping ? digit[0] : digit
+                    return (
+                      <span
+                        key={`${i}-${char}`}
+                        className={isFlipping ? 'animate-number-flip inline-block' : 'inline-block'}
+                        style={isFlipping ? { animationDuration: '0.3s' } : undefined}
+                      >
+                        {char}
+                      </span>
+                    )
+                  })}
+                </AnimatePresence>
               </span>
             </div>
             <span className="text-sm text-muted-foreground/60">links opened today</span>
@@ -472,7 +615,6 @@ export default function Hero({ onTryNow }: HeroProps) {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1 + i * 0.15, duration: 0.6 }}
                   className="px-5 py-2.5 rounded-xl glass-card text-sm text-muted-foreground/40 font-semibold tracking-wide hover:text-muted-foreground/60 transition-colors duration-300 card-shimmer"
-                  style={{ borderColor: 'oklch(0.93 0.01 270 / 4%)' }}
                 >
                   {company}
                 </motion.div>

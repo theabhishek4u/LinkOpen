@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Smartphone,
@@ -112,10 +112,10 @@ const features = [
 
 // Scroll reveal hook using IntersectionObserver
 function useScrollReveal() {
-  const ref = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const el = ref.current
+    const el = containerRef.current
     if (!el) return
 
     const children = el.querySelectorAll('.scroll-reveal')
@@ -134,11 +134,22 @@ function useScrollReveal() {
     return () => observer.disconnect()
   }, [])
 
-  return ref
+  return containerRef
 }
 
 export default function Features() {
   const gridRef = useScrollReveal()
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
+  // Spotlight effect — track mouse position within the grid
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!gridRef.current) return
+    const rect = gridRef.current.getBoundingClientRect()
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+  }
 
   return (
     <section className="relative py-20 sm:py-28 mesh-gradient-subtle">
@@ -159,11 +170,21 @@ export default function Features() {
           </p>
         </motion.div>
 
-        {/* Features grid with scroll-reveal */}
+        {/* Features grid with spotlight effect and scroll-reveal */}
         <div
           ref={gridRef}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+          onMouseMove={handleMouseMove}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 relative"
         >
+          {/* Spotlight radial gradient that follows cursor */}
+          <div
+            className="absolute inset-0 pointer-events-none z-0 transition-opacity duration-300"
+            style={{
+              background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, oklch(0.696 0.17 162.48 / 4%) 0%, transparent 60%)`,
+              opacity: mousePos.x > 0 ? 1 : 0,
+            }}
+          />
+
           {features.map((feature, index) => {
             const Icon = feature.icon
             const num = String(index + 1).padStart(2, '0')
@@ -174,10 +195,10 @@ export default function Features() {
                 key={feature.title}
                 className={`scroll-reveal ${staggerClass} rotating-gradient-border glass-card card-shimmer hover-lift p-5 sm:p-6 group relative`}
               >
-                {/* Featured badge */}
+                {/* Featured badge with rotating gradient */}
                 {feature.featured && (
-                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25">
-                    <Sparkles className="size-3 text-emerald-400" />
+                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full featured-badge-gradient border border-emerald-500/25">
+                    <Sparkles className="size-3 text-emerald-400" style={{ animation: 'sparkle 2s ease-in-out infinite' }} />
                     <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Featured</span>
                   </div>
                 )}

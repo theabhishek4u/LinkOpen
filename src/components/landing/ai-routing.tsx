@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Link2,
@@ -69,7 +70,54 @@ const highlights = [
   { icon: CheckCircle2, label: 'Predictive behavior', color: 'text-rose-400' },
 ]
 
+// Data flow dot component that animates along connection lines
+function DataFlowDots({ activeStep }: { activeStep: number }) {
+  return (
+    <div className="absolute left-[19px] top-0 bottom-0 pointer-events-none">
+      {flowSteps.map((_, i) => {
+        if (i >= flowSteps.length - 1) return null
+        const isActive = i === activeStep || i === activeStep - 1
+        return (
+          <div
+            key={i}
+            className="absolute"
+            style={{
+              top: `${i * 100 + 52}px`,
+              left: 0,
+              width: '2px',
+              height: '16px',
+            }}
+          >
+            {isActive && (
+              <div
+                className="absolute rounded-full"
+                style={{
+                  width: '4px',
+                  height: '4px',
+                  background: 'oklch(0.696 0.17 162.48)',
+                  boxShadow: '0 0 6px oklch(0.696 0.17 162.48 / 60%)',
+                  animation: 'data-flow-move 1.5s linear infinite',
+                }}
+              />
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function AIRouting() {
+  const [activeStep, setActiveStep] = useState(1) // AI Detection is default active
+
+  // Auto-advance animation that cycles through steps every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % flowSteps.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <section className="relative py-20 sm:py-28">
       {/* Decorative dot pattern behind the flow */}
@@ -96,9 +144,13 @@ export default function AIRouting() {
         <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-center">
           {/* Flow diagram - takes 3 columns */}
           <div className="lg:col-span-3">
-            <div className="flex flex-col gap-0">
+            <div className="flex flex-col gap-0 relative">
+              {/* Data flow dots */}
+              <DataFlowDots activeStep={activeStep} />
+
               {flowSteps.map((step, i) => {
                 const Icon = step.icon
+                const isCurrentlyActive = i === activeStep
                 return (
                   <motion.div
                     key={step.label}
@@ -114,41 +166,52 @@ export default function AIRouting() {
                         <svg width="2" height="16" className="overflow-visible">
                           <line
                             x1="1" y1="0" x2="1" y2="16"
-                            stroke="oklch(0.696 0.17 162.48 / 25%)"
+                            stroke={isCurrentlyActive ? 'oklch(0.696 0.17 162.48 / 50%)' : 'oklch(0.696 0.17 162.48 / 25%)'}
                             strokeWidth="2"
                             className="dash-animate"
+                            style={{
+                              strokeDasharray: '6 4',
+                              animation: 'dash-flow 1s linear infinite',
+                            }}
                           />
                         </svg>
                       </div>
                     )}
                     <div
-                      className={`glass-card hover-lift p-4 flex items-center gap-4 border-l-2 ${step.border} relative`}
+                      className={`glass-card hover-lift p-4 flex items-center gap-4 border-l-2 ${step.border} relative transition-all duration-500`}
                       style={{
-                        boxShadow: `0 0 20px ${step.glow}`,
+                        boxShadow: isCurrentlyActive
+                          ? `0 0 30px ${step.glow}, 0 0 60px ${step.glow.replace('15%', '8%')}`
+                          : `0 0 20px ${step.glow}`,
+                        transform: isCurrentlyActive ? 'scale(1.02)' : 'scale(1)',
                       }}
                     >
-                      {/* Processing animation on active step */}
-                      {step.isActive && (
+                      {/* Active step processing animation */}
+                      {(step.isActive || isCurrentlyActive) && (
                         <div className="absolute -left-0.5 top-0 bottom-0 w-1 rounded-full overflow-hidden">
                           <div
-                            className="w-full h-full bg-emerald-400 animate-processing"
+                            className={`w-full h-full bg-emerald-400 ${isCurrentlyActive ? 'step-active-glow' : 'animate-processing'}`}
                             style={{ transformOrigin: 'center' }}
                           />
                         </div>
                       )}
 
                       <div
-                        className={`flex-shrink-0 w-10 h-10 rounded-lg ${step.bg} flex items-center justify-center`}
+                        className={`flex-shrink-0 w-10 h-10 rounded-lg ${step.bg} flex items-center justify-center transition-all duration-300`}
+                        style={{
+                          transform: isCurrentlyActive ? 'scale(1.1)' : 'scale(1)',
+                          boxShadow: isCurrentlyActive ? `0 0 15px ${step.glow}` : 'none',
+                        }}
                       >
                         <Icon className={`size-5 ${step.color}`} />
                       </div>
                       <div className="min-w-0">
                         <h3 className="font-semibold text-sm text-foreground">
                           {step.label}
-                          {step.isActive && (
+                          {(step.isActive || isCurrentlyActive) && (
                             <span className="ml-2 inline-flex items-center gap-1 text-[10px] text-emerald-400/80 font-normal">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                              Active
+                              {isCurrentlyActive ? 'Processing' : 'Active'}
                             </span>
                           )}
                         </h3>
@@ -193,7 +256,7 @@ export default function AIRouting() {
                       transition={{ duration: 0.4, delay: 0.5 + i * 0.1 }}
                       className="flex items-center gap-3 group slide-in-hover"
                     >
-                      <div className="w-8 h-8 rounded-md bg-surface-3 flex items-center justify-center group-hover:bg-surface-4 transition-colors">
+                      <div className="w-8 h-8 rounded-md bg-accent/50 flex items-center justify-center group-hover:bg-accent transition-colors">
                         <Icon className={`size-4 ${item.color}`} />
                       </div>
                       <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
@@ -202,6 +265,28 @@ export default function AIRouting() {
                     </motion.div>
                   )
                 })}
+              </div>
+
+              {/* Step progress indicator */}
+              <div className="mt-6 pt-4 border-t border-border/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Processing Pipeline</span>
+                  <span className="text-[10px] text-emerald-400 font-medium">Step {activeStep + 1}/{flowSteps.length}</span>
+                </div>
+                <div className="flex gap-1">
+                  {flowSteps.map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 h-1 rounded-full transition-all duration-500"
+                      style={{
+                        background: i <= activeStep
+                          ? 'oklch(0.696 0.17 162.48)'
+                          : 'oklch(0.93 0.01 270 / 10%)',
+                        boxShadow: i === activeStep ? '0 0 8px oklch(0.696 0.17 162.48 / 40%)' : 'none',
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>

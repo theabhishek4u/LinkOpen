@@ -73,7 +73,7 @@ const cardVariants = {
   },
 }
 
-// SVG Connection Lines Component
+// SVG Connection Lines Component with data flow dots
 function ConnectionLines() {
   return (
     <svg
@@ -95,6 +95,7 @@ export default function Platforms() {
   const platforms = getAllPlatforms()
   const gridRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -114,8 +115,8 @@ export default function Platforms() {
       {/* Marquee of platform icons at the top */}
       <div className="mb-16 overflow-hidden relative">
         {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-20 z-10" style={{ background: 'linear-gradient(to right, oklch(0.058 0.008 280), transparent)' }} />
-        <div className="absolute right-0 top-0 bottom-0 w-20 z-10" style={{ background: 'linear-gradient(to left, oklch(0.058 0.008 280), transparent)' }} />
+        <div className="absolute left-0 top-0 bottom-0 w-20 z-10" style={{ background: 'linear-gradient(to right, var(--background), transparent)' }} />
+        <div className="absolute right-0 top-0 bottom-0 w-20 z-10" style={{ background: 'linear-gradient(to left, var(--background), transparent)' }} />
 
         <div className="marquee-track">
           {marqueePlatforms.concat(marqueePlatforms).map((platform, i) => (
@@ -150,11 +151,32 @@ export default function Platforms() {
           </p>
         </motion.div>
 
-        {/* Platform grid with connection lines and 3D tilt */}
+        {/* Platform grid with connection lines and dramatic hover */}
         <div className="relative" ref={gridRef}>
           {/* Animated connection lines (only visible on lg+) */}
           <div className="hidden lg:block">
             <ConnectionLines />
+          </div>
+
+          {/* Central hub ring — visible when a platform is hovered */}
+          <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
+            <div
+              className="platform-ring w-24 h-24"
+              style={{
+                opacity: hoveredId ? 0.5 : 0,
+                transition: 'opacity 0.4s ease',
+              }}
+            />
+            <div
+              className="platform-ring w-40 h-40"
+              style={{
+                top: '-32px',
+                left: '-32px',
+                opacity: hoveredId ? 0.3 : 0,
+                transition: 'opacity 0.4s ease 0.1s',
+                animationDelay: '0.5s',
+              }}
+            />
           </div>
 
           <motion.div
@@ -168,18 +190,24 @@ export default function Platforms() {
               <motion.div
                 key={platform.id}
                 variants={cardVariants}
-                className={`tilt-card glass-card hover-lift p-4 sm:p-5 cursor-default relative overflow-hidden group animated-border-glow scroll-reveal ${isVisible ? 'is-visible' : ''}`}
+                className={`glass-card platform-dramatic-hover p-4 sm:p-5 cursor-default relative overflow-hidden group animated-border-glow scroll-reveal ${isVisible ? 'is-visible' : ''}`}
                 style={{
                   borderLeft: `3px solid ${platform.color}40`,
                   transitionDelay: `${Math.random() * 0.3}s`,
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 25px ${platform.color}15, 0 0 50px ${platform.color}08, 0 8px 30px oklch(0 0 0 / 30%)`
-                  ;(e.currentTarget as HTMLElement).style.borderLeftColor = `${platform.color}80`
+                  setHoveredId(platform.id)
+                  const el = e.currentTarget as HTMLElement
+                  el.style.boxShadow = `0 0 25px ${platform.color}15, 0 0 50px ${platform.color}08, 0 12px 40px oklch(0 0 0 / 20%)`
+                  el.style.borderLeftColor = `${platform.color}80`
+                  el.style.borderColor = `${platform.color}40`
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.boxShadow = ''
-                  ;(e.currentTarget as HTMLElement).style.borderLeftColor = `${platform.color}40`
+                  setHoveredId(null)
+                  const el = e.currentTarget as HTMLElement
+                  el.style.boxShadow = ''
+                  el.style.borderLeftColor = `${platform.color}40`
+                  el.style.borderColor = ''
                 }}
               >
                 {/* Hover glow accent */}
@@ -190,13 +218,23 @@ export default function Platforms() {
                   }}
                 />
 
+                {/* Ring pulse on hover */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                  style={{
+                    boxShadow: `inset 0 0 30px ${platform.color}08, 0 0 0 1px ${platform.color}20`,
+                    borderRadius: 'inherit',
+                  }}
+                />
+
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-3">
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
                       style={{
                         background: `${platform.color}15`,
                         boxShadow: `0 0 0 0 ${platform.color}00`,
+                        transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease',
                       }}
                     >
                       {platform.icon}
@@ -215,15 +253,15 @@ export default function Platforms() {
                   <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed">
                     Open {platform.name} links directly in the native app
                   </p>
-                  {/* Platform stats */}
-                  <div className="mt-2 flex items-center gap-1.5">
+                  {/* Platform stats with ping animation */}
+                  <div className="mt-2 flex items-center gap-1.5 animate-stat-ping rounded-sm">
                     <span className="text-[10px] text-muted-foreground/40">👥</span>
                     <span className="text-[10px] text-muted-foreground/50 font-medium">
                       {platformStats[platform.id] || '100M+ users'}
                     </span>
                   </div>
                   {/* Deep link scheme */}
-                  <div className="mt-2.5 px-2 py-1 rounded bg-surface-2/50 border border-border/10">
+                  <div className="mt-2.5 px-2 py-1 rounded bg-background/30 border border-border/10">
                     <code className="text-[10px] text-emerald-400/60 font-mono">
                       {platform.deepLinkScheme}
                     </code>

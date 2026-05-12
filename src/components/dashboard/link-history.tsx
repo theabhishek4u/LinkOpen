@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useLinkStore } from '@/store/link-store'
 import { Badge } from '@/components/ui/badge'
+import { LinkCategories } from './link-categories'
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date()
@@ -51,7 +52,7 @@ function truncateUrl(url: string, maxLen: number = 35): string {
 type FilterTab = 'all' | 'favorites'
 
 export function LinkHistory() {
-  const { history, removeFromHistory, toggleFavorite, setDeepLinkResult, setInputUrl, clearHistory } =
+  const { history, removeFromHistory, toggleFavorite, setDeepLinkResult, setInputUrl, clearHistory, selectedCategory, categories } =
     useLinkStore()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -93,6 +94,11 @@ export function LinkHistory() {
       items = items.filter((item) => item.isFavorite)
     }
 
+    // Filter by selected category
+    if (selectedCategory) {
+      items = items.filter((item) => item.category === selectedCategory)
+    }
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       items = items.filter(
@@ -104,7 +110,7 @@ export function LinkHistory() {
     }
 
     return items
-  }, [history, activeTab, searchQuery])
+  }, [history, activeTab, searchQuery, selectedCategory])
 
   const favoriteCount = history.filter((item) => item.isFavorite).length
 
@@ -115,6 +121,9 @@ export function LinkHistory() {
         <h3 className="text-sm font-semibold text-foreground">Recent Links</h3>
         <span className="text-xs text-muted-foreground">{history.length} links</span>
       </div>
+
+      {/* Category filter */}
+      <LinkCategories />
 
       {/* Search Input */}
       <div className="relative">
@@ -274,6 +283,18 @@ export function LinkHistory() {
                               • {item.openCount}x opened
                             </span>
                           )}
+                          {item.category && (() => {
+                            const cat = categories.find(c => c.id === item.category)
+                            return cat ? (
+                              <Badge
+                                variant="outline"
+                                className="h-3.5 text-[8px] px-1 border-0"
+                                style={{ backgroundColor: `${cat.color}20`, color: cat.color }}
+                              >
+                                {cat.name}
+                              </Badge>
+                            ) : null
+                          })()}
                           {item.expiry && new Date(item.expiry).getTime() <= Date.now() && (
                             <Badge variant="outline" className="h-3.5 text-[8px] border-red-500/30 text-red-400 px-1">
                               Expired

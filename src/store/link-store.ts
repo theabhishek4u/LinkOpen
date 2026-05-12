@@ -1,5 +1,18 @@
 import { create } from 'zustand'
 
+export interface LinkCategory {
+  id: string
+  name: string
+  color: string
+}
+
+export const DEFAULT_CATEGORIES: LinkCategory[] = [
+  { id: 'social', name: 'Social', color: '#3b82f6' },
+  { id: 'work', name: 'Work', color: '#8b5cf6' },
+  { id: 'personal', name: 'Personal', color: '#f59e0b' },
+  { id: 'favorites', name: 'Favorites', color: '#ef4444' },
+]
+
 export interface LinkHistoryItem {
   id: string
   originalUrl: string
@@ -15,6 +28,7 @@ export interface LinkHistoryItem {
   openCount: number
   createdAt: string
   expiry?: string | null
+  category?: string | null
 }
 
 export interface AnalyticsData {
@@ -117,6 +131,15 @@ interface LinkState {
   // Settings
   settings: LinkVerseSettings
   updateSettings: (settings: Partial<LinkVerseSettings>) => void
+  // Categories
+  categories: LinkCategory[]
+  addCategory: (category: Omit<LinkCategory, 'id'>) => void
+  removeCategory: (id: string) => void
+  selectedCategory: string | null
+  setSelectedCategory: (categoryId: string | null) => void
+  // Custom Alias
+  customAlias: string
+  setCustomAlias: (alias: string) => void
 }
 
 const defaultAnalytics: AnalyticsData = {
@@ -181,6 +204,25 @@ function saveSettings(settings: LinkVerseSettings) {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem('linkverse-settings', JSON.stringify(settings))
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+function loadCategories(): LinkCategory[] {
+  if (typeof window === 'undefined') return DEFAULT_CATEGORIES
+  try {
+    const stored = localStorage.getItem('linkverse-categories')
+    return stored ? JSON.parse(stored) : DEFAULT_CATEGORIES
+  } catch {
+    return DEFAULT_CATEGORIES
+  }
+}
+
+function saveCategories(categories: LinkCategory[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem('linkverse-categories', JSON.stringify(categories))
   } catch {
     // Ignore storage errors
   }
@@ -271,4 +313,22 @@ export const useLinkStore = create<LinkState>((set, get) => ({
     saveSettings(updated)
     set({ settings: updated })
   },
+  // Categories
+  categories: loadCategories(),
+  addCategory: (category) => {
+    const newCat: LinkCategory = { ...category, id: category.name.toLowerCase().replace(/[^a-z0-9]/g, '-') }
+    const updated = [...get().categories, newCat]
+    saveCategories(updated)
+    set({ categories: updated })
+  },
+  removeCategory: (id) => {
+    const updated = get().categories.filter((c) => c.id !== id)
+    saveCategories(updated)
+    set({ categories: updated })
+  },
+  selectedCategory: null,
+  setSelectedCategory: (categoryId) => set({ selectedCategory: categoryId }),
+  // Custom Alias
+  customAlias: '',
+  setCustomAlias: (alias) => set({ customAlias: alias }),
 }))

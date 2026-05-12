@@ -20,6 +20,10 @@ import { LinkScheduler } from './link-scheduler'
 import { SettingsPanel } from './settings-panel'
 import { ExportPanel } from './export-panel'
 import { NotificationCenter } from './notification-center'
+import { LinkPreviewSimulator } from './link-preview-simulator'
+import { CustomAlias } from './custom-alias'
+import { CategorySelector } from './link-categories'
+import { DashboardSkeleton } from './dashboard-skeleton'
 import { useLinkStore } from '@/store/link-store'
 
 type SectionId = 'input' | 'analytics' | 'history' | 'tools'
@@ -31,6 +35,29 @@ const SECTIONS = [
   { id: 'history' as const, label: 'History', icon: Clock },
 ]
 
+// Staggered animation variants
+const sectionVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      delay: i * 0.08,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  }),
+  exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
+}
+
+// Background color shift per section
+const sectionBgColors: Record<SectionId, string> = {
+  input: '',
+  analytics: 'from-violet-500/[0.02] to-transparent',
+  tools: 'from-amber-500/[0.02] to-transparent',
+  history: 'from-emerald-500/[0.02] to-transparent',
+}
+
 export function DashboardMain() {
   const smartInputRef = useRef<SmartInputHandle>(null)
   const [bulkOpen, setBulkOpen] = useState(false)
@@ -39,7 +66,15 @@ export function DashboardMain() {
   const [showSettings, setShowSettings] = useState(false)
   const [showHealthChecker, setShowHealthChecker] = useState(false)
   const [activeSection, setActiveSection] = useState<SectionId>('input')
+  const [isLoading, setIsLoading] = useState(true)
+  const [sectionTransition, setSectionTransition] = useState<SectionId>('input')
   const { inputUrl, analytics, addNotification, history } = useLinkStore()
+
+  // Loading skeleton with 1.5s delay
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1500)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleFocusInput = useCallback(() => {
     smartInputRef.current?.focus()
@@ -93,16 +128,34 @@ export function DashboardMain() {
     ? ((nativeOpens / (nativeOpens + (analytics.browserOpens || 355))) * 100).toFixed(1)
     : '94.2'
 
+  // Handle section navigation with background color shift
+  const handleSectionNav = useCallback((sectionId: SectionId) => {
+    setActiveSection(sectionId)
+    setSectionTransition(sectionId)
+    document.getElementById(`section-${sectionId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
+
+  if (isLoading) {
+    return <DashboardSkeleton />
+  }
+
   return (
-    <div className="min-h-screen w-full mesh-gradient-subtle scroll-smooth relative">
+    <div className="min-h-screen w-full mesh-gradient-subtle scroll-smooth relative transition-colors duration-700">
+      {/* Section background color shift */}
+      <div
+        className={`fixed inset-0 bg-gradient-to-b ${sectionBgColors[sectionTransition] || ''} pointer-events-none transition-opacity duration-700`}
+        aria-hidden="true"
+      />
+
       <OnboardingOverlay />
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8 relative z-10">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          custom={0}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
           className="flex flex-col sm:flex-row items-center justify-between gap-4"
         >
           <div className="flex items-center gap-2">
@@ -143,9 +196,10 @@ export function DashboardMain() {
 
         {/* Quick Stats Floating Bar */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          custom={1}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
           className="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none"
         >
           <div className="flex items-center gap-3 sm:gap-5 text-xs shrink-0">
@@ -172,10 +226,7 @@ export function DashboardMain() {
             {SECTIONS.map((section) => (
               <button
                 key={section.id}
-                onClick={() => {
-                  setActiveSection(section.id)
-                  document.getElementById(`section-${section.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }}
+                onClick={() => handleSectionNav(section.id)}
                 className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-all ${
                   activeSection === section.id
                     ? 'bg-accent text-foreground shadow-sm'
@@ -190,17 +241,41 @@ export function DashboardMain() {
         </motion.div>
 
         {/* Platform Quick Actions */}
-        <PlatformQuickActions />
+        <motion.div
+          custom={2}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <PlatformQuickActions />
+        </motion.div>
 
         {/* Smart Input Section */}
-        <div id="section-input" className="relative">
+        <motion.div
+          custom={3}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          id="section-input"
+          className="relative"
+        >
           <SmartInput ref={smartInputRef} />
+
+          {/* Category selector */}
+          <div className="mt-2">
+            <CategorySelector />
+          </div>
+
+          {/* Custom Alias */}
+          <div className="mt-2">
+            <CustomAlias />
+          </div>
 
           {/* Extra action buttons row */}
           <motion.div
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
             className="flex items-center gap-2 mt-3"
           >
             <button
@@ -229,10 +304,27 @@ export function DashboardMain() {
               Health Check
             </button>
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* Link Result Section */}
-        <LinkResult />
+        <motion.div
+          custom={4}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <LinkResult />
+        </motion.div>
+
+        {/* Link Preview Simulator */}
+        <motion.div
+          custom={5}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <LinkPreviewSimulator />
+        </motion.div>
 
         {/* Gradient Divider */}
         <div className="flex items-center justify-center py-2">
@@ -256,20 +348,40 @@ export function DashboardMain() {
         {/* Two-Column Layout */}
         <div id="section-analytics" className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Left Column (wider) */}
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+          <motion.div
+            custom={6}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            className="lg:col-span-2 space-y-4 sm:space-y-6"
+          >
             <AnalyticsCards />
             <MiniChart />
-          </div>
+          </motion.div>
 
           {/* Right Column (narrower) */}
-          <div id="section-history" className="lg:col-span-1 space-y-4 sm:space-y-6">
+          <motion.div
+            custom={7}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            id="section-history"
+            className="lg:col-span-1 space-y-4 sm:space-y-6"
+          >
             <LinkHistory />
             <ActivityFeed />
-          </div>
+          </motion.div>
         </div>
 
         {/* Tools Section */}
-        <div id="section-tools" className="space-y-4 sm:space-y-6">
+        <motion.div
+          custom={8}
+          variants={sectionVariants}
+          initial="hidden"
+          animate="visible"
+          id="section-tools"
+          className="space-y-4 sm:space-y-6"
+        >
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
             <h2 className="text-sm font-semibold text-foreground">Tools & Utilities</h2>
@@ -279,7 +391,7 @@ export function DashboardMain() {
             <LinkScheduler />
             <ExportPanel />
           </div>
-        </div>
+        </motion.div>
 
         {/* Footer */}
         <motion.footer

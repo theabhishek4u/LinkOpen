@@ -31,6 +31,8 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
     setQrCodeDataUrl,
     linkExpiry,
     addNotification,
+    customAlias,
+    selectedCategory,
   } = useLinkStore()
 
   const [error, setError] = useState<string | null>(null)
@@ -99,7 +101,10 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
       const res = await fetch('/api/links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: validation.normalizedUrl }),
+        body: JSON.stringify({ 
+          url: validation.normalizedUrl,
+          ...(customAlias ? { customAlias } : {}),
+        }),
       })
 
       if (!res.ok) {
@@ -154,6 +159,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         openCount: 1,
         createdAt: new Date().toISOString(),
         expiry: linkExpiry || null,
+        category: selectedCategory || null,
       })
 
       addNotification({
@@ -171,7 +177,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
     } finally {
       setIsProcessing(false)
     }
-  }, [inputUrl, setDeepLinkResult, setIsProcessing, addToHistory])
+  }, [inputUrl, setDeepLinkResult, setIsProcessing, addToHistory, customAlias, selectedCategory])
 
   const handleOpenInBrowser = useCallback(() => {
     const validation = validateUrl(inputUrl)
