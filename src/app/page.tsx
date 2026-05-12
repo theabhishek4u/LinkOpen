@@ -14,8 +14,13 @@ import Testimonials from '@/components/landing/testimonials'
 import FAQ from '@/components/landing/faq'
 import Footer from '@/components/landing/footer'
 import { DashboardMain } from '@/components/dashboard/dashboard-main'
+import { ThemeToggle } from '@/components/dashboard/theme-toggle'
 import { ArrowLeft, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+
+function SectionDivider() {
+  return <div className="section-divider mx-auto max-w-4xl" />
+}
 
 function LandingView({ onSwitchToDashboard }: { onSwitchToDashboard: () => void }) {
   return (
@@ -23,19 +28,27 @@ function LandingView({ onSwitchToDashboard }: { onSwitchToDashboard: () => void 
       <Navbar onGetStarted={onSwitchToDashboard} />
       <main className="flex-1">
         <Hero onTryNow={onSwitchToDashboard} />
+        <SectionDivider />
         <div id="platforms">
           <Platforms />
         </div>
+        <SectionDivider />
         <div id="features">
           <Features />
         </div>
+        <SectionDivider />
         <AIRouting />
+        <SectionDivider />
         <DashboardPreview />
+        <SectionDivider />
         <AnalyticsPreview />
+        <SectionDivider />
         <div id="pricing">
           <Pricing />
         </div>
+        <SectionDivider />
         <Testimonials />
+        <SectionDivider />
         <div id="faq">
           <FAQ />
         </div>
@@ -68,6 +81,7 @@ function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void })
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-400" />
             <span className="text-xs text-emerald-400 font-medium">AI Active</span>
+            <ThemeToggle />
           </div>
         </div>
       </header>

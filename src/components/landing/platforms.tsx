@@ -72,35 +72,58 @@ export default function Platforms() {
             <motion.div
               key={platform.id}
               variants={cardVariants}
-              className="glass-card hover-lift p-4 sm:p-5 cursor-default relative overflow-hidden group"
+              className="glass-card hover-lift p-4 sm:p-5 cursor-default relative overflow-hidden group animated-border-glow"
               style={{
                 borderLeft: `3px solid ${platform.color}40`,
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 25px ${platform.color}15, 0 0 50px ${platform.color}08, 0 8px 30px oklch(0 0 0 / 30%)`
+                ;(e.currentTarget as HTMLElement).style.borderLeftColor = `${platform.color}80`
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = ''
+                ;(e.currentTarget as HTMLElement).style.borderLeftColor = `${platform.color}40`
               }}
             >
               {/* Hover glow accent */}
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                 style={{
-                  background: `radial-gradient(circle at 10% 50%, ${platform.color}08, transparent 70%)`,
+                  background: `radial-gradient(circle at 10% 50%, ${platform.color}10, transparent 70%)`,
                 }}
               />
 
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl">{platform.icon}</span>
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110"
+                    style={{
+                      background: `${platform.color}15`,
+                      boxShadow: `0 0 0 0 ${platform.color}00`,
+                    }}
+                  >
+                    {platform.icon}
+                  </div>
                   <span className="font-semibold text-sm sm:text-base text-foreground">
                     {platform.name}
                   </span>
                 </div>
+                {/* Pill-shaped category badge */}
                 <Badge
                   variant="outline"
-                  className={`text-[10px] sm:text-xs ${categoryColors[platform.category]}`}
+                  className={`text-[10px] sm:text-xs rounded-full px-2.5 py-0.5 ${categoryColors[platform.category]}`}
                 >
                   {categoryLabels[platform.category]}
                 </Badge>
                 <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed">
                   Open {platform.name} links directly in the native app
                 </p>
+                {/* Deep link scheme */}
+                <div className="mt-2.5 px-2 py-1 rounded bg-surface-2/50 border border-border/10">
+                  <code className="text-[10px] text-emerald-400/60 font-mono">
+                    {platform.deepLinkScheme}
+                  </code>
+                </div>
               </div>
             </motion.div>
           ))}

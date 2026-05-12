@@ -81,11 +81,20 @@ export default function FAQ() {
         >
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`item-${i}`} className="border-border/20">
-                <AccordionTrigger className="text-sm sm:text-base text-foreground hover:text-emerald-400 hover:no-underline text-left">
-                  {faq.question}
+              <AccordionItem
+                key={i}
+                value={`item-${i}`}
+                className="faq-accordion-item border-border/10"
+              >
+                <AccordionTrigger className="faq-accordion-trigger text-sm sm:text-base text-foreground hover:text-emerald-400 hover:no-underline text-left">
+                  <span className="flex items-center gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 text-xs flex items-center justify-center font-mono">
+                      {i + 1}
+                    </span>
+                    {faq.question}
+                  </span>
                 </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                <AccordionContent className="faq-accordion-content text-sm text-muted-foreground leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

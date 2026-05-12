@@ -1,15 +1,22 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Globe, ExternalLink, Copy, Share2, QrCode, Loader2, Link2 } from 'lucide-react'
+import { Globe, ExternalLink, Copy, Share2, QrCode, Loader2, Link2, ClipboardPaste, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useLinkStore } from '@/store/link-store'
 import { detectPlatform, validateUrl } from '@/lib/platform-detect'
 import { PlatformBadge } from './platform-badge'
 import { toast } from 'sonner'
 
-export function SmartInput() {
+export interface SmartInputHandle {
+  focus: () => void
+  openInApp: () => void
+  copyLink: () => void
+  generateQR: () => void
+}
+
+export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, ref) {
   const {
     inputUrl,
     setInputUrl,
@@ -25,8 +32,16 @@ export function SmartInput() {
   } = useLinkStore()
 
   const [error, setError] = useState<string | null>(null)
+  const [isFocused, setIsFocused] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+    openInApp: handleOpenInApp,
+    copyLink: handleCopyLink,
+    generateQR: handleQRCode,
+  }))
 
   // Debounced platform detection
   useEffect(() => {
@@ -196,6 +211,25 @@ export function SmartInput() {
     setQrCodeDataUrl(null)
   }, [inputUrl, setShowQRCode, setQrCodeDataUrl])
 
+  const handlePasteFromClipboard = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) {
+        setInputUrl(text)
+        setError(null)
+        toast.success('Pasted from clipboard')
+      }
+    } catch {
+      toast.error('Unable to access clipboard')
+    }
+  }, [setInputUrl])
+
+  const handleClear = useCallback(() => {
+    setInputUrl('')
+    setError(null)
+    inputRef.current?.focus()
+  }, [setInputUrl])
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' && inputUrl.trim() && !isProcessing) {
@@ -207,6 +241,11 @@ export function SmartInput() {
 
   const isUrlValid = validateUrl(inputUrl).valid
 
+  // Compute deep link preview
+  const deepLinkPreview = detectedPlatform
+    ? inputUrl.replace(/^https?:\/\/(www\.)?/i, detectedPlatform.deepLinkScheme)
+    : null
+
   return (
     <div className="w-full space-y-4">
       {/* Main Input Card */}
@@ -214,73 +253,150 @@ export function SmartInput() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className={`glass-card p-4 sm:p-6 transition-all duration-300 ${
-          error ? 'border-red-500/50' : ''
+        className={`relative rounded-xl transition-all duration-300 ${
+          isFocused ? 'premium-border' : ''
+        } ${
+          detectedPlatform ? 'glow-green-sm' : ''
         }`}
       >
-        <div className="flex items-center gap-3">
-          {/* Left Icon */}
-          <div className="flex-shrink-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Globe className="h-5 w-5" />
+        <div
+          className={`glass-card p-4 sm:p-6 rounded-xl transition-all duration-300 ${
+            error ? 'border-red-500/50' : ''
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            {/* Left Icon */}
+            <div className="flex-shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Globe className="h-5 w-5" />
+              </div>
             </div>
-          </div>
 
-          {/* Input */}
-          <div className="relative flex-1">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputUrl}
-              onChange={(e) => {
-                setInputUrl(e.target.value)
-                setError(null)
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Paste any social media link here..."
-              className={`w-full bg-transparent text-foreground placeholder:text-muted-foreground text-base sm:text-lg outline-none ${
-                error ? 'text-red-400' : ''
-              }`}
-              disabled={isProcessing}
-            />
+            {/* Input */}
+            <div className="relative flex-1">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputUrl}
+                onChange={(e) => {
+                  setInputUrl(e.target.value)
+                  setError(null)
+                }}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                onKeyDown={handleKeyDown}
+                placeholder="Paste any social media link here..."
+                className={`w-full bg-transparent text-foreground placeholder:text-muted-foreground text-base sm:text-lg outline-none pr-20 ${
+                  error ? 'text-red-400' : ''
+                }`}
+                disabled={isProcessing}
+              />
 
-            {/* Platform Badge (inline next to input) */}
+              {/* Right side controls */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {/* Platform Badge */}
+                <AnimatePresence>
+                  {detectedPlatform && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    >
+                      <PlatformBadge platform={detectedPlatform} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Clear button */}
+                <AnimatePresence>
+                  {inputUrl.trim() && !detectedPlatform && (
+                    <motion.button
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={handleClear}
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Paste from Clipboard Button */}
             <AnimatePresence>
-              {detectedPlatform && (
-                <div className="absolute right-0 top-1/2 -translate-y-1/2">
-                  <PlatformBadge platform={detectedPlatform} />
-                </div>
+              {!inputUrl.trim() && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handlePasteFromClipboard}
+                    className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                    title="Paste from clipboard"
+                  >
+                    <ClipboardPaste className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Processing Spinner */}
+            <AnimatePresence>
+              {isProcessing && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                >
+                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Processing Spinner */}
+          {/* Deep Link Preview */}
           <AnimatePresence>
-            {isProcessing && (
+            {detectedPlatform && deepLinkPreview && inputUrl.trim() && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
               >
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <div className="mt-3 pt-3 border-t border-border/30">
+                  <div className="flex items-center gap-2">
+                    <Link2 className="h-3 w-3 text-primary/60 shrink-0" />
+                    <span className="text-xs text-muted-foreground/60 font-mono truncate">
+                      {deepLinkPreview}
+                    </span>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
 
-        {/* Error Message */}
-        <AnimatePresence>
-          {error && (
-            <motion.p
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-2 text-sm text-red-400"
-            >
-              {error}
-            </motion.p>
-          )}
-        </AnimatePresence>
+          {/* Error Message */}
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2 text-sm text-red-400"
+              >
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
 
       {/* Action Buttons Row */}
@@ -344,4 +460,4 @@ export function SmartInput() {
       </motion.div>
     </div>
   )
-}
+})

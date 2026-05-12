@@ -1,22 +1,22 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Play, ExternalLink, Loader2 } from 'lucide-react'
+import { ArrowRight, Play, ExternalLink, Loader2, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { detectPlatform } from '@/lib/platform-detect'
 
 const floatingIcons = [
-  { emoji: '📸', x: '10%', y: '15%', delay: 0 },
-  { emoji: '▶️', x: '85%', y: '10%', delay: 0.5 },
-  { emoji: '💬', x: '75%', y: '70%', delay: 1 },
-  { emoji: '🐦', x: '15%', y: '75%', delay: 1.5 },
-  { emoji: '🎵', x: '90%', y: '45%', delay: 0.8 },
-  { emoji: '💼', x: '5%', y: '45%', delay: 1.2 },
-  { emoji: '🎮', x: '50%', y: '5%', delay: 0.3 },
-  { emoji: '🧵', x: '45%', y: '80%', delay: 1.8 },
+  { emoji: '📸', x: '10%', y: '15%', delay: 0, color: '#E4405F' },
+  { emoji: '▶️', x: '85%', y: '10%', delay: 0.5, color: '#FF0000' },
+  { emoji: '💬', x: '75%', y: '70%', delay: 1, color: '#25D366' },
+  { emoji: '🐦', x: '15%', y: '75%', delay: 1.5, color: '#888888' },
+  { emoji: '🎵', x: '90%', y: '45%', delay: 0.8, color: '#ff0050' },
+  { emoji: '💼', x: '5%', y: '45%', delay: 1.2, color: '#0A66C2' },
+  { emoji: '🎮', x: '50%', y: '5%', delay: 0.3, color: '#5865F2' },
+  { emoji: '🧵', x: '45%', y: '80%', delay: 1.8, color: '#000000' },
 ]
 
 const containerVariants = {
@@ -41,6 +41,39 @@ const itemVariants = {
 
 const companies = ['Acme Corp', 'TechFlow', 'SocialBase', 'LinkHive', 'AppDirect']
 
+function useCounter(end: number, duration: number = 2000) {
+  const [count, setCount] = useState(0)
+  const ref = useRef<HTMLElement>(null)
+  const started = useRef(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true
+          const startTime = Date.now()
+          const animate = () => {
+            const elapsed = Date.now() - startTime
+            const progress = Math.min(elapsed / duration, 1)
+            const eased = 1 - Math.pow(1 - progress, 3)
+            setCount(Math.floor(eased * end))
+            if (progress < 1) {
+              requestAnimationFrame(animate)
+            }
+          }
+          requestAnimationFrame(animate)
+        }
+      },
+      { threshold: 0.5 }
+    )
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [end, duration])
+
+  return { count, ref }
+}
+
 interface HeroProps {
   onTryNow?: () => void
 }
@@ -53,8 +86,10 @@ export default function Hero({ onTryNow }: HeroProps) {
     deepLink?: string
     success?: boolean
   } | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const detectedPlatform = url ? detectPlatform(url) : null
+  const { count, ref: counterRef } = useCounter(12847, 2500)
 
   const handleSubmit = useCallback(async () => {
     if (!url.trim()) return
@@ -75,16 +110,28 @@ export default function Hero({ onTryNow }: HeroProps) {
     }
   }, [url])
 
+  const handleCopy = useCallback((text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [])
+
   return (
-    <section className="relative min-h-screen overflow-hidden mesh-gradient">
-      {/* Floating social media icons */}
+    <section className="relative min-h-screen overflow-hidden">
+      {/* Animated mesh gradient background */}
+      <div className="absolute inset-0 mesh-gradient" style={{ animationDuration: '8s' }} />
+
+      {/* Dot grid overlay */}
+      <div className="absolute inset-0 dot-grid opacity-40" />
+
+      {/* Floating social media icons with glass-card styling */}
       {floatingIcons.map((icon, i) => (
         <motion.div
           key={i}
-          className="absolute text-3xl sm:text-4xl opacity-20 pointer-events-none select-none"
+          className="absolute pointer-events-none select-none hidden sm:block"
           style={{ left: icon.x, top: icon.y }}
           animate={{
-            y: [0, -12, 0],
+            y: [0, -14, 0],
             rotate: [0, 5, -5, 0],
           }}
           transition={{
@@ -94,7 +141,24 @@ export default function Hero({ onTryNow }: HeroProps) {
             ease: 'easeInOut',
           }}
         >
-          {icon.emoji}
+          {/* Pulsing ring behind icon */}
+          <div
+            className="absolute inset-0 rounded-xl"
+            style={{
+              boxShadow: `0 0 20px ${icon.color}25, 0 0 40px ${icon.color}10`,
+              animation: `pulse-ring-anim ${2.5 + i * 0.3}s ease-in-out infinite ${icon.delay}s`,
+            }}
+          />
+          {/* Glass card wrapper */}
+          <div
+            className="relative flex items-center justify-center w-12 h-12 rounded-xl glass-card"
+            style={{
+              boxShadow: `0 0 15px ${icon.color}20, inset 0 0 15px ${icon.color}05`,
+              border: `1px solid ${icon.color}25`,
+            }}
+          >
+            <span className="text-xl">{icon.emoji}</span>
+          </div>
         </motion.div>
       ))}
 
@@ -110,8 +174,9 @@ export default function Hero({ onTryNow }: HeroProps) {
           <motion.div variants={itemVariants}>
             <Badge
               variant="outline"
-              className="mb-6 px-4 py-1.5 text-xs sm:text-sm border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+              className="mb-6 px-4 py-1.5 text-xs sm:text-sm border-emerald-500/30 text-emerald-400 bg-emerald-500/10 backdrop-blur-sm"
             >
+              <span className="mr-1.5 inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               AI-Powered Deep Linking Platform
             </Badge>
           </motion.div>
@@ -139,7 +204,7 @@ export default function Hero({ onTryNow }: HeroProps) {
             variants={itemVariants}
             className="mt-10 w-full max-w-xl"
           >
-            <div className="glass-card p-4 sm:p-6">
+            <div className="glass-card p-4 sm:p-6" style={{ boxShadow: '0 0 60px oklch(0.696 0.17 162.48 / 8%), 0 8px 40px oklch(0 0 0 / 60%)' }}>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Input
@@ -149,7 +214,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                       setResult(null)
                     }}
                     placeholder="Paste any social media link..."
-                    className="h-11 bg-surface-2 border-border/50 text-foreground placeholder:text-muted-foreground/60 pr-20"
+                    className="h-11 bg-surface-2 border-border/50 text-foreground placeholder:text-muted-foreground/60 pr-20 focus:border-emerald-500/40 focus:ring-emerald-500/20"
                     onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                   />
                   {detectedPlatform && (
@@ -168,7 +233,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                 <Button
                   onClick={handleSubmit}
                   disabled={loading || !url.trim()}
-                  className="h-11 px-6 glow-green bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold"
+                  className="h-11 px-6 glow-green bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold transition-all duration-300"
                 >
                   {loading ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -181,14 +246,37 @@ export default function Hero({ onTryNow }: HeroProps) {
                 </Button>
               </div>
 
-              {/* Result display */}
+              {/* Empty state hint */}
+              {!result && !loading && (
+                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground/40">
+                  <span>Try:</span>
+                  <button
+                    onClick={() => { setUrl('https://instagram.com/p/abc123'); setResult(null) }}
+                    className="px-2 py-0.5 rounded bg-surface-2/50 hover:bg-surface-3/50 transition-colors text-muted-foreground/60"
+                  >
+                    instagram.com/p/abc123
+                  </button>
+                  <button
+                    onClick={() => { setUrl('https://youtube.com/watch?v=dQw4w9WgXcQ'); setResult(null) }}
+                    className="px-2 py-0.5 rounded bg-surface-2/50 hover:bg-surface-3/50 transition-colors text-muted-foreground/60"
+                  >
+                    youtube.com/watch?v=...
+                  </button>
+                </div>
+              )}
+
+              {/* Result display - enhanced */}
               {result && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20"
+                  initial={{ opacity: 0, height: 0, y: -10 }}
+                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  className="mt-4 p-4 rounded-xl bg-emerald-500/8 border border-emerald-500/15"
                 >
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex items-center gap-2 text-sm mb-2">
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                      <Check className="size-3 text-emerald-400" />
+                    </div>
                     <span className="text-emerald-400 font-medium">
                       {result.success ? 'Deep link generated!' : 'Detection complete'}
                     </span>
@@ -206,10 +294,30 @@ export default function Hero({ onTryNow }: HeroProps) {
                     )}
                   </div>
                   {result.deepLink && (
-                    <p className="mt-1 text-xs text-muted-foreground font-mono break-all">
-                      {result.deepLink}
-                    </p>
+                    <div className="flex items-center gap-2 mt-2 p-2.5 rounded-lg bg-surface-2/70 border border-border/30">
+                      <code className="text-sm text-emerald-400 font-mono break-all flex-1">
+                        {result.deepLink}
+                      </code>
+                      <button
+                        onClick={() => handleCopy(result.deepLink!)}
+                        className="flex-shrink-0 p-1.5 rounded-md hover:bg-surface-3 transition-colors"
+                        aria-label="Copy deep link"
+                      >
+                        {copied ? (
+                          <Check className="size-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="size-3.5 text-muted-foreground" />
+                        )}
+                      </button>
+                    </div>
                   )}
+                  <button
+                    onClick={onTryNow}
+                    className="mt-3 text-xs text-emerald-400/70 hover:text-emerald-400 transition-colors flex items-center gap-1"
+                  >
+                    Try it yourself in the dashboard
+                    <ArrowRight className="size-3" />
+                  </button>
                 </motion.div>
               )}
             </div>
@@ -223,7 +331,7 @@ export default function Hero({ onTryNow }: HeroProps) {
             <Button
               onClick={onTryNow}
               size="lg"
-              className="h-12 px-8 glow-green bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold text-base"
+              className="h-12 px-8 glow-green bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold text-base btn-glow"
             >
               Get Started Free
               <ArrowRight className="size-4" />
@@ -231,26 +339,45 @@ export default function Hero({ onTryNow }: HeroProps) {
             <Button
               size="lg"
               variant="ghost"
-              className="h-12 px-8 text-base text-muted-foreground hover:text-foreground"
+              className="h-12 px-8 text-base text-muted-foreground hover:text-foreground border border-border/20 hover:border-border/40"
             >
               <Play className="size-4" />
               Watch Demo
             </Button>
           </motion.div>
 
+          {/* Counter animation */}
+          <motion.div
+            variants={itemVariants}
+            ref={counterRef}
+            className="mt-8 flex items-center gap-2"
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-sm font-medium counter-glow text-emerald-400">
+                {count.toLocaleString()}
+              </span>
+            </div>
+            <span className="text-sm text-muted-foreground/60">links opened today</span>
+          </motion.div>
+
           {/* Trusted by */}
-          <motion.div variants={itemVariants} className="mt-16 w-full">
-            <p className="text-xs sm:text-sm text-muted-foreground/60 mb-4 uppercase tracking-widest">
+          <motion.div variants={itemVariants} className="mt-14 w-full">
+            <p className="text-xs sm:text-sm text-muted-foreground/40 mb-5 uppercase tracking-[0.2em]">
               Trusted by innovative teams
             </p>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-8">
-              {companies.map((company) => (
-                <div
+              {companies.map((company, i) => (
+                <motion.div
                   key={company}
-                  className="px-4 py-2 rounded-lg bg-surface-2/50 border border-border/20 text-sm text-muted-foreground/50 font-medium"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1 + i * 0.15, duration: 0.6 }}
+                  className="px-5 py-2.5 rounded-xl glass-card text-sm text-muted-foreground/40 font-semibold tracking-wide hover:text-muted-foreground/60 transition-colors duration-300"
+                  style={{ borderColor: 'oklch(0.93 0.01 270 / 4%)' }}
                 >
                   {company}
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>

@@ -1,9 +1,22 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, X, ExternalLink, Clock } from 'lucide-react'
+import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { useLinkStore } from '@/store/link-store'
 
 function formatRelativeTime(dateStr: string): string {
@@ -34,9 +47,14 @@ function truncateUrl(url: string, maxLen: number = 35): string {
   }
 }
 
+type FilterTab = 'all' | 'favorites'
+
 export function LinkHistory() {
-  const { history, removeFromHistory, toggleFavorite, setDeepLinkResult, setInputUrl } =
+  const { history, removeFromHistory, toggleFavorite, setDeepLinkResult, setInputUrl, clearHistory } =
     useLinkStore()
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState<FilterTab>('all')
 
   const handleItemClick = useCallback(
     (item: (typeof history)[0]) => {
@@ -52,6 +70,31 @@ export function LinkHistory() {
     [setInputUrl, setDeepLinkResult]
   )
 
+  // Filtered list
+  const filteredHistory = useMemo(() => {
+    let items = history
+
+    // Tab filter
+    if (activeTab === 'favorites') {
+      items = items.filter((item) => item.isFavorite)
+    }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      items = items.filter(
+        (item) =>
+          item.originalUrl.toLowerCase().includes(query) ||
+          item.platform.name.toLowerCase().includes(query) ||
+          item.deepLink.toLowerCase().includes(query)
+      )
+    }
+
+    return items
+  }, [history, activeTab, searchQuery])
+
+  const favoriteCount = history.filter((item) => item.isFavorite).length
+
   return (
     <div className="glass-card p-4 sm:p-6 space-y-4">
       {/* Header */}
@@ -60,100 +103,217 @@ export function LinkHistory() {
         <span className="text-xs text-muted-foreground">{history.length} links</span>
       </div>
 
+      {/* Search Input */}
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search links..."
+          className="h-8 pl-8 pr-8 text-xs bg-background/40 border-border/50 focus:border-primary/50"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+
+      {/* Tab Filter */}
+      <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5">
+        <button
+          onClick={() => setActiveTab('all')}
+          className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${
+            activeTab === 'all'
+              ? 'bg-accent text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => setActiveTab('favorites')}
+          className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${
+            activeTab === 'favorites'
+              ? 'bg-accent text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <span className="flex items-center justify-center gap-1">
+            <Star className="h-3 w-3" />
+            Favorites
+            {favoriteCount > 0 && (
+              <span className="text-[10px] text-muted-foreground/60">({favoriteCount})</span>
+            )}
+          </span>
+        </button>
+      </div>
+
       {/* List */}
-      {history.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <Clock className="h-8 w-8 text-muted-foreground/30 mb-2" />
-          <p className="text-sm text-muted-foreground">No links yet</p>
+      {filteredHistory.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          {/* Illustration-like icon arrangement */}
+          <div className="relative mb-4">
+            <motion.div
+              animate={{ y: [-2, 2, -2] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <Link2 className="h-10 w-10 text-muted-foreground/15" />
+            </motion.div>
+            <motion.div
+              className="absolute -top-1 -right-1"
+              animate={{ y: [1, -1, 1] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+            >
+              <Sparkles className="h-4 w-4 text-primary/20" />
+            </motion.div>
+            <motion.div
+              className="absolute -bottom-1 -left-1"
+              animate={{ y: [-1, 1, -1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
+            >
+              <Globe className="h-4 w-4 text-violet-400/20" />
+            </motion.div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {searchQuery ? 'No matching links' : activeTab === 'favorites' ? 'No favorites yet' : 'No links yet'}
+          </p>
           <p className="text-xs text-muted-foreground/60 mt-1">
-            Paste a link above to get started!
+            {searchQuery ? 'Try a different search term' : 'Paste a link above to get started!'}
           </p>
         </div>
       ) : (
-        <ScrollArea className="max-h-96">
-          <div className="space-y-1">
-            <AnimatePresence initial={false}>
-              {history.map((item) => (
-                <motion.div
-                  key={item.id}
-                  layout
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-accent/50 transition-colors cursor-pointer"
-                  onClick={() => handleItemClick(item)}
-                >
-                  {/* Platform Icon */}
-                  <div
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm"
+        <>
+          <ScrollArea className="max-h-96">
+            <div className="space-y-1">
+              <AnimatePresence initial={false}>
+                {filteredHistory.map((item) => (
+                  <motion.div
+                    key={item.id}
+                    layout
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-accent/50 transition-all cursor-pointer relative overflow-hidden"
+                    onClick={() => handleItemClick(item)}
                     style={{
-                      backgroundColor: `${item.platform.color}20`,
+                      borderLeft: `3px solid ${item.platform.color}40`,
                     }}
                   >
-                    {item.platform.icon}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate">
-                      {truncateUrl(item.originalUrl)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatRelativeTime(item.createdAt)}
-                    </p>
-                  </div>
-
-                  {/* Open Count */}
-                  {item.openCount > 0 && (
-                    <span className="text-xs text-muted-foreground/60 shrink-0">
-                      {item.openCount}x
-                    </span>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleFavorite(item.id)
+                    {/* Hover glow effect */}
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                      style={{
+                        background: `radial-gradient(ellipse at left, ${item.platform.color}08, transparent 60%)`,
                       }}
-                      className="rounded-md p-1 hover:bg-accent transition-colors"
-                    >
-                      <Star
-                        className={`h-3.5 w-3.5 transition-colors ${
-                          item.isFavorite
-                            ? 'fill-amber-400 text-amber-400'
-                            : 'text-muted-foreground'
-                        }`}
-                      />
-                    </button>
+                    />
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        window.open(item.deepLink, '_blank')
+                    {/* Platform Icon */}
+                    <div
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm relative z-10"
+                      style={{
+                        backgroundColor: `${item.platform.color}20`,
                       }}
-                      className="rounded-md p-1 hover:bg-accent transition-colors"
                     >
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                    </button>
+                      {item.platform.icon}
+                    </div>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        removeFromHistory(item.id)
-                      }}
-                      className="rounded-md p-1 hover:bg-destructive/20 transition-colors"
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 relative z-10">
+                      <p className="text-sm text-foreground truncate">
+                        {truncateUrl(item.originalUrl)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatRelativeTime(item.createdAt)}
+                      </p>
+                    </div>
+
+                    {/* Open Count */}
+                    {item.openCount > 0 && (
+                      <span className="text-xs text-muted-foreground/60 shrink-0 relative z-10">
+                        {item.openCount}x
+                      </span>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 relative z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleFavorite(item.id)
+                        }}
+                        className="rounded-md p-1 hover:bg-accent transition-colors"
+                      >
+                        <Star
+                          className={`h-3.5 w-3.5 transition-colors ${
+                            item.isFavorite
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(item.deepLink, '_blank')
+                        }}
+                        className="rounded-md p-1 hover:bg-accent transition-colors"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeFromHistory(item.id)
+                        }}
+                        className="rounded-md p-1 hover:bg-destructive/20 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </ScrollArea>
+
+          {/* Clear All Button */}
+          {history.length > 0 && (
+            <div className="flex justify-end pt-2 border-t border-border/20">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Clear All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="glass-card border-border/50">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear all history?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all {history.length} links from your history. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={clearHistory}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      <X className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </ScrollArea>
+                      Clear All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
