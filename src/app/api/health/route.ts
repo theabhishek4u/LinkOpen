@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { withRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 // ============================================================================
 // Types
@@ -25,6 +26,10 @@ interface HealthCheckResult {
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = withRateLimit(request, RATE_LIMITS.health)
+    if (rateLimitResponse) return rateLimitResponse
+
     const body: HealthCheckRequest = await request.json()
     const { url } = body
 

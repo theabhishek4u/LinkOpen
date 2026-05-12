@@ -197,17 +197,27 @@ export function ActivityFeed() {
               return (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, x: -10, height: 0, scaleY: 0.97 }}
-                  animate={{ opacity: 1, x: 0, height: 'auto', scaleY: 1 }}
+                  initial={{ opacity: 0, y: -16, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, x: 10, height: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.03 }}
-                  className={`group flex items-center gap-2.5 rounded-lg p-2 hover:bg-accent/30 transition-colors ${
+                  transition={{ duration: 0.3, delay: index * 0.03, type: 'spring', stiffness: 300, damping: 25 }}
+                  className={`group relative flex items-center gap-2.5 rounded-lg p-2 transition-colors ${
                     !isRead ? 'bg-accent/10' : ''
-                  }`}
+                  } ${index % 2 === 1 ? 'activity-item-odd' : 'activity-item-even'} hover:bg-accent/30`}
                   onClick={() => {
                     setReadItems(prev => new Set([...prev, item.id]))
                   }}
                 >
+                  {/* Timeline connector line between items */}
+                  {index < activities.length - 1 && (
+                    <div
+                      className="absolute left-[18px] top-full w-px h-2 -z-0"
+                      style={{
+                        background: `linear-gradient(180deg, ${item.platformColor}20, transparent)`,
+                      }}
+                      aria-hidden="true"
+                    />
+                  )}
                   {/* Platform Icon */}
                   <div
                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs"

@@ -29,6 +29,7 @@ model Link {
   qrCodeUrl     String?
   title         String?
   isFavorite    Boolean  @default(false)
+  notes         String?
   openCount     Int      @default(0)
   expiresAt     DateTime?
   healthStatus  String?

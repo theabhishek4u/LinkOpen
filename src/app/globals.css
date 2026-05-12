@@ -3793,3 +3793,295 @@ nav a:focus-visible {
     transform: none;
   }
 }
+
+/* ============================================================
+   STYLING ENHANCEMENT — Task 6-a
+   New CSS utilities and animations for premium polish
+   ============================================================ */
+
+/* ── Float animation — Gentle floating up/down ──────────── */
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+.float-animation {
+  animation: float-gentle 3s ease-in-out infinite;
+}
+
+/* ── Glow expand — Expanding glow on hover/focus ───────── */
+@keyframes glow-expand-keyframes {
+  0% { box-shadow: 0 0 0 0 oklch(0.696 0.17 162.48 / 0%); }
+  50% { box-shadow: 0 0 20px 4px oklch(0.696 0.17 162.48 / 15%); }
+  100% { box-shadow: 0 0 0 0 oklch(0.696 0.17 162.48 / 0%); }
+}
+
+.glow-expand {
+  animation: glow-expand-keyframes 2s ease-in-out infinite;
+}
+
+/* ── Slide in from left ─────────────────────────────────── */
+@keyframes slide-in-left {
+  0% { opacity: 0; transform: translateX(-24px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-from-left {
+  animation: slide-in-left 0.5s ease-out both;
+}
+
+/* ── Slide in from right ────────────────────────────────── */
+@keyframes slide-in-right {
+  0% { opacity: 0; transform: translateX(24px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-from-right {
+  animation: slide-in-right 0.5s ease-out both;
+}
+
+/* ── Count up number animation ──────────────────────────── */
+@keyframes count-up-keyframes {
+  0% { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  60% { opacity: 1; filter: blur(0px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
+}
+
+.count-up {
+  animation: count-up-keyframes 0.6s ease-out both;
+}
+
+/* ── Dot pattern background ─────────────────────────────── */
+.dot-pattern {
+  background-image: radial-gradient(
+    oklch(0.696 0.17 162.48 / 6%) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+}
+
+.dark .dot-pattern {
+  background-image: radial-gradient(
+    oklch(0.696 0.17 162.48 / 4%) 1px,
+    transparent 1px
+  );
+  background-size: 20px 20px;
+}
+
+/* ── Text gradient on hover ─────────────────────────────── */
+.text-gradient-hover {
+  transition: all 0.3s ease;
+  -webkit-text-fill-color: currentColor;
+}
+
+.text-gradient-hover:hover {
+  background: linear-gradient(135deg, oklch(0.696 0.17 162.48), oklch(0.488 0.243 264.376));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Border glow — Subtle glowing border effect ─────────── */
+@keyframes border-glow-pulse {
+  0%, 100% {
+    border-color: oklch(0.696 0.17 162.48 / 15%);
+    box-shadow: 0 0 8px oklch(0.696 0.17 162.48 / 5%);
+  }
+  50% {
+    border-color: oklch(0.696 0.17 162.48 / 35%);
+    box-shadow: 0 0 16px oklch(0.696 0.17 162.48 / 12%), 0 0 32px oklch(0.696 0.17 162.48 / 5%);
+  }
+}
+
+.border-glow {
+  border: 1px solid oklch(0.696 0.17 162.48 / 15%);
+  animation: border-glow-pulse 3s ease-in-out infinite;
+}
+
+/* ── Timeline connector — Vertical line connecting items ── */
+.timeline-connector {
+  position: relative;
+}
+
+.timeline-connector::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    oklch(0.696 0.17 162.48 / 30%) 0%,
+    oklch(0.488 0.243 264.376 / 20%) 50%,
+    oklch(0.769 0.188 70.08 / 15%) 100%
+  );
+  border-radius: 1px;
+}
+
+/* ── Gradient mesh orb — Slowly drifting soft background orb */
+@keyframes mesh-orb-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-20px, 15px) scale(0.95); }
+  75% { transform: translate(15px, 25px) scale(1.03); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.mesh-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  animation: mesh-orb-drift 20s ease-in-out infinite;
+}
+
+.mesh-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: oklch(0.696 0.17 162.48 / 8%);
+  top: 10%;
+  left: 5%;
+  animation-delay: 0s;
+  animation-duration: 22s;
+}
+
+.mesh-orb-2 {
+  width: 350px;
+  height: 350px;
+  background: oklch(0.488 0.243 264.376 / 7%);
+  top: 50%;
+  right: 5%;
+  animation-delay: -7s;
+  animation-duration: 25s;
+}
+
+.mesh-orb-3 {
+  width: 300px;
+  height: 300px;
+  background: oklch(0.769 0.188 70.08 / 6%);
+  bottom: 10%;
+  left: 40%;
+  animation-delay: -14s;
+  animation-duration: 28s;
+}
+
+/* ── FAQ glow on expand ─────────────────────────────────── */
+@keyframes faq-glow-expand {
+  0% { box-shadow: 0 0 0 0 oklch(0.696 0.17 162.48 / 0%); }
+  100% { box-shadow: 0 0 16px 2px oklch(0.696 0.17 162.48 / 10%); }
+}
+
+.faq-glow-open {
+  animation: faq-glow-expand 0.4s ease-out both;
+  border-left: 3px solid;
+  border-image: linear-gradient(180deg, oklch(0.696 0.17 162.48), oklch(0.488 0.243 264.376)) 1;
+}
+
+/* ── Chevron rotation for FAQ ────────────────────────────── */
+.faq-chevron-open {
+  transform: rotate(180deg);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Real-time badge pulse ──────────────────────────────── */
+@keyframes realtime-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.696 0.17 162.48 / 30%); }
+  50% { box-shadow: 0 0 0 4px oklch(0.696 0.17 162.48 / 10%); }
+}
+
+.realtime-badge {
+  animation: realtime-badge-pulse 2s ease-in-out infinite;
+}
+
+/* ── Navbar scroll glow ─────────────────────────────────── */
+.nav-scroll-glow {
+  border-bottom: 1px solid oklch(0.696 0.17 162.48 / 10%);
+  box-shadow: 0 1px 12px oklch(0.696 0.17 162.48 / 5%);
+}
+
+/* ── Pulsing Ready indicator ────────────────────────────── */
+@keyframes ready-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.ready-indicator {
+  animation: ready-pulse 2s ease-in-out infinite;
+}
+
+/* ── Progress bar animation ─────────────────────────────── */
+@keyframes progress-bar-fill {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  90% { width: 95%; }
+  100% { width: 100%; }
+}
+
+.progress-bar-animated {
+  animation: progress-bar-fill 2s ease-in-out infinite;
+  background: linear-gradient(90deg, oklch(0.696 0.17 162.48), oklch(0.488 0.243 264.376), oklch(0.696 0.17 162.48));
+  background-size: 200% 100%;
+  animation: progress-bar-fill 2s ease-in-out infinite, gradient-shift 1.5s ease infinite;
+}
+
+/* ── Hover card lift with shadow ────────────────────────── */
+.hover-card-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 12px 40px oklch(0 0 0 / 25%),
+    0 0 0 1px oklch(0.696 0.17 162.48 / 10%),
+    0 0 20px oklch(0.696 0.17 162.48 / 5%);
+}
+
+/* ── Activity feed alternating background ───────────────── */
+.activity-item-even { background-color: transparent; }
+.activity-item-odd { background-color: oklch(0.696 0.17 162.48 / 2%); }
+.dark .activity-item-odd { background-color: oklch(0.93 0.01 270 / 2%); }
+
+/* ── Section transition fade + slide ────────────────────── */
+.section-fade-slide {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* ── Empty state link icon pulse ────────────────────────── */
+@keyframes empty-state-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.empty-state-pulse {
+  animation: empty-state-pulse 3s ease-in-out infinite;
+}
+
+/* ── Sparkline mini trend ────────────────────────────────── */
+.sparkline-trend {
+  transition: opacity 0.3s ease;
+}
+
+.sparkline-trend:hover {
+  opacity: 1 !important;
+}
+
+/* ── Reduced motion support for new animations ──────────── */
+@media (prefers-reduced-motion: reduce) {
+  .float-animation,
+  .glow-expand,
+  .slide-in-from-left,
+  .slide-in-from-right,
+  .count-up,
+  .border-glow,
+  .mesh-orb,
+  .faq-glow-open,
+  .realtime-badge,
+  .ready-indicator,
+  .progress-bar-animated,
+  .empty-state-pulse {
+    animation: none !important;
+  }
+}

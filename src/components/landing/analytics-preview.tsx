@@ -209,10 +209,25 @@ function ChartBar({ bar, index, animated, hoveredBar, onHover, onLeave }: {
 export default function AnalyticsPreview() {
   const [animated, setAnimated] = useState(false)
   const [hoveredBar, setHoveredBar] = useState<number | null>(null)
+  const [scrollOffset, setScrollOffset] = useState(0)
+  const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const timer = setTimeout(() => setAnimated(true), 300)
     return () => clearTimeout(timer)
+  }, [])
+
+  // Parallax scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (sectionRef.current) {
+        const rect = sectionRef.current.getBoundingClientRect()
+        const progress = rect.top / window.innerHeight
+        setScrollOffset(progress * 40)
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const today = new Date()
@@ -220,9 +235,9 @@ export default function AnalyticsPreview() {
   const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 
   return (
-    <section className="relative py-20 sm:py-28 overflow-hidden">
-      {/* Subtle particle effects */}
-      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+    <section className="relative py-20 sm:py-28 overflow-hidden" ref={sectionRef}>
+      {/* Parallax particle effects */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true" style={{ transform: `translateY(${scrollOffset}px)` }}>
         {particles.map((p) => (
           <div key={p.id} className="particle-dot" style={p.style} />
         ))}
@@ -249,6 +264,20 @@ export default function AnalyticsPreview() {
           >
             <Sparkles className="size-3.5 text-emerald-400" />
             <span className="text-xs font-medium text-emerald-400">Real-time Insights</span>
+          </motion.div>
+          {/* Real-time badge with pulse */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 20 }}
+            className="realtime-badge flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20"
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+            </span>
+            <span className="text-[9px] font-semibold text-emerald-400 uppercase tracking-wider">Real-time</span>
           </motion.div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
             <span className="gradient-text">Enterprise Analytics</span>

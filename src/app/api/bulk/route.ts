@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { detectPlatform, validateUrl } from '@/lib/platform-detect'
 import { generateDeepLink, generateShortCode } from '@/lib/deep-link'
 import { db } from '@/lib/db'
+import { withRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 // ============================================================================
 // Types
@@ -34,6 +35,10 @@ const MAX_BULK_URLS = 50
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = withRateLimit(request, RATE_LIMITS.bulk)
+    if (rateLimitResponse) return rateLimitResponse
+
     const body: BulkRequest = await request.json()
     const { urls } = body
 

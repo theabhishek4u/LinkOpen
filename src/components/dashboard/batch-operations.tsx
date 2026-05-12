@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Trash2, Download, ExternalLink, X, CheckSquare, Square, Loader2,
-  Tag, Copy, Check, AlertTriangle,
+  Tag, Copy, Check, AlertTriangle, FileSpreadsheet, FileJson,
 } from 'lucide-react'
 import { useLinkStore } from '@/store/link-store'
 import { Button } from '@/components/ui/button'
@@ -68,6 +68,31 @@ function RippleButton({
   )
 }
 
+// Helper: Convert array of objects to CSV string
+function generateCSV(links: Record<string, unknown>[]): string {
+  if (links.length === 0) return ''
+  const headers = ['originalUrl', 'platform', 'deepLink', 'shortCode', 'openCount', 'createdAt', 'note']
+  const headerRow = headers.join(',')
+
+  const rows = links.map((link) =>
+    headers.map((h) => {
+      let val = ''
+      if (h === 'platform') {
+        val = (link.platform as Record<string, string>)?.name || ''
+      } else {
+        val = String(link[h] ?? '')
+      }
+      // Escape CSV
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        val = `"${val.replace(/"/g, '""')}"`
+      }
+      return val
+    }).join(',')
+  )
+
+  return [headerRow, ...rows].join('\n')
+}
+
 export function BatchOperationsBar() {
   const {
     selectedLinkIds,
@@ -86,6 +111,7 @@ export function BatchOperationsBar() {
   const [isCopying, setIsCopying] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false)
+  const [exportPopoverOpen, setExportPopoverOpen] = useState(false)
   const [copiedTag, setCopiedTag] = useState<string | null>(null)
   const [operationProgress, setOperationProgress] = useState<number | null>(null)
 
@@ -116,10 +142,11 @@ export function BatchOperationsBar() {
     }
   }, [selectedLinkIds, removeFromHistory, addNotification, clearSelection])
 
-  const handleExportSelected = useCallback(async () => {
+  const handleExportJSON = useCallback(async () => {
     if (selectedLinkIds.length === 0) return
     setIsExporting(true)
     setOperationProgress(0)
+    setExportPopoverOpen(false)
     try {
       const selectedLinks = history.filter((item) => selectedLinkIds.includes(item.id))
       const res = await fetch('/api/export', {
@@ -154,6 +181,32 @@ export function BatchOperationsBar() {
     } finally {
       setIsExporting(false)
       setTimeout(() => setOperationProgress(null), 800)
+    }
+  }, [selectedLinkIds, history, addNotification])
+
+  const handleExportCSV = useCallback(() => {
+    if (selectedLinkIds.length === 0) return
+    setIsExporting(true)
+    setExportPopoverOpen(false)
+    try {
+      const selectedLinks = history.filter((item) => selectedLinkIds.includes(item.id))
+      const csv = generateCSV(selectedLinks as unknown as Record<string, unknown>[])
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `linkverse-export-${Date.now()}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      addNotification({
+        type: 'link_generated',
+        title: 'Export Complete',
+        description: `${selectedLinkIds.length} link(s) exported as CSV`,
+      })
+    } finally {
+      setIsExporting(false)
     }
   }, [selectedLinkIds, history, addNotification])
 
@@ -315,19 +368,38 @@ export function BatchOperationsBar() {
                     Delete
                   </RippleButton>
 
-                  {/* Export Selected */}
-                  <RippleButton
-                    onClick={handleExportSelected}
-                    disabled={isOperating}
-                    className="h-7 px-2 text-[10px] gap-1 text-primary hover:bg-primary/10 rounded-md transition-colors disabled:opacity-40 inline-flex items-center shrink-0"
-                  >
-                    {isExporting ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <Download className="h-3 w-3" />
-                    )}
-                    Export
-                  </RippleButton>
+                  {/* Export Selected - Popover with JSON/CSV options */}
+                  <Popover open={exportPopoverOpen} onOpenChange={setExportPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <button
+                        disabled={isOperating}
+                        className="h-7 px-2 text-[10px] gap-1 text-primary hover:bg-primary/10 rounded-md transition-colors disabled:opacity-40 inline-flex items-center shrink-0"
+                      >
+                        {isExporting ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Download className="h-3 w-3" />
+                        )}
+                        Export
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40 p-1.5" align="bottom" sideOffset={8}>
+                      <button
+                        onClick={handleExportJSON}
+                        className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+                      >
+                        <FileJson className="h-3.5 w-3.5 text-primary" />
+                        Export as JSON
+                      </button>
+                      <button
+                        onClick={handleExportCSV}
+                        className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
+                      >
+                        <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
+                        Export as CSV
+                      </button>
+                    </PopoverContent>
+                  </Popover>
 
                   {/* Tag Selected - Popover */}
                   <Popover open={tagPopoverOpen} onOpenChange={setTagPopoverOpen}>
@@ -384,7 +456,7 @@ export function BatchOperationsBar() {
                     ) : (
                       <Copy className="h-3 w-3" />
                     )}
-                    Copy All
+                    Copy
                   </RippleButton>
 
                   {/* Open All */}
@@ -394,7 +466,7 @@ export function BatchOperationsBar() {
                     className="h-7 px-2 text-[10px] gap-1 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 rounded-md transition-colors disabled:opacity-40 inline-flex items-center shrink-0"
                   >
                     <ExternalLink className="h-3 w-3" />
-                    Open All
+                    Open
                   </RippleButton>
 
                   {/* Select All / Deselect */}
@@ -408,7 +480,7 @@ export function BatchOperationsBar() {
                     ) : (
                       <Square className="h-3 w-3" />
                     )}
-                    {allSelected ? 'Deselect' : 'Select All'}
+                    {allSelected ? 'None' : 'All'}
                   </RippleButton>
                 </div>
 

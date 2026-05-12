@@ -139,7 +139,7 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="relative group rounded-xl overflow-hidden glass-card-hover stat-card-glow"
+      className="relative group rounded-xl overflow-hidden glass-card-hover stat-card-glow hover-card-lift"
     >
       {/* Animated gradient border */}
       <div className="absolute inset-0 rounded-xl premium-border pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

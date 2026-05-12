@@ -73,14 +73,15 @@ export function LinkSearch() {
   const filteredCount = useMemo(() => {
     let items = history
 
-    // Text search
+    // Text search (includes notes)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       items = items.filter(
         (item) =>
           item.originalUrl.toLowerCase().includes(query) ||
           item.platform.name.toLowerCase().includes(query) ||
-          item.deepLink.toLowerCase().includes(query)
+          item.deepLink.toLowerCase().includes(query) ||
+          (item.note && item.note.toLowerCase().includes(query))
       )
     }
 

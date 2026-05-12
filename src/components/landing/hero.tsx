@@ -326,6 +326,11 @@ export default function Hero({ onTryNow }: HeroProps) {
         ))}
       </div>
 
+      {/* Gradient mesh orbs — 3 slowly drifting soft orbs */}
+      <div className="mesh-orb mesh-orb-1" aria-hidden="true" />
+      <div className="mesh-orb mesh-orb-2" aria-hidden="true" />
+      <div className="mesh-orb mesh-orb-3" aria-hidden="true" />
+
       {/* Dot grid overlay */}
       <div className="absolute inset-0 dot-grid opacity-30" />
 
@@ -391,8 +396,8 @@ export default function Hero({ onTryNow }: HeroProps) {
           animate="visible"
           className="flex flex-col items-center text-center"
         >
-          {/* Badge */}
-          <motion.div variants={itemVariants} className="flex items-center gap-2">
+          {/* Badge + Social Proof */}
+          <motion.div variants={itemVariants} className="flex items-center gap-2 flex-wrap justify-center">
             <Badge
               variant="outline"
               className="px-4 py-1.5 text-xs sm:text-sm border-emerald-500/30 text-emerald-400 bg-emerald-500/10 backdrop-blur-sm"
@@ -406,6 +411,46 @@ export default function Hero({ onTryNow }: HeroProps) {
             >
               ⚡ powered by AI
             </Badge>
+            {/* Floating "Trusted by 10,000+ users" social proof badge */}
+            <motion.div
+              className="float-animation"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.2, duration: 0.5 }}
+            >
+              <Badge
+                variant="outline"
+                className="px-3 py-1 text-[10px] border-amber-500/25 text-amber-500 bg-amber-500/10 backdrop-blur-sm"
+              >
+                <span className="mr-1">👥</span>
+                Trusted by 10,000+ users
+              </Badge>
+            </motion.div>
+          </motion.div>
+
+          {/* Live indicator — real-time link processing count */}
+          <motion.div
+            variants={itemVariants}
+            className="flex items-center gap-2 mt-2"
+          >
+            <div className="realtime-badge flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Live</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground/50">
+              <motion.span
+                key={count}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="count-up inline-block text-emerald-400/70 font-medium"
+              >
+                {count.toLocaleString()}
+              </motion.span>
+              {' '}links processed
+            </span>
           </motion.div>
 
           {/* Headline with smoother gradient */}

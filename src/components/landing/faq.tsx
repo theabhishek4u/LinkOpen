@@ -60,7 +60,7 @@ function FaqItem({ faq, index, isOpen, onToggle }: { faq: typeof faqs[0]; index:
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: index * 0.06 }}
       className={`relative rounded-lg overflow-hidden transition-all duration-300 ${
-        isOpen ? 'faq-item-open-accent' : 'hover:bg-accent/20'
+        isOpen ? 'faq-glow-open' : 'hover:bg-accent/20'
       }`}
     >
       <button
@@ -88,12 +88,12 @@ function FaqItem({ faq, index, isOpen, onToggle }: { faq: typeof faqs[0]; index:
           {faq.question}
         </span>
 
-        {/* Animated chevron icon with spin */}
+        {/* Animated chevron icon with smooth rotation */}
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0, scale: isOpen ? 1.1 : 1 }}
-          transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           className={`flex-shrink-0 transition-colors duration-300 ${
-            isOpen ? 'text-emerald-400' : 'text-muted-foreground group-hover:text-emerald-400'
+            isOpen ? 'faq-chevron-open text-emerald-400' : 'text-muted-foreground group-hover:text-emerald-400'
           }`}
         >
           <ChevronDown className="size-4" />

@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen, Bell } from 'lucide-react'
+import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen, Bell, Moon, Download, Globe } from 'lucide-react'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { SmartInput, SmartInputHandle } from './smart-input'
 import { LinkResult } from './link-result'
@@ -14,7 +14,7 @@ import { AnalyticsChart } from './analytics-chart'
 import { UrlSuggestions } from './url-suggestions'
 import { ThemeToggle } from './theme-toggle'
 import { BulkOpener } from './bulk-opener'
-import { KeyboardShortcuts } from './keyboard-shortcuts'
+import { KeyboardShortcuts, ShortcutsHelpButton } from './keyboard-shortcuts'
 import { PlatformQuickActions } from './platform-quick-actions'
 import { ActivityFeed } from './activity-feed'
 import { OnboardingOverlay } from './onboarding-overlay'
@@ -35,7 +35,10 @@ import { ApiDocsModal } from './api-docs-modal'
 import { LinkInsights } from './link-insights'
 import { LinkSearch } from './link-search'
 import { DeepLinkTester } from './deep-link-tester'
+import { LinkClusters } from './link-clusters'
+import { WelcomeCard } from './welcome-card'
 import { useLinkStore } from '@/store/link-store'
+import { useTheme } from 'next-themes'
 
 type SectionId = 'input' | 'analytics' | 'history' | 'tools'
 
@@ -83,6 +86,7 @@ export function DashboardMain() {
   const [whatsNewDismissed, setWhatsNewDismissed] = useState(false)
   const [statGlowKey, setStatGlowKey] = useState(0)
   const { inputUrl, analytics, addNotification, history } = useLinkStore()
+  const { theme, setTheme } = useTheme()
 
   // Loading skeleton with 1.5s delay
   useEffect(() => {
@@ -106,7 +110,16 @@ export function DashboardMain() {
     smartInputRef.current?.generateQR()
   }, [])
 
+  const handleToggleDarkMode = useCallback(() => {
+    setTheme(theme === 'dark' ? 'light' : 'dark')
+  }, [theme, setTheme])
+
+  const handleExportData = useCallback(() => {
+    setShowSettings(true)
+  }, [])
+
   // Command palette shortcut (Cmd+K / Ctrl+K)
+  // Note: Other shortcuts are handled by KeyboardShortcuts component
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -161,6 +174,18 @@ export function DashboardMain() {
     document.getElementById(`section-${sectionId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
+  const handleViewAnalytics = useCallback(() => {
+    handleSectionNav('analytics')
+  }, [handleSectionNav])
+
+  const handleViewHistory = useCallback(() => {
+    handleSectionNav('history')
+  }, [handleSectionNav])
+
+  const handleNewLink = useCallback(() => {
+    handleFocusInput()
+  }, [handleFocusInput])
+
   // Handle sidebar section navigation
   const handleSidebarNav = useCallback((sectionId: SidebarSection) => {
     if (sectionId === 'settings') {
@@ -178,11 +203,34 @@ export function DashboardMain() {
 
   return (
     <div className="min-h-screen w-full mesh-gradient-subtle scroll-smooth relative transition-colors duration-700">
+      {/* Dot pattern background */}
+      <div className="fixed inset-0 dot-pattern opacity-40 pointer-events-none" aria-hidden="true" />
+
       {/* Section background color shift */}
       <div
         className={`fixed inset-0 bg-gradient-to-b ${sectionBgColors[sectionTransition] || ''} pointer-events-none transition-opacity duration-700`}
         aria-hidden="true"
       />
+
+      {/* Quick Tips tooltip on first visit */}
+      {!isLoading && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2, duration: 0.5 }}
+          className="fixed bottom-6 left-6 z-30 max-w-xs hidden lg:block"
+        >
+          <div className="glass-card p-3 rounded-lg border-glow">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="text-xs font-semibold text-foreground">Quick Tip</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              Press <kbd className="px-1 py-0.5 rounded bg-muted/60 text-[9px] font-mono border border-border/30">⌘K</kbd> to open the command palette for quick actions.
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       <OnboardingOverlay />
 
@@ -195,6 +243,20 @@ export function DashboardMain() {
 
         {/* Main content */}
         <div className="flex-1 min-w-0 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8 relative z-10">
+          {/* Welcome Card */}
+          <motion.div
+            custom={-0.5}
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <WelcomeCard
+              onCreateLink={handleFocusInput}
+              onViewAnalytics={handleViewAnalytics}
+              onExportData={handleExportData}
+            />
+          </motion.div>
+
           {/* Header */}
           <motion.div
             custom={0}
@@ -497,6 +559,7 @@ export function DashboardMain() {
               className="lg:col-span-2 space-y-4 sm:space-y-6"
             >
               <AnalyticsCards />
+              <LinkClusters />
               <AnalyticsChart />
               <PerformanceDashboard />
               <MiniChart />
@@ -612,7 +675,15 @@ export function DashboardMain() {
         onOpenInApp={handleOpenInApp}
         onCopyLink={handleCopyLink}
         onGenerateQR={handleGenerateQR}
+        onViewAnalytics={handleViewAnalytics}
+        onExportData={handleExportData}
+        onToggleDarkMode={handleToggleDarkMode}
+        onViewHistory={handleViewHistory}
+        onNewLink={handleNewLink}
       />
+
+      {/* Shortcuts Help Button */}
+      <ShortcutsHelpButton onClick={() => setShowShortcuts(true)} />
 
       {/* Settings Panel */}
       <SettingsPanel open={showSettings} onOpenChange={setShowSettings} />
@@ -670,6 +741,9 @@ export function DashboardMain() {
                     { icon: HeartPulse, label: 'Health Check', desc: 'Check link health status', actionId: 'healthCheck' as const },
                     { icon: BookOpen, label: 'API Docs', desc: 'View API documentation', actionId: 'apiDocs' as const },
                     { icon: Settings, label: 'Settings', desc: 'Open settings panel', actionId: 'settings' as const },
+                    { icon: Moon, label: 'Toggle Theme', desc: 'Switch light/dark mode', actionId: 'toggleDarkMode' as const },
+                    { icon: Download, label: 'Export Data', desc: 'Export links and analytics', actionId: 'exportData' as const },
+                    { icon: Globe, label: 'Link Clusters', desc: 'View link groups by platform', actionId: 'viewClusters' as const },
                   ].map((cmd) => (
                     <button
                       key={cmd.label}
@@ -678,9 +752,13 @@ export function DashboardMain() {
                         else if (cmd.actionId === 'focusInput') handleFocusInput()
                         else if (cmd.actionId === 'showShortcuts') setShowShortcuts(true)
                         else if (cmd.actionId === 'bulkOpen') setBulkOpen(true)
+                        else if (cmd.actionId === 'viewAnalytics') handleViewAnalytics()
                         else if (cmd.actionId === 'healthCheck') setShowHealthChecker(true)
                         else if (cmd.actionId === 'apiDocs') setShowApiDocs(true)
                         else if (cmd.actionId === 'settings') setShowSettings(true)
+                        else if (cmd.actionId === 'toggleDarkMode') handleToggleDarkMode()
+                        else if (cmd.actionId === 'exportData') handleExportData()
+                        else if (cmd.actionId === 'viewClusters') handleSectionNav('analytics')
                         setShowCommandPalette(false)
                       }}
                       className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left hover:bg-accent/50 transition-colors group focus-visible-ring"

@@ -423,70 +423,81 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
                 aria-label="URL input"
               />
 
-              {/* Right side controls */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                {/* Platform Badge with sparkle */}
-                <AnimatePresence>
-                  {detectedPlatform && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                      className="relative"
-                    >
-                      <PlatformBadge platform={detectedPlatform} />
-                      {/* Mini sparkle particles around the badge */}
-                      {showSparkle && (
-                        <>
-                          <motion.span
-                            initial={{ opacity: 1, scale: 0, y: 0 }}
-                            animate={{ opacity: 0, scale: 1, y: -8 }}
-                            transition={{ duration: 0.4 }}
-                            className="absolute -top-1 left-1/2 text-[8px]"
-                          >
-                            ✨
-                          </motion.span>
-                        </>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              {/* Pulsing "Ready" indicator when input is empty and focused */}
+              {isFocused && !inputUrl.trim() && !isProcessing && (
+                <motion.div
+                  initial={{ opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 8 }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5"
+                >
+                  <span className="ready-indicator h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="text-[10px] text-emerald-400/70 font-medium">Ready</span>
+                </motion.div>
+              )}
 
-                {/* URL validation indicator */}
-                <AnimatePresence>
-                  {inputUrl.trim() && !detectedPlatform && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                    >
-                      {isUrlValid ? (
-                        <Check className="h-4 w-4 text-emerald-400" />
-                      ) : (
-                        <AlertCircle className="h-4 w-4 text-amber-400/60" />
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              {/* Animated platform icon that appears when detected (spring scale-in) */}
+              <AnimatePresence>
+                {detectedPlatform && inputUrl.trim() && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0, rotate: -10 }}
+                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                    exit={{ scale: 0, opacity: 0, rotate: 10 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                  >
+                    <PlatformBadge platform={detectedPlatform} />
+                    {/* Mini sparkle particles around the badge */}
+                    {showSparkle && (
+                      <>
+                        <motion.span
+                          initial={{ opacity: 1, scale: 0, y: 0 }}
+                          animate={{ opacity: 0, scale: 1, y: -8 }}
+                          transition={{ duration: 0.4 }}
+                          className="absolute -top-1 left-1/2 text-[8px]"
+                        >
+                          ✨
+                        </motion.span>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                {/* Clear button */}
-                <AnimatePresence>
-                  {inputUrl.trim() && !detectedPlatform && (
-                    <motion.button
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={handleClear}
-                      className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </div>
+              {/* URL validation indicator */}
+              <AnimatePresence>
+                {inputUrl.trim() && !detectedPlatform && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                  >
+                    {isUrlValid ? (
+                      <Check className="h-4 w-4 text-emerald-400" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-amber-400/60" />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Clear button */}
+              <AnimatePresence>
+                {inputUrl.trim() && !detectedPlatform && (
+                  <motion.button
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleClear}
+                    className="absolute right-8 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Paste from Clipboard Button */}
@@ -510,6 +521,20 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
               )}
             </AnimatePresence>
           </div>
+
+          {/* Progress bar under the input during processing */}
+          <AnimatePresence>
+            {isProcessing && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 3 }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden rounded-b-xl -mt-1"
+              >
+                <div className="progress-bar-animated h-full rounded-full" />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Code-Style Deep Link Preview */}
           <AnimatePresence>

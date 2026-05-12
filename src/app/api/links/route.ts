@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { detectPlatform, validateUrl } from '@/lib/platform-detect'
 import { generateDeepLink, generateShortCode } from '@/lib/deep-link'
 import { db } from '@/lib/db'
+import { withRateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = withRateLimit(request, RATE_LIMITS.links)
+    if (rateLimitResponse) return rateLimitResponse
+
     const body = await request.json()
     const { url, customAlias } = body
 
@@ -107,6 +112,10 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = withRateLimit(request, RATE_LIMITS.links)
+    if (rateLimitResponse) return rateLimitResponse
+
     const searchParams = request.nextUrl.searchParams
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')

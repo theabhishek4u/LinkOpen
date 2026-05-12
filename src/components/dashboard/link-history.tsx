@@ -2,10 +2,15 @@
 
 import { useCallback, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe, Heart, Pin, AlertCircle, CheckSquare, Square, FileQuestion, ArrowUpRight, TrendingUp } from 'lucide-react'
+import { Star, X, ExternalLink, Clock, Search, Trash2, Link2, Sparkles, Globe, Heart, Pin, AlertCircle, CheckSquare, Square, FileQuestion, ArrowUpRight, TrendingUp, StickyNote } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,6 +67,7 @@ export function LinkHistory() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [heartAnimatingId, setHeartAnimatingId] = useState<string | null>(null)
   const [selectionMode, setSelectionMode] = useState(false)
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
 
   const handleItemClick = useCallback(
     (item: (typeof history)[0]) => {
@@ -113,12 +119,30 @@ export function LinkHistory() {
         (item) =>
           item.originalUrl.toLowerCase().includes(query) ||
           item.platform.name.toLowerCase().includes(query) ||
-          item.deepLink.toLowerCase().includes(query)
+          item.deepLink.toLowerCase().includes(query) ||
+          (item.note && item.note.toLowerCase().includes(query))
       )
     }
 
     return items
   }, [history, activeTab, searchQuery, selectedCategory, filterByTag])
+
+  // Shift+click range selection handler
+  const handleSelectionClick = useCallback(
+    (itemId: string, index: number, e: React.MouseEvent) => {
+      if (e.shiftKey && lastSelectedIndex !== null) {
+        // Range selection
+        const start = Math.min(lastSelectedIndex, index)
+        const end = Math.max(lastSelectedIndex, index)
+        const rangeIds = filteredHistory.slice(start, end + 1).map((item) => item.id)
+        selectAll(rangeIds)
+      } else {
+        toggleSelect(itemId)
+      }
+      setLastSelectedIndex(index)
+    },
+    [lastSelectedIndex, filteredHistory, toggleSelect, selectAll]
+  )
 
   const favoriteCount = history.filter((item) => item.isFavorite).length
 
@@ -247,13 +271,20 @@ export function LinkHistory() {
       {/* List with improved empty state */}
       {filteredHistory.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="empty-state-icon mb-4">
+          <div className="empty-state-icon mb-4 relative">
             <motion.div
               animate={{ y: [-2, 2, -2] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <FileQuestion className="h-8 w-8 text-muted-foreground/25" />
+              <Link2 className="h-8 w-8 text-muted-foreground/25" />
             </motion.div>
+            {/* Empty state pulse ring */}
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0, 0.3] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ border: '1px solid oklch(0.696 0.17 162.48 / 15%)' }}
+            />
             {/* Orbiting decorative dots */}
             <motion.div
               className="absolute -top-1 -right-1"
@@ -325,7 +356,10 @@ export function LinkHistory() {
                       </motion.div>
                     )}
 
-                    <div
+                    {/* Hover card preview showing link details */}
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <div
                       className={`flex items-center gap-3 rounded-lg p-2.5 ml-8 transition-all cursor-pointer relative overflow-hidden ${
                         selectedLinkIds.includes(item.id)
                           ? 'bg-primary/5 border border-primary/15'
@@ -333,9 +367,9 @@ export function LinkHistory() {
                             ? 'bg-amber-500/5 border border-amber-500/10'
                             : 'hover:bg-accent/50 border border-transparent'
                       } ${expandedId === item.id ? 'bg-accent/50' : ''}`}
-                      onClick={() => {
+                      onClick={(e) => {
                         if (selectionMode) {
-                          toggleSelect(item.id)
+                          handleSelectionClick(item.id, index, e)
                         } else {
                           handleItemClick(item)
                         }
@@ -351,7 +385,7 @@ export function LinkHistory() {
 
                       {/* Checkbox (when selection mode is active) */}
                       {selectionMode && (
-                        <div className="shrink-0 relative z-10" onClick={(e) => { e.stopPropagation(); toggleSelect(item.id) }}>
+                        <div className="shrink-0 relative z-10" onClick={(e) => { e.stopPropagation(); handleSelectionClick(item.id, index, e) }}>
                           {selectedLinkIds.includes(item.id) ? (
                             <CheckSquare className="h-4 w-4 text-primary" />
                           ) : (
@@ -361,13 +395,21 @@ export function LinkHistory() {
                       )}
 
                       {/* Platform Icon */}
-                      <div
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm relative z-10"
-                        style={{
-                          backgroundColor: `${item.platform.color}20`,
-                        }}
-                      >
-                        {item.platform.icon}
+                      <div className="relative shrink-0 z-10">
+                        <div
+                          className="flex h-8 w-8 items-center justify-center rounded-md text-sm"
+                          style={{
+                            backgroundColor: `${item.platform.color}20`,
+                          }}
+                        >
+                          {item.platform.icon}
+                        </div>
+                        {/* Note indicator dot */}
+                        {item.note && (
+                          <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary border border-background flex items-center justify-center">
+                            <StickyNote className="h-1.5 w-1.5 text-primary-foreground" />
+                          </div>
+                        )}
                       </div>
 
                       {/* Content */}
@@ -520,6 +562,36 @@ export function LinkHistory() {
                         </div>
                       )}
                     </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="glass-card w-64 p-3" side="left">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs"
+                              style={{ backgroundColor: `${item.platform.color}20` }}
+                            >
+                              {item.platform.icon}
+                            </div>
+                            <span className="text-xs font-medium text-foreground">{item.platform.name}</span>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Deep Link</p>
+                            <p className="text-[11px] text-primary font-mono truncate">{item.deepLink}</p>
+                          </div>
+                          {item.shortCode && (
+                            <div className="space-y-1">
+                              <p className="text-[10px] text-muted-foreground/50 uppercase tracking-wider">Short Code</p>
+                              <p className="text-[11px] text-amber-400 font-mono">/s/{item.shortCode}</p>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50">
+                            <span>{item.openCount}x opened</span>
+                            <span>•</span>
+                            <span>{formatRelativeTime(item.createdAt)}</span>
+                          </div>
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   </motion.div>
                 ))}
               </AnimatePresence>
