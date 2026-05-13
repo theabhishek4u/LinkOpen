@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
+import { Providers } from "@/components/auth/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -48,10 +49,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
-          <TooltipProvider>
-            <Toaster />
-          </TooltipProvider>
+          <Providers>
+            {children}
+            <TooltipProvider>
+              <Toaster />
+            </TooltipProvider>
+          </Providers>
         </ThemeProvider>
       </body>
     </html>

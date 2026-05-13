@@ -624,12 +624,11 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         <Button
           onClick={handleOpenInApp}
           disabled={!isUrlValid || isProcessing}
-          className="glow-green btn-glow bg-primary text-primary-foreground hover:bg-primary/90"
+          className="glow-green btn-glow bg-primary text-primary-foreground hover:bg-primary/90 min-w-[100px]"
           size="default"
         >
           <ExternalLink className="h-4 w-4" />
-          <span className="hidden sm:inline">Open in App</span>
-          <span className="sm:hidden">App</span>
+          <span className="sm:inline">Open in App</span>
         </Button>
 
         <Button

@@ -2,25 +2,31 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link2, BarChart3, Shield, Clock, Settings, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Link2, BarChart3, Shield, Clock, Settings, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
+import { useAuthStore } from '@/store/auth-store'
 
-export type SidebarSection = 'input' | 'analytics' | 'tools' | 'history' | 'settings'
+export type SidebarSection = 'input' | 'analytics' | 'tools' | 'history' | 'settings' | 'admin'
 
 interface DashboardSidebarProps {
   activeSection: SidebarSection
   onSectionChange: (section: SidebarSection) => void
 }
 
-const sidebarItems: { id: SidebarSection; label: string; icon: typeof Link2; gradient: string; progress: number }[] = [
+const baseSidebarItems: { id: SidebarSection; label: string; icon: typeof Link2; gradient: string; progress: number; adminOnly?: boolean }[] = [
   { id: 'input', label: 'Create', icon: Link2, gradient: 'from-emerald-500/20 to-emerald-500/5', progress: 85 },
   { id: 'analytics', label: 'Analytics', icon: BarChart3, gradient: 'from-violet-500/20 to-violet-500/5', progress: 60 },
   { id: 'tools', label: 'Tools', icon: Shield, gradient: 'from-amber-500/20 to-amber-500/5', progress: 40 },
   { id: 'history', label: 'History', icon: Clock, gradient: 'from-emerald-500/20 to-emerald-500/5', progress: 70 },
+  { id: 'admin', label: 'Admin', icon: ShieldCheck, gradient: 'from-amber-500/20 to-amber-500/5', progress: 100, adminOnly: true },
   { id: 'settings', label: 'Settings', icon: Settings, gradient: 'from-violet-500/20 to-violet-500/5', progress: 30 },
 ]
 
 export function DashboardSidebar({ activeSection, onSectionChange }: DashboardSidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const { user } = useAuthStore()
+
+  // Filter sidebar items based on user role
+  const sidebarItems = baseSidebarItems.filter(item => !item.adminOnly || user?.role === 'admin')
 
   return (
     <motion.aside

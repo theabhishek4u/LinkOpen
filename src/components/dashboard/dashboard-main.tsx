@@ -41,10 +41,12 @@ import { LinkHeatmap } from './link-heatmap'
 import { UrlBuilder } from './url-builder'
 import { RedirectChain } from './redirect-chain'
 import { UsageQuota } from './usage-quota'
+import { AdminDashboard } from '@/components/admin/admin-dashboard'
 import { useLinkStore } from '@/store/link-store'
+import { useAuthStore } from '@/store/auth-store'
 import { useTheme } from 'next-themes'
 
-type SectionId = 'input' | 'analytics' | 'history' | 'tools'
+type SectionId = 'input' | 'analytics' | 'history' | 'tools' | 'admin'
 
 const SECTIONS = [
   { id: 'input' as const, label: 'Create', icon: Link2 },
@@ -90,6 +92,7 @@ export function DashboardMain() {
   const [whatsNewDismissed, setWhatsNewDismissed] = useState(false)
   const [statGlowKey, setStatGlowKey] = useState(0)
   const { inputUrl, analytics, addNotification, history } = useLinkStore()
+  const { user } = useAuthStore()
   const { theme, setTheme } = useTheme()
 
   // Loading skeleton with 1.5s delay
@@ -246,7 +249,7 @@ export function DashboardMain() {
         />
 
         {/* Main content */}
-        <div className="flex-1 min-w-0 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-8 relative z-10">
+        <div className="flex-1 min-w-0 mx-auto max-w-6xl px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8 relative z-10">
           {/* Welcome Card */}
           <motion.div
             custom={-0.5}
@@ -608,6 +611,20 @@ export function DashboardMain() {
               <DeepLinkTester />
             </div>
           </motion.div>
+
+          {/* Admin Section - Only visible for admin users */}
+          {user?.role === 'admin' && (
+            <motion.div
+              custom={9}
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              id="section-admin"
+              className="space-y-4 sm:space-y-6"
+            >
+              <AdminDashboard />
+            </motion.div>
+          )}
 
           {/* Enhanced Footer */}
           <motion.footer

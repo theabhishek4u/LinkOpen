@@ -1,6 +1,7 @@
 'use client'
 
 import { useLinkStore } from '@/store/link-store'
+import { useAuthStore } from '@/store/auth-store'
 import { motion, AnimatePresence } from 'framer-motion'
 import Navbar from '@/components/landing/navbar'
 import Hero from '@/components/landing/hero'
@@ -18,6 +19,11 @@ import { ThemeToggle } from '@/components/dashboard/theme-toggle'
 import { ArrowLeft, Sparkles, Link2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CookieConsent } from '@/components/landing/cookie-consent'
+import { UserMenu } from '@/components/auth/user-menu'
+import { LoginForm } from '@/components/auth/login-form'
+import { RegisterForm } from '@/components/auth/register-form'
+import { useState, useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
 
 function SectionDivider() {
   return <div className="section-divider mx-auto max-w-4xl" />
@@ -61,6 +67,89 @@ function LandingView({ onSwitchToDashboard }: { onSwitchToDashboard: () => void 
 }
 
 function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void }) {
+  const { isAuthenticated, checkSession } = useAuthStore()
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
+  const [isChecking, setIsChecking] = useState(true)
+
+  useEffect(() => {
+    const verify = async () => {
+      await checkSession()
+      setIsChecking(false)
+    }
+    verify()
+  }, [checkSession])
+
+  // Loading state while checking session
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background mesh-gradient-subtle">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            </div>
+            <div className="absolute -inset-2 rounded-2xl bg-emerald-500/10 animate-pulse" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-medium gradient-text">LinkVerse</p>
+            <p className="text-xs text-muted-foreground">Checking authentication...</p>
+          </div>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // If not authenticated, show auth forms
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background mesh-gradient-subtle p-4">
+        <div className="w-full max-w-md">
+          {/* Back to home button */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSwitchToLanding}
+              className="text-muted-foreground hover:text-foreground -ml-2"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back to Home
+            </Button>
+          </motion.div>
+
+          <AnimatePresence mode="wait">
+            {authMode === 'login' ? (
+              <LoginForm
+                key="login"
+                onSwitchToRegister={() => setAuthMode('register')}
+              />
+            ) : (
+              <RegisterForm
+                key="register"
+                onSwitchToLogin={() => setAuthMode('login')}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* Background decoration */}
+          <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Authenticated: show the full dashboard
   return (
     <div className="min-h-screen flex flex-col bg-background mesh-gradient-subtle">
       {/* Dashboard header with gradient bottom border */}
@@ -92,8 +181,9 @@ function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void })
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
             </span>
             <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs text-emerald-400 font-medium">AI Active</span>
+            <span className="text-xs text-emerald-400 font-medium hidden sm:inline">AI Active</span>
             <ThemeToggle />
+            <UserMenu />
           </div>
         </div>
       </header>
@@ -107,6 +197,15 @@ function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void })
 export default function Home() {
   const { activeView, setActiveView } = useLinkStore()
 
+  const handleSwitchToDashboard = () => {
+    // DashboardView will handle auth checking and show login if needed
+    setActiveView('dashboard')
+  }
+
+  const handleSwitchToLanding = () => {
+    setActiveView('landing')
+  }
+
   return (
     <AnimatePresence mode="wait">
       {activeView === 'landing' ? (
@@ -117,7 +216,7 @@ export default function Home() {
           exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <LandingView onSwitchToDashboard={() => setActiveView('dashboard')} />
+          <LandingView onSwitchToDashboard={handleSwitchToDashboard} />
         </motion.div>
       ) : (
         <motion.div
@@ -127,7 +226,7 @@ export default function Home() {
           exit={{ opacity: 0, scale: 0.95, filter: 'blur(4px)' }}
           transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <DashboardView onSwitchToLanding={() => setActiveView('landing')} />
+          <DashboardView onSwitchToLanding={handleSwitchToLanding} />
         </motion.div>
       )}
     </AnimatePresence>

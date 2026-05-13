@@ -5,23 +5,44 @@ import { Github, Twitter, MessageCircle, ArrowUp, Mail, Sparkles, Heart, X, Shie
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 
 const footerLinks = {
-  Product: ['Features', 'Pricing', 'API', 'Changelog'],
-  Company: ['About', 'Blog', 'Careers', 'Contact'],
-  Resources: ['Documentation', 'Guides', 'Support', 'Status'],
-  Legal: ['Privacy', 'Terms', 'Cookie Policy', 'GDPR'],
+  Product: [
+    { label: 'Features', href: '#features' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'API', href: '#features' },
+    { label: 'Changelog', href: '#' },
+  ],
+  Company: [
+    { label: 'About', href: '#' },
+    { label: 'Blog', href: '#' },
+    { label: 'Careers', href: '#' },
+    { label: 'Contact', href: '#' },
+  ],
+  Resources: [
+    { label: 'Documentation', href: '#' },
+    { label: 'Guides', href: '#' },
+    { label: 'Support', href: '#' },
+    { label: 'Status', href: '#' },
+  ],
+  Legal: [
+    { label: 'Privacy', href: '#' },
+    { label: 'Terms', href: '#' },
+    { label: 'Cookie Policy', href: '#' },
+    { label: 'GDPR', href: '#' },
+  ],
 }
 
 const socialLinks = [
-  { icon: Twitter, label: 'Twitter', brandColor: '#1DA1F2', hoverBg: 'hover:bg-[#1DA1F2]/15', hoverText: 'hover:text-[#1DA1F2]', glowColor: '0 0 12px #1DA1F240' },
-  { icon: Github, label: 'GitHub', brandColor: '#f0f0f0', hoverBg: 'hover:bg-[#f0f0f0]/10', hoverText: 'hover:text-[#f0f0f0]', glowColor: '0 0 12px #f0f0f020' },
-  { icon: MessageCircle, label: 'Discord', brandColor: '#5865F2', hoverBg: 'hover:bg-[#5865F2]/15', hoverText: 'hover:text-[#5865F2]', glowColor: '0 0 12px #5865F240' },
-  { icon: Linkedin, label: 'LinkedIn', brandColor: '#0A66C2', hoverBg: 'hover:bg-[#0A66C2]/15', hoverText: 'hover:text-[#0A66C2]', glowColor: '0 0 12px #0A66C240' },
-  { icon: Youtube, label: 'YouTube', brandColor: '#FF0000', hoverBg: 'hover:bg-[#FF0000]/15', hoverText: 'hover:text-[#FF0000]', glowColor: '0 0 12px #FF000040' },
+  { icon: Twitter, label: 'Twitter', brandColor: '#1DA1F2', hoverBg: 'hover:bg-[#1DA1F2]/15', hoverText: 'hover:text-[#1DA1F2]', glowColor: '0 0 12px #1DA1F240', href: 'https://twitter.com' },
+  { icon: Github, label: 'GitHub', brandColor: '#f0f0f0', hoverBg: 'hover:bg-[#f0f0f0]/10', hoverText: 'hover:text-[#f0f0f0]', glowColor: '0 0 12px #f0f0f020', href: 'https://github.com' },
+  { icon: MessageCircle, label: 'Discord', brandColor: '#5865F2', hoverBg: 'hover:bg-[#5865F2]/15', hoverText: 'hover:text-[#5865F2]', glowColor: '0 0 12px #5865F240', href: 'https://discord.com' },
+  { icon: Linkedin, label: 'LinkedIn', brandColor: '#0A66C2', hoverBg: 'hover:bg-[#0A66C2]/15', hoverText: 'hover:text-[#0A66C2]', glowColor: '0 0 12px #0A66C240', href: 'https://linkedin.com' },
+  { icon: Youtube, label: 'YouTube', brandColor: '#FF0000', hoverBg: 'hover:bg-[#FF0000]/15', hoverText: 'hover:text-[#FF0000]', glowColor: '0 0 12px #FF000040', href: 'https://youtube.com' },
 ]
 
-// Cookie consent banner component — enhanced with slide-up, glow buttons, localStorage
+// Cookie consent banner component
 function CookieConsentBanner() {
   const [visible, setVisible] = useState(false)
   const [dismissing, setDismissing] = useState(false)
@@ -37,7 +58,6 @@ function CookieConsentBanner() {
   const handleDismiss = (accepted: boolean) => {
     setDismissing(true)
     localStorage.setItem('linkverse-cookies-accepted', accepted ? 'true' : 'false')
-    // Allow dismiss animation to play before removing
     setTimeout(() => {
       setVisible(false)
       setDismissing(false)
@@ -52,10 +72,9 @@ function CookieConsentBanner() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed bottom-0 left-0 right-0 z-50 p-4"
+          className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-4"
         >
           <div className={`max-w-4xl mx-auto glass-card rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 cookie-banner-slide ${dismissing ? 'cookie-banner-dismiss' : ''}`}>
-            {/* Cookie icon */}
             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
             </div>
@@ -63,7 +82,7 @@ function CookieConsentBanner() {
               <p className="text-sm text-foreground font-semibold">We value your privacy</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 We use cookies to enhance your experience. By continuing, you agree to our{' '}
-                <a href="#" className="text-emerald-400 hover:underline focus-visible-ring">Cookie Policy</a>.
+                <button onClick={() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' })} className="text-emerald-400 hover:underline focus-visible-ring">Cookie Policy</button>.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -131,18 +150,38 @@ function FooterParticles() {
   )
 }
 
+// Scroll to section helper
+function scrollToSection(href: string) {
+  if (href === '#') return
+  const id = href.replace('#', '')
+  const el = document.getElementById(id)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
 export default function Footer() {
   const [email, setEmail] = useState('')
-  const [subscribed, setSubscribed] = useState(false)
   const [emailFocused, setEmailFocused] = useState(false)
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault()
-    if (email.trim()) {
-      setSubscribed(true)
-      setEmail('')
-      setTimeout(() => setSubscribed(false), 3000)
+    if (!email.trim()) {
+      toast.error('Please enter your email address')
+      return
     }
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+    // Simulate subscription
+    toast.success('Successfully subscribed!', {
+      description: 'You\'ll receive the latest updates about LinkVerse.',
+      duration: 4000,
+    })
+    setEmail('')
   }
 
   const scrollToTop = () => {
@@ -152,7 +191,6 @@ export default function Footer() {
   return (
     <>
       <footer className="relative gradient-mesh-bg overflow-hidden">
-        {/* Footer particle dots decoration */}
         <FooterParticles />
 
         {/* Enhanced gradient top border line */}
@@ -175,7 +213,7 @@ export default function Footer() {
               <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
                 Get the latest updates on deep linking, new platform support, and product features delivered to your inbox.
               </p>
-              <form onSubmit={handleSubscribe} className="flex gap-2 max-w-md mx-auto">
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
                 <Input
                   type="email"
                   value={email}
@@ -183,26 +221,23 @@ export default function Footer() {
                   onFocus={() => setEmailFocused(true)}
                   onBlur={() => setEmailFocused(false)}
                   placeholder="your@email.com"
-                  className={`h-11 text-sm bg-surface-2 border-border/30 placeholder:text-muted-foreground/40 transition-all duration-300 focus-visible-ring ${
+                  className={`h-11 text-sm bg-surface-2 border-border/30 placeholder:text-muted-foreground/40 transition-all duration-300 focus-visible-ring w-full ${
                     emailFocused ? 'newsletter-input-glow border-emerald-500/40' : ''
                   }`}
+                  required
                 />
                 <Button
                   type="submit"
                   className="h-11 px-5 bg-emerald-500 hover:bg-emerald-400 text-surface-0 font-semibold text-sm flex-shrink-0 transition-all duration-300 btn-primary-glow focus-visible-ring"
                 >
-                  {subscribed ? (
-                    <span className="flex items-center gap-1.5">✓ Subscribed!</span>
-                  ) : (
-                    'Subscribe'
-                  )}
+                  Subscribe
                 </Button>
               </form>
               <p className="text-[10px] text-muted-foreground/30 mt-3">No spam, unsubscribe anytime.</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-10 sm:gap-12 mb-14">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-8 sm:gap-10 lg:gap-12 mb-14">
             {/* Brand column */}
             <div className="col-span-2 sm:col-span-4 lg:col-span-1 mb-4 lg:mb-0">
               <span className="text-xl font-bold gradient-text-smooth">LinkVerse</span>
@@ -210,14 +245,16 @@ export default function Footer() {
                 AI-powered deep linking platform that opens social media links in their native apps.
               </p>
 
-              {/* Social links with brand colors on hover */}
+              {/* Social links with brand colors on hover - open in new tabs */}
               <div className="flex gap-3 mt-5">
                 {socialLinks.map((social) => {
                   const Icon = social.icon
                   return (
                     <motion.a
                       key={social.label}
-                      href="#"
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       aria-label={social.label}
                       whileHover={{ y: -3, scale: 1.15 }}
                       whileTap={{ scale: 0.95 }}
@@ -239,23 +276,22 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Link columns with gradient separators */}
-            {Object.entries(footerLinks).map(([category, links], catIndex, arr) => (
+            {/* Link columns with working navigation */}
+            {Object.entries(footerLinks).map(([category, links], catIndex) => (
               <div key={category} className="relative">
-                {/* Gradient separator on desktop (between columns) */}
                 {catIndex > 0 && (
                   <div className="hidden lg:block absolute -left-6 top-0 bottom-0 gradient-separator" aria-hidden="true" />
                 )}
                 <h4 className="text-sm font-semibold text-foreground mb-4">{category}</h4>
                 <ul className="flex flex-col gap-3">
                   {links.map((link) => (
-                    <li key={link}>
-                      <a
-                        href="#"
+                    <li key={link.label}>
+                      <button
+                        onClick={() => scrollToSection(link.href)}
                         className="text-sm text-muted-foreground hover:text-emerald-400 transition-colors duration-200 focus-visible-ring rounded-sm"
                       >
-                        {link}
-                      </a>
+                        {link.label}
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -295,12 +331,10 @@ export default function Footer() {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Made with ♥ and AI */}
               <span className="text-xs text-muted-foreground/40 flex items-center gap-1">
                 Made with <Heart className="size-3 text-rose-400/60 fill-rose-400/60" /> and AI
               </span>
 
-              {/* Back to top button with bounce animation */}
               <motion.button
                 onClick={scrollToTop}
                 whileHover={{ y: -2 }}
@@ -316,7 +350,6 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* Cookie consent banner */}
       <CookieConsentBanner />
     </>
   )

@@ -528,7 +528,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                       setResult(null)
                     }}
                     placeholder="Paste any social media link..."
-                    className="h-11 bg-background/50 border-border/50 text-foreground placeholder:text-muted-foreground/60 pr-20 focus:border-emerald-500/40 focus:ring-emerald-500/20"
+                    className="h-11 w-full bg-background/50 border-border/50 text-foreground placeholder:text-muted-foreground/60 pr-20 focus:border-emerald-500/40 focus:ring-emerald-500/20"
                     onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                   />
                   {detectedPlatform && (
@@ -550,7 +550,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                   <Button
                     onClick={handleSubmit}
                     disabled={loading || !url.trim()}
-                    className="h-11 px-6 glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition-all duration-300 relative z-10"
+                    className="h-11 px-6 w-full sm:w-auto glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold transition-all duration-300 relative z-10"
                   >
                     {loading ? (
                       <Loader2 className="size-4 animate-spin" />

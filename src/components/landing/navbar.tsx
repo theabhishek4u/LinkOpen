@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Link2, ArrowUp, Sparkles } from 'lucide-react'
+import { ArrowRight, Link2, ArrowUp, Sparkles, LogIn, LogOut, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -11,6 +11,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { useAuthStore } from '@/store/auth-store'
+import { useLinkStore } from '@/store/link-store'
 
 const navLinks = [
   { label: 'Features', href: '#features' },
@@ -58,7 +69,7 @@ function LinkVerseLogo() {
   )
 }
 
-// Animated hamburger button that transforms to X
+// Animated hamburger button
 function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) {
   return (
     <button
@@ -104,38 +115,77 @@ function BackToTopFAB({ scrollProgress }: { scrollProgress: number }) {
           className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full glass-card flex items-center justify-center focus-visible-ring group hover:scale-110 transition-transform duration-200"
           aria-label="Back to top"
         >
-          <svg
-            className="absolute inset-0 w-full h-full -rotate-90"
-            viewBox="0 0 48 48"
-            aria-hidden="true"
-          >
-            <circle
-              cx="24"
-              cy="24"
-              r={radius}
-              fill="none"
-              stroke="oklch(0.93 0.01 270 / 10%)"
-              strokeWidth="2.5"
-              className="dark:stroke-[oklch(0.93_0.01_270/6%)]"
-            />
-            <circle
-              cx="24"
-              cy="24"
-              r={radius}
-              fill="none"
-              stroke="oklch(0.696 0.17 162.48)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              className="transition-[stroke-dashoffset] duration-150 ease-out"
-              style={{ filter: 'drop-shadow(0 0 3px oklch(0.696 0.17 162.48 / 40%))' }}
-            />
+          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r={radius} fill="none" stroke="oklch(0.93 0.01 270 / 10%)" strokeWidth="2.5" className="dark:stroke-[oklch(0.93_0.01_270/6%)]" />
+            <circle cx="24" cy="24" r={radius} fill="none" stroke="oklch(0.696 0.17 162.48)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} className="transition-[stroke-dashoffset] duration-150 ease-out" style={{ filter: 'drop-shadow(0 0 3px oklch(0.696 0.17 162.48 / 40%))' }} />
           </svg>
           <ArrowUp className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
         </motion.button>
       )}
     </AnimatePresence>
+  )
+}
+
+// User auth button for navbar
+function NavAuthButton({ onGetStarted }: { onGetStarted?: () => void }) {
+  const { user, isAuthenticated, logout } = useAuthStore()
+  const { setActiveView } = useLinkStore()
+
+  if (isAuthenticated && user) {
+    const initials = user.name
+      ? user.name.trim().split(/\s+/).length >= 2
+        ? (user.name.trim().split(/\s+/)[0][0] + user.name.trim().split(/\s+/).pop()![0]).toUpperCase()
+        : user.name[0].toUpperCase()
+      : user.email[0].toUpperCase()
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-9 gap-2 px-2 hover:bg-accent/50 transition-colors rounded-xl">
+            <Avatar className="h-7 w-7 border border-emerald-500/20">
+              <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-emerald-600 text-white text-xs font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <span className="hidden sm:inline text-sm font-medium max-w-[80px] truncate">
+              {user.name || user.email.split('@')[0]}
+            </span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/50 glass-card">
+          <DropdownMenuLabel className="font-normal">
+            <p className="text-sm font-medium truncate">{user.name || 'User'}</p>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-pointer rounded-lg" onClick={() => setActiveView('dashboard')}>
+            <User className="mr-2 h-4 w-4" />
+            Dashboard
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="cursor-pointer rounded-lg text-red-400 focus:text-red-400 focus:bg-red-500/10"
+            onSelect={async () => { await logout(); setActiveView('landing') }}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
+  return (
+    <Button
+      onClick={onGetStarted}
+      className="launch-btn-glow bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 relative overflow-hidden focus-visible-ring btn-primary-glow"
+    >
+      <span className="relative z-10 flex items-center gap-1.5">
+        <LogIn className="size-3.5" />
+        <span className="hidden sm:inline">Sign In</span>
+        <span className="sm:hidden">Sign In</span>
+      </span>
+    </Button>
   )
 }
 
@@ -145,6 +195,8 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [activeLink, setActiveLink] = useState<string | null>(null)
   const [currentSection, setCurrentSection] = useState<string | null>(null)
+  const { isAuthenticated, logout } = useAuthStore()
+  const { setActiveView } = useLinkStore()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -153,7 +205,7 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
       const progress = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0
       setScrollProgress(progress)
 
-      // Track which section is currently in view for active indicator
+      // Track which section is currently in view
       const sections = navLinks.map(l => l.href.replace('#', ''))
       for (let i = sections.length - 1; i >= 0; i--) {
         const el = document.getElementById(sections[i])
@@ -215,7 +267,6 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
                     }`}
                   >
                     {link.label}
-                    {/* Hover underline */}
                     {!isActive && (
                       <span className="absolute -bottom-1 left-0 w-0 h-px bg-gradient-to-r from-emerald-400 to-violet-400 group-hover:w-full transition-all duration-300" />
                     )}
@@ -230,35 +281,42 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
               </span>
             </div>
 
-            {/* Desktop CTA with glow effect */}
-            <div className="hidden md:block">
-              <Button
-                onClick={onGetStarted}
-                className="launch-btn-glow bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 relative overflow-hidden focus-visible-ring btn-primary-glow"
-              >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  Launch App
-                  <ArrowRight className="size-3.5" />
-                </span>
-              </Button>
+            {/* Desktop Auth + CTA */}
+            <div className="hidden md:flex items-center gap-3">
+              {isAuthenticated ? (
+                <NavAuthButton onGetStarted={onGetStarted} />
+              ) : (
+                <>
+                  <NavAuthButton onGetStarted={onGetStarted} />
+                  <Button
+                    onClick={onGetStarted}
+                    className="launch-btn-glow bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 relative overflow-hidden focus-visible-ring btn-primary-glow"
+                  >
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      Launch App
+                      <ArrowRight className="size-3.5" />
+                    </span>
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Mobile hamburger menu */}
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center gap-2">
+              <NavAuthButton onGetStarted={onGetStarted} />
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
                   <HamburgerButton isOpen={false} onClick={() => setMobileOpen(true)} />
                 </SheetTrigger>
                 <SheetContent
                   side="right"
-                  className="glass-card border-l border-border/10 bg-background/90 backdrop-blur-2xl"
+                  className="glass-card border-l border-border/10 bg-background/90 backdrop-blur-2xl w-[280px] sm:w-[320px]"
                 >
                   <SheetHeader>
                     <SheetTitle className="gradient-text text-left">
                       <LinkVerseLogo />
                     </SheetTitle>
                   </SheetHeader>
-                  {/* AI Powered badge in mobile menu */}
                   <div className="mt-4 mb-2">
                     <span className="ai-powered-pill inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-emerald-400">
                       <Sparkles className="size-3" />
@@ -283,13 +341,36 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
                         {link.label}
                       </motion.button>
                     ))}
-                    <Button
-                      onClick={() => { setMobileOpen(false); onGetStarted?.() }}
-                      className="mt-4 btn-primary-glow glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold focus-visible-ring"
-                    >
-                      Launch App
-                      <ArrowRight className="size-4" />
-                    </Button>
+
+                    {isAuthenticated ? (
+                      <Button
+                        onClick={() => { setMobileOpen(false); setActiveView('dashboard') }}
+                        className="mt-4 btn-primary-glow glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold focus-visible-ring"
+                      >
+                        Dashboard
+                        <ArrowRight className="size-4" />
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => { setMobileOpen(false); onGetStarted?.() }}
+                        className="mt-4 btn-primary-glow glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold focus-visible-ring"
+                      >
+                        <LogIn className="size-4" />
+                        Sign In
+                        <ArrowRight className="size-4" />
+                      </Button>
+                    )}
+
+                    {isAuthenticated && (
+                      <Button
+                        variant="ghost"
+                        onClick={async () => { await logout(); setActiveView('landing'); setMobileOpen(false) }}
+                        className="text-muted-foreground hover:text-red-400"
+                      >
+                        <LogOut className="size-4 mr-1" />
+                        Sign Out
+                      </Button>
+                    )}
                   </div>
                 </SheetContent>
               </Sheet>
@@ -297,7 +378,7 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
           </div>
         </div>
 
-        {/* Scroll progress indicator — thicker with gradient glow */}
+        {/* Scroll progress indicator */}
         <AnimatePresence>
           {scrolled && (
             <motion.div
@@ -316,7 +397,6 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
                 }}
                 transition={{ duration: 0.1 }}
               >
-                {/* Glow at the leading edge */}
                 <div
                   className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full"
                   style={{
@@ -330,7 +410,6 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
         </AnimatePresence>
       </motion.nav>
 
-      {/* Back to top FAB with circular progress */}
       <BackToTopFAB scrollProgress={scrollProgress} />
     </>
   )
