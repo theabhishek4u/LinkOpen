@@ -152,9 +152,9 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
         }}
       />
 
-      <div className="glass-card hover-lift p-4 sm:p-5 space-y-3 rounded-xl relative z-10">
+      <div className="glass-card hover-lift p-3 sm:p-4 md:p-5 space-y-2 sm:space-y-3 rounded-xl relative z-10">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <h4 className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
             {title}
           </h4>
           <div
@@ -167,7 +167,7 @@ function StatCard({ title, value, suffix, subtitle, icon, iconBg, iconColor, del
 
         <div className="flex items-end justify-between gap-2">
           <div>
-            <div className={`text-2xl sm:text-3xl font-bold text-foreground animate-number-glow`}>
+            <div className={`text-xl sm:text-2xl md:text-3xl font-bold text-foreground animate-number-glow`}>
               <AnimatedNumber value={value} suffix={suffix} />
             </div>
             {/* Trend indicator with animated arrow */}

@@ -16,12 +16,13 @@ import FAQ from '@/components/landing/faq'
 import Footer from '@/components/landing/footer'
 import { DashboardMain } from '@/components/dashboard/dashboard-main'
 import { ThemeToggle } from '@/components/dashboard/theme-toggle'
-import { ArrowLeft, Sparkles, Link2 } from 'lucide-react'
+import { ArrowLeft, Sparkles, Link2, ShieldCheck, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { CookieConsent } from '@/components/landing/cookie-consent'
+// CookieConsent is handled within the Footer component
 import { UserMenu } from '@/components/auth/user-menu'
 import { LoginForm } from '@/components/auth/login-form'
 import { RegisterForm } from '@/components/auth/register-form'
+import { AdminPanel } from '@/components/admin/admin-panel'
 import { useState, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
 
@@ -33,7 +34,7 @@ function LandingView({ onSwitchToDashboard }: { onSwitchToDashboard: () => void 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar onGetStarted={onSwitchToDashboard} />
-      <main className="flex-1">
+      <main className="flex-1 shrink-0">
         <Hero onTryNow={onSwitchToDashboard} />
         <SectionDivider />
         <div id="platforms">
@@ -61,15 +62,16 @@ function LandingView({ onSwitchToDashboard }: { onSwitchToDashboard: () => void 
         </div>
       </main>
       <Footer />
-      <CookieConsent />
     </div>
   )
 }
 
+
 function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void }) {
-  const { isAuthenticated, checkSession } = useAuthStore()
+  const { isAuthenticated, checkSession, user } = useAuthStore()
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   const [isChecking, setIsChecking] = useState(true)
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
 
   useEffect(() => {
     const verify = async () => {
@@ -182,14 +184,65 @@ function DashboardView({ onSwitchToLanding }: { onSwitchToLanding: () => void })
             </span>
             <Sparkles className="w-4 h-4 text-emerald-400" />
             <span className="text-xs text-emerald-400 font-medium hidden sm:inline">AI Active</span>
+            {user?.role === 'admin' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAdminPanel(true)}
+                className="hidden sm:flex items-center gap-1.5 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 h-8 px-2.5 text-xs font-medium"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Admin
+              </Button>
+            )}
             <ThemeToggle />
-            <UserMenu />
+            <UserMenu onOpenAdmin={() => setShowAdminPanel(true)} />
           </div>
         </div>
       </header>
       <main className="flex-1">
         <DashboardMain />
       </main>
+
+      {/* Admin Panel Overlay */}
+      <AnimatePresence>
+        {showAdminPanel && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[60]"
+              onClick={() => setShowAdminPanel(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 40, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40, scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 25 }}
+              className="fixed inset-2 sm:inset-4 lg:inset-8 z-[61] bg-background/95 backdrop-blur-xl rounded-xl border border-border/30 shadow-2xl overflow-hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-border/20 bg-background/80 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-amber-400" />
+                  <span className="text-sm font-semibold text-foreground">Admin Panel</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowAdminPanel(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+                <AdminPanel onClose={() => setShowAdminPanel(false)} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -275,13 +275,31 @@ export function LinkResult() {
             transition={{ delay: 0.4 }}
             className="flex flex-wrap gap-2 pt-1"
           >
+            {/* Open in App - full width on mobile */}
             <Button
               size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 glow-green-sm group"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 glow-green-sm group w-full sm:w-auto h-10 sm:h-9"
               onClick={() => {
-                try {
-                  window.open(deepLinkResult.deepLink, '_blank')
-                } catch {
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+                if (isMobile) {
+                  // On mobile: try deep link with fallback
+                  try {
+                    const deepLinkTimeout = setTimeout(() => {
+                      window.open(deepLinkResult.webUrl, '_blank')
+                    }, 2000)
+                    window.location.href = deepLinkResult.deepLink
+                    const handleVisibility = () => {
+                      if (document.hidden) {
+                        clearTimeout(deepLinkTimeout)
+                        document.removeEventListener('visibilitychange', handleVisibility)
+                      }
+                    }
+                    document.addEventListener('visibilitychange', handleVisibility)
+                  } catch {
+                    window.open(deepLinkResult.webUrl, '_blank')
+                  }
+                } else {
+                  // On desktop: open web URL directly
                   window.open(deepLinkResult.webUrl, '_blank')
                 }
               }}
@@ -289,14 +307,15 @@ export function LinkResult() {
               <ArrowUpRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               Open in App
             </Button>
-
             <Button
               size="sm"
               variant="secondary"
               onClick={() => window.open(deepLinkResult.webUrl, '_blank')}
+              className="h-10 sm:h-9"
             >
               <Globe className="h-3.5 w-3.5" />
-              Open in Browser
+              <span className="sm:inline">Open in Browser</span>
+              <span className="sm:hidden">Browser</span>
             </Button>
 
             {/* Copy Deep Link with animated feedback */}

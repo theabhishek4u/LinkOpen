@@ -1,7 +1,6 @@
 'use client'
 
 import { useAuthStore } from '@/store/auth-store'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { LogOut, User, Settings, Shield, Crown, Rocket } from 'lucide-react'
+import { LogOut, User, Settings, Shield, Crown, Rocket, ShieldCheck } from 'lucide-react'
 
 function getPlanBadge(plan: string) {
   switch (plan) {
@@ -36,7 +35,11 @@ function getInitials(name: string | null, email: string): string {
   return email[0].toUpperCase()
 }
 
-export function UserMenu() {
+interface UserMenuProps {
+  onOpenAdmin?: () => void
+}
+
+export function UserMenu({ onOpenAdmin }: UserMenuProps) {
   const { user, logout } = useAuthStore()
 
   if (!user) return null
@@ -97,6 +100,20 @@ export function UserMenu() {
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
+
+        {/* Admin Panel button - only visible for admin users */}
+        {user.role === 'admin' && onOpenAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer rounded-lg text-amber-400 focus:text-amber-400 focus:bg-amber-500/10"
+              onSelect={onOpenAdmin}
+            >
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Admin Dashboard
+            </DropdownMenuItem>
+          </>
+        )}
 
         <DropdownMenuSeparator />
 

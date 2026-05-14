@@ -2,15 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Link2, ArrowUp, Sparkles, LogIn, LogOut, User } from 'lucide-react'
+import { ArrowRight, Link2, ArrowUp, Sparkles, LogIn, LogOut, User, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,98 +28,17 @@ interface NavbarProps {
 }
 
 function LinkVerseLogo() {
-  const [displayText, setDisplayText] = useState('')
-  const [showCursor, setShowCursor] = useState(true)
-  const fullText = 'LinkVerse'
-
-  useEffect(() => {
-    let i = 0
-    const interval = setInterval(() => {
-      if (i <= fullText.length) {
-        setDisplayText(fullText.slice(0, i))
-        i++
-      } else {
-        clearInterval(interval)
-        setTimeout(() => setShowCursor(false), 1500)
-      }
-    }, 80)
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <motion.div layoutId="linkverse-logo" className="flex items-center gap-2.5">
       <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/25">
         <Link2 className="size-4 text-emerald-400" />
         <div className="absolute inset-0 rounded-lg" style={{ boxShadow: '0 0 12px oklch(0.696 0.17 162.48 / 20%)' }} />
       </div>
-      <span className="text-lg font-bold gradient-text">
-        {displayText}
-        {showCursor && (
-          <span className="inline-block w-0.5 h-5 bg-emerald-400 ml-0.5 align-middle" style={{ animation: 'cursor-blink 1s step-end infinite' }} />
-        )}
-      </span>
+      <span className="text-lg font-bold gradient-text-smooth">LinkVerse</span>
     </motion.div>
   )
 }
 
-// Animated hamburger button
-function HamburgerButton({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`relative w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-emerald-400 hover:bg-accent/50 transition-colors focus-visible-ring ${isOpen ? 'hamburger-open' : ''}`}
-      aria-label={isOpen ? 'Close menu' : 'Open menu'}
-      aria-expanded={isOpen}
-    >
-      <div className="flex flex-col gap-[5px] w-5">
-        <span className="hamburger-line block h-[2px] w-full bg-current rounded-full" />
-        <span className="hamburger-line block h-[2px] w-full bg-current rounded-full" />
-        <span className="hamburger-line block h-[2px] w-full bg-current rounded-full" />
-      </div>
-    </button>
-  )
-}
-
-// Back-to-top FAB with circular progress indicator
-function BackToTopFAB({ scrollProgress }: { scrollProgress: number }) {
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    setIsVisible(scrollProgress >= 50)
-  }, [scrollProgress])
-
-  const scrollToTop = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [])
-
-  const radius = 20
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference - (scrollProgress / 100) * circumference
-
-  return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.5, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.5, y: 20 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full glass-card flex items-center justify-center focus-visible-ring group hover:scale-110 transition-transform duration-200"
-          aria-label="Back to top"
-        >
-          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48" aria-hidden="true">
-            <circle cx="24" cy="24" r={radius} fill="none" stroke="oklch(0.93 0.01 270 / 10%)" strokeWidth="2.5" className="dark:stroke-[oklch(0.93_0.01_270/6%)]" />
-            <circle cx="24" cy="24" r={radius} fill="none" stroke="oklch(0.696 0.17 162.48)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} className="transition-[stroke-dashoffset] duration-150 ease-out" style={{ filter: 'drop-shadow(0 0 3px oklch(0.696 0.17 162.48 / 40%))' }} />
-          </svg>
-          <ArrowUp className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-        </motion.button>
-      )}
-    </AnimatePresence>
-  )
-}
-
-// User auth button for navbar
 function NavAuthButton({ onGetStarted }: { onGetStarted?: () => void }) {
   const { user, isAuthenticated, logout } = useAuthStore()
   const { setActiveView } = useLinkStore()
@@ -178,12 +90,11 @@ function NavAuthButton({ onGetStarted }: { onGetStarted?: () => void }) {
   return (
     <Button
       onClick={onGetStarted}
-      className="launch-btn-glow bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 relative overflow-hidden focus-visible-ring btn-primary-glow"
+      className="bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 relative overflow-hidden"
     >
       <span className="relative z-10 flex items-center gap-1.5">
         <LogIn className="size-3.5" />
-        <span className="hidden sm:inline">Sign In</span>
-        <span className="sm:hidden">Sign In</span>
+        <span>Sign In</span>
       </span>
     </Button>
   )
@@ -193,7 +104,6 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [activeLink, setActiveLink] = useState<string | null>(null)
   const [currentSection, setCurrentSection] = useState<string | null>(null)
   const { isAuthenticated, logout } = useAuthStore()
   const { setActiveView } = useLinkStore()
@@ -205,7 +115,6 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
       const progress = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0
       setScrollProgress(progress)
 
-      // Track which section is currently in view
       const sections = navLinks.map(l => l.href.replace('#', ''))
       for (let i = sections.length - 1; i >= 0; i--) {
         const el = document.getElementById(sections[i])
@@ -225,12 +134,10 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
 
   const handleNavClick = useCallback((href: string) => {
     setMobileOpen(false)
-    setActiveLink(href)
     const el = document.querySelector(href)
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' })
     }
-    setTimeout(() => setActiveLink(null), 600)
   }, [])
 
   return (
@@ -240,42 +147,39 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? 'nav-glass nav-scroll-shadow nav-scroll-glow'
-            : 'bg-transparent'
+          scrolled ? 'nav-glass shadow-lg shadow-black/5' : 'bg-transparent'
         }`}
-        style={scrolled ? { backdropFilter: 'blur(20px) saturate(200%)', WebkitBackdropFilter: 'blur(20px) saturate(200%)' } : undefined}
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <a href="#" className="group focus-visible-ring rounded-md" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+            <a href="#" className="group rounded-md" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
               <LinkVerseLogo />
             </a>
 
-            {/* Desktop nav links with active indicator */}
-            <div className="hidden md:flex items-center gap-8">
+            {/* Desktop nav */}
+            <div className="hidden md:flex items-center gap-1">
               {navLinks.map((link) => {
                 const sectionId = link.href.replace('#', '')
-                const isActive = currentSection === sectionId || activeLink === link.href
+                const isActive = currentSection === sectionId
                 return (
                   <button
                     key={link.label}
                     onClick={() => handleNavClick(link.href)}
-                    className={`text-sm transition-colors duration-200 relative group focus-visible-ring rounded-sm px-1 ${
-                      isActive ? 'text-emerald-400 nav-active-indicator' : 'text-muted-foreground hover:text-emerald-400'
+                    className={`text-sm transition-all duration-200 relative px-3 py-1.5 rounded-lg ${
+                      isActive
+                        ? 'text-emerald-400 bg-emerald-500/10'
+                        : 'text-muted-foreground hover:text-emerald-400 hover:bg-accent/30'
                     }`}
                   >
                     {link.label}
-                    {!isActive && (
-                      <span className="absolute -bottom-1 left-0 w-0 h-px bg-gradient-to-r from-emerald-400 to-violet-400 group-hover:w-full transition-all duration-300" />
-                    )}
                   </button>
                 )
               })}
 
-              {/* AI Powered gradient pill badge */}
-              <span className="ai-powered-pill inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-emerald-400">
+              <span className="mx-2 h-4 w-px bg-border/30" />
+
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/15">
                 <Sparkles className="size-3" />
                 AI Powered
               </span>
@@ -283,112 +187,45 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
 
             {/* Desktop Auth + CTA */}
             <div className="hidden md:flex items-center gap-3">
-              {isAuthenticated ? (
-                <NavAuthButton onGetStarted={onGetStarted} />
-              ) : (
-                <>
-                  <NavAuthButton onGetStarted={onGetStarted} />
-                  <Button
-                    onClick={onGetStarted}
-                    className="launch-btn-glow bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 relative overflow-hidden focus-visible-ring btn-primary-glow"
-                  >
-                    <span className="relative z-10 flex items-center gap-1.5">
-                      Launch App
-                      <ArrowRight className="size-3.5" />
-                    </span>
-                  </Button>
-                </>
+              <NavAuthButton onGetStarted={onGetStarted} />
+              {!isAuthenticated && (
+                <Button
+                  onClick={onGetStarted}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-white font-semibold h-9 relative overflow-hidden"
+                >
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    Launch App
+                    <ArrowRight className="size-3.5" />
+                  </span>
+                </Button>
               )}
             </div>
 
-            {/* Mobile hamburger menu */}
+            {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
               <NavAuthButton onGetStarted={onGetStarted} />
-              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-                <SheetTrigger asChild>
-                  <HamburgerButton isOpen={false} onClick={() => setMobileOpen(true)} />
-                </SheetTrigger>
-                <SheetContent
-                  side="right"
-                  className="glass-card border-l border-border/10 bg-background/90 backdrop-blur-2xl w-[280px] sm:w-[320px]"
-                >
-                  <SheetHeader>
-                    <SheetTitle className="gradient-text text-left">
-                      <LinkVerseLogo />
-                    </SheetTitle>
-                  </SheetHeader>
-                  <div className="mt-4 mb-2">
-                    <span className="ai-powered-pill inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-emerald-400">
-                      <Sparkles className="size-3" />
-                      AI Powered
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-2 mt-2">
-                    {navLinks.map((link, i) => (
-                      <motion.button
-                        key={link.label}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05, type: 'spring', stiffness: 300, damping: 25 }}
-                        onClick={() => handleNavClick(link.href)}
-                        className={`text-base transition-colors py-3 px-3 rounded-lg text-left focus-visible-ring animate-mobile-menu-slide ${
-                          currentSection === link.href.replace('#', '')
-                            ? 'text-emerald-400 bg-emerald-500/10'
-                            : 'text-muted-foreground hover:text-emerald-400 hover:bg-accent/50'
-                        }`}
-                        style={{ animationDelay: `${i * 0.06}s` }}
-                      >
-                        {link.label}
-                      </motion.button>
-                    ))}
-
-                    {isAuthenticated ? (
-                      <Button
-                        onClick={() => { setMobileOpen(false); setActiveView('dashboard') }}
-                        className="mt-4 btn-primary-glow glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold focus-visible-ring"
-                      >
-                        Dashboard
-                        <ArrowRight className="size-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={() => { setMobileOpen(false); onGetStarted?.() }}
-                        className="mt-4 btn-primary-glow glow-green bg-emerald-500 hover:bg-emerald-400 text-white font-semibold focus-visible-ring"
-                      >
-                        <LogIn className="size-4" />
-                        Sign In
-                        <ArrowRight className="size-4" />
-                      </Button>
-                    )}
-
-                    {isAuthenticated && (
-                      <Button
-                        variant="ghost"
-                        onClick={async () => { await logout(); setActiveView('landing'); setMobileOpen(false) }}
-                        className="text-muted-foreground hover:text-red-400"
-                      >
-                        <LogOut className="size-4 mr-1" />
-                        Sign Out
-                      </Button>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-emerald-400 hover:bg-accent/50 transition-colors"
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              >
+                {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Scroll progress indicator */}
+        {/* Scroll progress */}
         <AnimatePresence>
           {scrolled && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute bottom-0 left-0 right-0 h-1 bg-border/20"
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-border/20"
             >
               <motion.div
-                className="h-full relative"
+                className="h-full"
                 style={{
                   width: `${scrollProgress}%`,
                   background: 'linear-gradient(90deg, oklch(0.696 0.17 162.48), oklch(0.488 0.243 264.376), oklch(0.696 0.17 162.48))',
@@ -396,21 +233,144 @@ export default function Navbar({ onGetStarted }: NavbarProps) {
                   animation: 'gradient-shift 3s ease infinite',
                 }}
                 transition={{ duration: 0.1 }}
-              >
-                <div
-                  className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full"
-                  style={{
-                    background: 'oklch(0.696 0.17 162.48)',
-                    boxShadow: '0 0 8px oklch(0.696 0.17 162.48 / 60%), 0 0 16px oklch(0.696 0.17 162.48 / 30%)',
-                  }}
-                />
-              </motion.div>
+              />
             </motion.div>
           )}
         </AnimatePresence>
       </motion.nav>
 
+      {/* Mobile menu drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 md:hidden"
+          >
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={() => setMobileOpen(false)}
+            />
+
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="absolute right-0 top-0 bottom-0 w-[280px] sm:w-[320px] glass-card rounded-l-2xl border-l border-border/10 bg-background/95 backdrop-blur-2xl p-6 flex flex-col"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <LinkVerseLogo />
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/15 mb-4 self-start">
+                <Sparkles className="size-3" />
+                AI Powered
+              </span>
+
+              <div className="flex flex-col gap-1">
+                {navLinks.map((link, i) => (
+                  <motion.button
+                    key={link.label}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05, type: 'spring', stiffness: 300, damping: 25 }}
+                    onClick={() => handleNavClick(link.href)}
+                    className={`text-base transition-colors py-3 px-3 rounded-lg text-left ${
+                      currentSection === link.href.replace('#', '')
+                        ? 'text-emerald-400 bg-emerald-500/10'
+                        : 'text-muted-foreground hover:text-emerald-400 hover:bg-accent/50'
+                    }`}
+                  >
+                    {link.label}
+                  </motion.button>
+                ))}
+              </div>
+
+              <div className="mt-auto">
+                {isAuthenticated ? (
+                  <>
+                    <Button
+                      onClick={() => { setMobileOpen(false); setActiveView('dashboard') }}
+                      className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold"
+                    >
+                      Dashboard
+                      <ArrowRight className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={async () => { await logout(); setActiveView('landing'); setMobileOpen(false) }}
+                      className="w-full mt-2 text-muted-foreground hover:text-red-400"
+                    >
+                      <LogOut className="size-4 mr-1" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => { setMobileOpen(false); onGetStarted?.() }}
+                    className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-semibold"
+                  >
+                    <LogIn className="size-4" />
+                    Sign In
+                    <ArrowRight className="size-4" />
+                  </Button>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Back to top FAB */}
       <BackToTopFAB scrollProgress={scrollProgress} />
     </>
+  )
+}
+
+function BackToTopFAB({ scrollProgress }: { scrollProgress: number }) {
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    setIsVisible(scrollProgress >= 50)
+  }, [scrollProgress])
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  const radius = 20
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (scrollProgress / 100) * circumference
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.5, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.5, y: 20 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full glass-card flex items-center justify-center group hover:scale-110 transition-transform duration-200"
+          aria-label="Back to top"
+        >
+          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r={radius} fill="none" stroke="oklch(0.93 0.01 270 / 10%)" strokeWidth="2.5" />
+            <circle cx="24" cy="24" r={radius} fill="none" stroke="oklch(0.696 0.17 162.48)" strokeWidth="2.5" strokeLinecap="round" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} className="transition-[stroke-dashoffset] duration-150 ease-out" />
+          </svg>
+          <ArrowUp className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+        </motion.button>
+      )}
+    </AnimatePresence>
   )
 }

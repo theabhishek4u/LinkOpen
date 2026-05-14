@@ -127,20 +127,20 @@ export default function Pricing() {
   }
 
   return (
-    <section className="relative py-20 sm:py-28 mesh-gradient-subtle">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section className="relative py-12 sm:py-20 md:py-28 mesh-gradient-subtle">
+      <div className="mx-auto max-w-6xl px-3 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 sm:mb-16"
+          className="text-center mb-8 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             <span className="gradient-text-smooth">Simple, Transparent Pricing</span>
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
             Choose the plan that fits your needs. Upgrade or downgrade anytime.
           </p>
 
@@ -193,7 +193,7 @@ export default function Pricing() {
               className={`relative pricing-card-depth ${plan.highlighted ? 'premium-border' : ''}`}
             >
               <div
-                className={`glass-card p-6 sm:p-8 h-full flex flex-col ${
+                className={`glass-card p-4 sm:p-6 md:p-8 h-full flex flex-col ${
                   plan.highlighted ? 'ring-1 ring-emerald-500/30 glow-green most-popular-shimmer' : ''
                 }`}
               >
@@ -225,7 +225,7 @@ export default function Pricing() {
                 </div>
 
                 <div className="mb-6">
-                  <span className="text-4xl sm:text-5xl font-bold text-foreground price-counter">
+                  <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground price-counter">
                     <AnimatePresence mode="wait">
                       <motion.span
                         key={plan.price}

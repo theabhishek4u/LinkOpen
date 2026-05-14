@@ -147,11 +147,11 @@ export function LinkHistory() {
   const favoriteCount = history.filter((item) => item.isFavorite).length
 
   return (
-    <div className="glass-card p-4 sm:p-6 space-y-4">
+    <div className="glass-card p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
       {/* Header with count badge */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-foreground">Recent Links</h3>
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground">Recent Links</h3>
           <span className="count-badge">{history.length}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -360,7 +360,7 @@ export function LinkHistory() {
                     <HoverCard>
                       <HoverCardTrigger asChild>
                         <div
-                      className={`flex items-center gap-3 rounded-lg p-2.5 ml-8 transition-all cursor-pointer relative overflow-hidden ${
+                      className={`flex items-center gap-2 sm:gap-3 rounded-lg p-2 sm:p-2.5 ml-8 transition-all cursor-pointer relative overflow-hidden ${
                         selectedLinkIds.includes(item.id)
                           ? 'bg-primary/5 border border-primary/15'
                           : item.isFavorite
@@ -397,7 +397,7 @@ export function LinkHistory() {
                       {/* Platform Icon */}
                       <div className="relative shrink-0 z-10">
                         <div
-                          className="flex h-8 w-8 items-center justify-center rounded-md text-sm"
+                          className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-md text-sm"
                           style={{
                             backgroundColor: `${item.platform.color}20`,
                           }}
@@ -414,11 +414,11 @@ export function LinkHistory() {
 
                       {/* Content */}
                       <div className="flex-1 min-w-0 relative z-10">
-                        <p className="text-sm text-foreground truncate">
+                        <p className="text-xs sm:text-sm text-foreground truncate">
                           {truncateUrl(item.originalUrl)}
                         </p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">
                             {formatRelativeTime(item.createdAt)}
                           </p>
                           {item.openCount > 0 && (

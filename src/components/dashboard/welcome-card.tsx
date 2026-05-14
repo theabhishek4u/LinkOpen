@@ -150,7 +150,7 @@ export function WelcomeCard({ onCreateLink, onViewAnalytics, onExportData }: Wel
           aria-hidden="true"
         />
 
-        <div className="relative p-4 sm:p-5 space-y-4">
+        <div className="relative p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4">
           {/* Header row */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
@@ -208,7 +208,7 @@ export function WelcomeCard({ onCreateLink, onViewAnalytics, onExportData }: Wel
                 onClick={action.onClick}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium ${action.color} border border-border/20 transition-colors focus-visible-ring`}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium ${action.color} border border-border/20 transition-colors focus-visible-ring min-h-[36px]`}
               >
                 <action.icon className="h-3.5 w-3.5" />
                 {action.label}

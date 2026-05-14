@@ -4488,3 +4488,269 @@ nav a:focus-visible {
     opacity: 1 !important;
   }
 }
+
+/* ============================================================
+   TASK 5-a: LANDING PAGE UI OVERHAUL
+   ============================================================ */
+
+/* Hero animated mesh gradient orbs */
+@keyframes hero-orb-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+
+@keyframes hero-orb-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, 30px) scale(0.95); }
+  66% { transform: translate(25px, -40px) scale(1.05); }
+}
+
+@keyframes hero-orb-3 {
+  0%, 100% { transform: translate(0, 0) scale(1.05); }
+  33% { transform: translate(20px, 40px) scale(0.9); }
+  66% { transform: translate(-30px, -20px) scale(1); }
+}
+
+.animate-hero-orb-1 { animation: hero-orb-1 8s ease-in-out infinite; }
+.animate-hero-orb-2 { animation: hero-orb-2 10s ease-in-out infinite; }
+.animate-hero-orb-3 { animation: hero-orb-3 12s ease-in-out infinite; }
+
+/* Nav glass effect */
+.nav-glass {
+  background: oklch(1 0.003 160 / 80%);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border-bottom: 1px solid oklch(0.696 0.17 162.48 / 8%);
+}
+
+.dark .nav-glass {
+  background: oklch(0.058 0.008 280 / 80%);
+  border-bottom: 1px solid oklch(0.93 0.01 270 / 6%);
+}
+
+/* Pricing gradient border for popular plan */
+.pricing-popular-border {
+  position: relative;
+  border-radius: var(--radius-xl);
+}
+
+.pricing-popular-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48 / 80%),
+    oklch(0.55 0.2 170 / 70%),
+    oklch(0.488 0.243 264.376 / 60%),
+    oklch(0.696 0.17 162.48 / 80%)
+  );
+  background-size: 300% 300%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: border-rotate 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Feature card gradient border on hover */
+.feature-card-hover {
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px oklch(0 0 0 / 20%);
+}
+
+.feature-card-hover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48 / 0%),
+    oklch(0.488 0.243 264.376 / 0%),
+    oklch(0.696 0.17 162.48 / 0%)
+  );
+  background-size: 300% 300%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.feature-card-hover:hover::before {
+  background: linear-gradient(
+    135deg,
+    oklch(0.696 0.17 162.48 / 50%),
+    oklch(0.488 0.243 264.376 / 50%),
+    oklch(0.769 0.188 70.08 / 30%),
+    oklch(0.696 0.17 162.48 / 50%)
+  );
+  background-size: 300% 300%;
+  animation: border-rotate 4s linear infinite;
+  opacity: 1;
+}
+
+/* Platform card hover */
+.platform-card-hover {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.platform-card-hover:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Footer gradient mesh */
+.footer-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.696 0.17 162.48 / 6%) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 80% at 80% 20%, oklch(0.488 0.243 264.376 / 4%) 0%, transparent 50%),
+    oklch(0.99 0.001 160);
+}
+
+.dark .footer-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 40%, oklch(0.696 0.17 162.48 / 8%) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 80% at 80% 20%, oklch(0.488 0.243 264.376 / 6%) 0%, transparent 50%),
+    oklch(0.058 0.008 280);
+}
+
+/* Newsletter input glow */
+.newsletter-input:focus {
+  box-shadow: 0 0 0 2px oklch(0.696 0.17 162.48 / 25%), 0 0 16px oklch(0.696 0.17 162.48 / 8%);
+  border-color: oklch(0.696 0.17 162.48 / 40%);
+}
+
+/* FAQ glow on open */
+.faq-glow-open {
+  background: oklch(0.696 0.17 162.48 / 3%);
+  box-shadow: inset 0 0 0 1px oklch(0.696 0.17 162.48 / 10%);
+}
+
+/* Reduced motion for new animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-orb-1,
+  .animate-hero-orb-2,
+  .animate-hero-orb-3,
+  .pricing-popular-border::before,
+  .feature-card-hover::before,
+  .platform-card-hover {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .feature-card-hover:hover {
+    transform: none;
+  }
+
+  .platform-card-hover:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   RESPONSIVE UTILITIES — Mobile-first improvements
+   ============================================================ */
+
+/* Safe area padding for bottom navigation on iOS */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Minimum touch target size for interactive elements on mobile */
+@media (max-width: 640px) {
+  /* Ensure buttons have minimum 44px touch target */
+  button,
+  [role="button"],
+  .btn-ghost-shine,
+  a.nav-link {
+    min-height: 36px;
+  }
+
+  /* Scale up very small text on mobile for readability */
+  .text-\\[9px\\],
+  .text-\\[8px\\] {
+    font-size: 10px;
+  }
+
+  /* Make scrollable areas more touch-friendly */
+  .overflow-x-auto,
+  .overflow-y-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure glass-card has adequate contrast on light mobile */
+  .glass-card {
+    background: oklch(1 0.003 160 / 85%);
+    border: 1px solid oklch(0.696 0.17 162.48 / 15%);
+  }
+
+  /* Make code preview more readable */
+  .code-preview {
+    font-size: 0.7rem;
+    padding: 0.5rem;
+  }
+
+  /* Ensure timeline items have enough padding on mobile */
+  .timeline-line::before {
+    left: 11px;
+  }
+
+  /* Compact stat cards on mobile */
+  .glass-card-hover .text-2xl {
+    font-size: 1.25rem;
+  }
+}
+
+/* Tablet (sm) breakpoint adjustments */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* Medium padding for cards */
+  .glass-card {
+    padding: clamp(0.75rem, 2vw, 1.5rem);
+  }
+}
+
+/* Ensure scrollbar-none works on mobile */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar for dashboard panels */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.55 0.03 270 / 25%) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: oklch(0.55 0.03 270 / 25%);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}

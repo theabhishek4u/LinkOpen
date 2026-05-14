@@ -124,16 +124,33 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         shortCode: result.shortCode,
       })
 
-      try {
-        const iframe = document.createElement('iframe')
-        iframe.style.display = 'none'
-        document.body.appendChild(iframe)
-        iframe.contentWindow?.location.assign(result.deepLink)
-
-        setTimeout(() => {
-          document.body.removeChild(iframe)
-        }, 2000)
-      } catch {
+      // Handle deep link opening based on device type
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      
+      if (isMobile) {
+        // On mobile: try deep link first, fallback to web URL
+        try {
+          // Use location.href for better deep link support on mobile
+          const deepLinkTimeout = setTimeout(() => {
+            // If deep link didn't open the app after 2s, open in browser
+            window.open(result.webUrl, '_blank')
+          }, 2000)
+          
+          window.location.href = result.deepLink
+          
+          // Clear timeout if page loses visibility (app opened)
+          const handleVisibility = () => {
+            if (document.hidden) {
+              clearTimeout(deepLinkTimeout)
+              document.removeEventListener('visibilitychange', handleVisibility)
+            }
+          }
+          document.addEventListener('visibilitychange', handleVisibility)
+        } catch {
+          window.open(result.webUrl, '_blank')
+        }
+      } else {
+        // On desktop: open the web URL directly (deep link schemes don't work)
         window.open(result.webUrl, '_blank')
       }
 
@@ -173,10 +190,18 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
       addRecentUrl(validation.normalizedUrl)
 
       toast.success('Deep link generated successfully!', {
-        description: `Opened via ${result.platform?.name || 'app'}`,
+        description: isMobile 
+          ? `Opened via ${result.platform?.name || 'app'}` 
+          : `Opened in browser (${result.platform?.name || 'link'})`,
         action: {
-          label: 'Open in App',
-          onClick: () => window.open(result.deepLink, '_blank'),
+          label: isMobile ? 'Open in App' : 'Open Link',
+          onClick: () => {
+            if (isMobile) {
+              window.location.href = result.deepLink
+            } else {
+              window.open(result.webUrl, '_blank')
+            }
+          },
         },
       })
     } catch (err) {
@@ -624,11 +649,11 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         <Button
           onClick={handleOpenInApp}
           disabled={!isUrlValid || isProcessing}
-          className="glow-green btn-glow bg-primary text-primary-foreground hover:bg-primary/90 min-w-[100px]"
+          className="glow-green btn-glow bg-primary text-primary-foreground hover:bg-primary/90 min-w-[100px] h-10 sm:h-9 w-full sm:w-auto"
           size="default"
         >
           <ExternalLink className="h-4 w-4" />
-          <span className="sm:inline">Open in App</span>
+          Open in App
         </Button>
 
         <Button
@@ -636,6 +661,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
           onClick={handleOpenInBrowser}
           disabled={!isUrlValid || isProcessing}
           size="default"
+          className="h-10 sm:h-9"
         >
           <Globe className="h-4 w-4" />
           <span className="hidden sm:inline">Open in Browser</span>
@@ -647,6 +673,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
           onClick={handleCopyLink}
           disabled={!inputUrl.trim()}
           size="default"
+          className="h-10 sm:h-9"
         >
           <Copy className="h-4 w-4" />
           <span className="hidden sm:inline">Copy Link</span>
@@ -657,6 +684,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
           onClick={handleShare}
           disabled={!inputUrl.trim()}
           size="default"
+          className="h-10 sm:h-9"
         >
           <Share2 className="h-4 w-4" />
           <span className="hidden sm:inline">Share</span>
@@ -667,6 +695,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
           onClick={handleQRCode}
           disabled={!inputUrl.trim()}
           size="default"
+          className="h-10 sm:h-9"
         >
           <QrCode className="h-4 w-4" />
           <span className="hidden sm:inline">QR Code</span>

@@ -270,24 +270,24 @@ export function DashboardMain() {
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col sm:flex-row items-center justify-between gap-4"
+            className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4"
           >
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              <h1 className="text-2xl sm:text-3xl font-bold gradient-text">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold gradient-text">
                 LinkVerse
               </h1>
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap justify-center">
               {/* Command Palette Trigger */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowCommandPalette(true)}
-                className="animate-cmdk-glow flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible-ring"
+                className="animate-cmdk-glow flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible-ring min-h-[36px]"
               >
-                <Search className="h-3 w-3" />
+                <Search className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Search commands...</span>
                 <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded bg-background/50 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/60 border border-border/30">
                   <Command className="h-2.5 w-2.5" />K
@@ -300,7 +300,7 @@ export function DashboardMain() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowApiDocs(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground hover:text-foreground transition-colors focus-visible-ring"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground hover:text-foreground transition-colors focus-visible-ring"
                 aria-label="API Documentation"
                 title="API Docs"
               >
@@ -311,7 +311,7 @@ export function DashboardMain() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowSettings(true)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground hover:text-foreground transition-colors focus-visible-ring"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground hover:text-foreground transition-colors focus-visible-ring"
                 aria-label="Open settings"
               >
                 <Settings className="h-4 w-4" />
@@ -326,7 +326,7 @@ export function DashboardMain() {
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
-            className="glass-card rounded-xl p-2.5 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none gradient-stat-border"
+            className="glass-card rounded-xl p-2 sm:p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3 overflow-x-auto scrollbar-none gradient-stat-border"
           >
             <div className="flex items-center gap-3 sm:gap-5 text-xs shrink-0">
               <div className="flex items-center gap-1.5">
@@ -340,7 +340,7 @@ export function DashboardMain() {
                 </motion.span>
                 <span className="text-muted-foreground hidden sm:inline">links</span>
               </div>
-              <div className="h-3 w-px bg-border/40" />
+              <div className="h-3 w-px bg-border/40 hidden sm:block" />
               <div className="flex items-center gap-1.5">
                 <Activity className="h-3.5 w-3.5 text-violet-400" />
                 <motion.span
@@ -352,7 +352,7 @@ export function DashboardMain() {
                 </motion.span>
                 <span className="text-muted-foreground hidden sm:inline">conversion</span>
               </div>
-              <div className="h-3 w-px bg-border/40" />
+              <div className="h-3 w-px bg-border/40 hidden sm:block" />
               <div className="flex items-center gap-1.5">
                 <Radio className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
                 <span className="text-emerald-400 font-medium">Live</span>
@@ -459,25 +459,25 @@ export function DashboardMain() {
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex items-center gap-2 mt-3"
+              className="flex flex-wrap items-center gap-2 mt-3"
             >
               <button
                 onClick={() => setBulkOpen(true)}
-                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring"
+                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
               >
                 <Layers className="h-3.5 w-3.5" />
                 Bulk Open
               </button>
               <button
                 onClick={() => setShowShortcuts(true)}
-                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring"
+                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
               >
                 <Keyboard className="h-3.5 w-3.5" />
                 Shortcuts
               </button>
               <button
                 onClick={() => setShowHealthChecker(!showHealthChecker)}
-                className={`btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-colors focus-visible-ring ${
+                className={`btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-colors focus-visible-ring min-h-[36px] ${
                   showHealthChecker
                     ? 'text-primary bg-primary/10'
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
@@ -488,7 +488,7 @@ export function DashboardMain() {
               </button>
               <button
                 onClick={() => setShowApiDocs(true)}
-                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring"
+                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
               >
                 <BookOpen className="h-3.5 w-3.5" />
                 API Docs
@@ -556,7 +556,7 @@ export function DashboardMain() {
           </motion.div>
 
           {/* Two-Column Layout */}
-          <div id="section-analytics" className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div id="section-analytics" className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-2">
             {/* Left Column (wider) */}
             <motion.div
               custom={6}
@@ -600,7 +600,7 @@ export function DashboardMain() {
               <Shield className="h-4 w-4 text-primary" />
               <h2 className="text-sm font-semibold text-foreground">Tools & Utilities</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <UrlBuilder />
               <RedirectChain />
               <UsageQuota />
@@ -626,12 +626,36 @@ export function DashboardMain() {
             </motion.div>
           )}
 
+          {/* Mobile Bottom Navigation */}
+          <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden glass-card border-t border-border/20 safe-area-bottom">
+            <nav className="flex items-center justify-around px-2 py-1" role="navigation" aria-label="Mobile dashboard navigation">
+              {SECTIONS.map((section) => {
+                const Icon = section.icon
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => handleSectionNav(section.id)}
+                    className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg transition-colors min-w-[56px] ${
+                      activeSection === section.id
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-current={activeSection === section.id ? 'page' : undefined}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="text-[10px] font-medium">{section.label}</span>
+                  </button>
+                )
+              })}
+            </nav>
+          </div>
+
           {/* Enhanced Footer */}
           <motion.footer
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="mt-auto border-t border-border/20 pt-6 pb-8"
+            className="mt-auto border-t border-border/20 pt-6 pb-20 lg:pb-8"
           >
             <div className="flex flex-col items-center gap-4">
               {/* Brand row */}

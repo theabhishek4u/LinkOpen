@@ -50,7 +50,7 @@ function CookieConsentBanner() {
   useEffect(() => {
     const accepted = localStorage.getItem('linkverse-cookies-accepted')
     if (!accepted) {
-      const timer = setTimeout(() => setVisible(true), 2000)
+      const timer = setTimeout(() => setVisible(true), 5000)
       return () => clearTimeout(timer)
     }
   }, [])

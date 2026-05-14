@@ -113,9 +113,9 @@ export default function Platforms() {
   }, [])
 
   return (
-    <section className="relative py-20 sm:py-28">
+    <section className="relative py-12 sm:py-20 md:py-28">
       {/* Marquee of platform icons at the top */}
-      <div className="mb-16 overflow-hidden relative">
+      <div className="mb-8 sm:mb-12 md:mb-16 overflow-hidden relative">
         {/* Fade edges */}
         <div className="absolute left-0 top-0 bottom-0 w-20 z-10" style={{ background: 'linear-gradient(to right, var(--background), transparent)' }} />
         <div className="absolute right-0 top-0 bottom-0 w-20 z-10" style={{ background: 'linear-gradient(to left, var(--background), transparent)' }} />
@@ -136,19 +136,19 @@ export default function Platforms() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-3 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 sm:mb-16"
+          className="text-center mb-8 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             <span className="gradient-text-smooth">{platforms.length} Platforms Supported</span>
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
             We support all major social media platforms with intelligent deep linking
           </p>
         </motion.div>
@@ -204,13 +204,13 @@ export default function Platforms() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-50px' }}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 relative z-10"
+            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4 relative z-10"
           >
             {platforms.map((platform, index) => (
               <motion.div
                 key={platform.id}
                 variants={cardVariants}
-                className={`glass-card platform-dramatic-hover p-4 sm:p-5 cursor-default relative overflow-hidden group animated-border-glow scroll-reveal ${isVisible ? 'is-visible' : ''}`}
+                className={`glass-card platform-dramatic-hover p-3 sm:p-4 md:p-5 cursor-default relative overflow-hidden group animated-border-glow scroll-reveal ${isVisible ? 'is-visible' : ''}`}
                 style={{
                   borderLeft: `3px solid ${platform.color}40`,
                   transitionDelay: `${(index * 0.05) % 0.3}s`,
@@ -248,9 +248,9 @@ export default function Platforms() {
                 />
 
                 <div className="relative z-10 overflow-hidden">
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                     <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0 icon-bob"
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg sm:text-xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0 icon-bob"
                       style={{
                         background: `${platform.color}15`,
                         boxShadow: `0 0 0 0 ${platform.color}00`,
@@ -260,18 +260,18 @@ export default function Platforms() {
                     >
                       {platform.icon}
                     </div>
-                    <span className="font-semibold text-sm sm:text-base text-foreground truncate">
+                    <span className="font-semibold text-xs sm:text-sm md:text-base text-foreground truncate">
                       {platform.name}
                     </span>
                   </div>
                   {/* Pill-shaped category badge */}
                   <Badge
                     variant="outline"
-                    className={`text-[10px] sm:text-xs rounded-full px-2.5 py-0.5 ${categoryColors[platform.category]}`}
+                    className={`text-[9px] sm:text-[10px] md:text-xs rounded-full px-1.5 sm:px-2.5 py-0.5 ${categoryColors[platform.category]}`}
                   >
                     {categoryLabels[platform.category]}
                   </Badge>
-                  <p className="mt-2 text-xs text-muted-foreground/70 leading-relaxed truncate">
+                  <p className="mt-1 sm:mt-2 text-[11px] sm:text-xs text-muted-foreground/70 leading-relaxed truncate hidden sm:block">
                     Open {platform.name} links directly in the native app
                   </p>
                   {/* Platform stats with ping animation */}

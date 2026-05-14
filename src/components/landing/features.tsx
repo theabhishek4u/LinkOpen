@@ -161,25 +161,25 @@ export default function Features() {
   }
 
   return (
-    <section className="relative py-20 sm:py-28 mesh-gradient-subtle">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <section className="relative py-12 sm:py-20 md:py-28 mesh-gradient-subtle">
+      <div className="mx-auto max-w-6xl px-3 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 sm:mb-16"
+          className="text-center mb-8 sm:mb-12 md:mb-16"
         >
           <div className="flex items-center justify-center gap-3">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
               <span className="gradient-text-smooth">Powerful Features</span>
             </h2>
             <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
               9 features
             </span>
           </div>
-          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-2">
             Everything you need for seamless social media deep linking
           </p>
         </motion.div>
@@ -212,13 +212,13 @@ export default function Features() {
             return (
               <div
                 key={feature.title}
-                className={`scroll-reveal ${staggerClass} rotating-gradient-border glass-card card-shimmer card-tilt-hover p-5 sm:p-6 group relative ${bentoClass}`}
+                className={`scroll-reveal ${staggerClass} rotating-gradient-border glass-card card-shimmer card-tilt-hover p-4 sm:p-5 md:p-6 group relative ${bentoClass}`}
               >
                 {/* Featured badge with rotating gradient */}
                 {feature.featured && (
-                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 rounded-full featured-badge-gradient border border-emerald-500/25">
+                  <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full featured-badge-gradient border border-emerald-500/25">
                     <Sparkles className="size-3 text-emerald-400" style={{ animation: 'sparkle 2s ease-in-out infinite' }} />
-                    <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Featured</span>
+                    <span className="text-[9px] sm:text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Featured</span>
                   </div>
                 )}
 
