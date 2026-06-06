@@ -97,8 +97,7 @@ export function LinkResult() {
           initial={{ opacity: 0, y: -30, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-          className="premium-border glass-card p-4 sm:p-6 space-y-5 relative overflow-hidden"
+          className="glass-card rounded-2xl p-5 sm:p-8 space-y-5 relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/10 dark:border-white/5 hover-lift"
         >
           {/* Success Ripple Animation */}
           <AnimatePresence>

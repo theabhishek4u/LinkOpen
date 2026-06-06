@@ -407,13 +407,13 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
         </AnimatePresence>
 
         <div
-          className={`glass-card p-4 sm:p-6 rounded-xl transition-all duration-300 relative z-10 ${
+          className={`glass-card p-5 sm:p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/10 dark:border-white/5 transition-all duration-300 relative z-10 hover-lift ${
             error ? 'border-red-500/50' : ''
           }`}
         >
           <div className="flex items-center gap-3">
             {/* Left Icon */}
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <motion.div
                 className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"
                 animate={isProcessing ? { rotate: 360 } : {}}
@@ -441,7 +441,7 @@ export const SmartInput = forwardRef<SmartInputHandle>(function SmartInput(_, re
                 onBlur={() => setIsFocused(false)}
                 onKeyDown={handleKeyDown}
                 placeholder="Paste any social media link here..."
-                className={`w-full bg-transparent text-foreground placeholder:text-muted-foreground text-base sm:text-lg outline-none pr-24 ${
+                className={`w-full bg-transparent text-foreground placeholder:text-muted-foreground/60 text-lg sm:text-xl font-medium tracking-tight outline-none pr-24 ${
                   error ? 'text-red-400' : ''
                 }`}
                 disabled={isProcessing}

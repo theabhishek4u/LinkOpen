@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen, Bell, Moon, Download, Globe, GitBranch, Gauge, Wrench, Share2 } from 'lucide-react'
+import { Sparkles, Layers, Keyboard, Zap, Shield, Activity, Search, Command, Link2, BarChart3, Clock, Radio, Settings, HeartPulse, Timer, BookOpen, Bell, Moon, Download, Globe, GitBranch, Gauge, Wrench, Share2, ShieldCheck } from 'lucide-react'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { SmartInput, SmartInputHandle } from './smart-input'
 import { LinkResult } from './link-result'
@@ -211,13 +211,13 @@ export function DashboardMain() {
   }
 
   return (
-    <div className="min-h-screen w-full mesh-gradient-subtle scroll-smooth relative transition-colors duration-700">
+    <div className="min-h-screen w-full mesh-gradient scroll-smooth relative transition-colors duration-700">
       {/* Dot pattern background */}
-      <div className="fixed inset-0 dot-pattern opacity-40 pointer-events-none" aria-hidden="true" />
+      <div className="fixed inset-0 dot-grid opacity-50 pointer-events-none" aria-hidden="true" />
 
       {/* Section background color shift */}
       <div
-        className={`fixed inset-0 bg-gradient-to-b ${sectionBgColors[sectionTransition] || ''} pointer-events-none transition-opacity duration-700`}
+        className={`fixed inset-0 bg-linear-to-b ${sectionBgColors[sectionTransition] || ''} pointer-events-none transition-opacity duration-700`}
         aria-hidden="true"
       />
 
@@ -252,20 +252,6 @@ export function DashboardMain() {
 
         {/* Main content */}
         <div className="flex-1 min-w-0 mx-auto max-w-6xl px-3 sm:px-6 lg:px-8 py-4 sm:py-10 space-y-4 sm:space-y-8 relative z-10">
-          {/* Welcome Card */}
-          <motion.div
-            custom={-0.5}
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <WelcomeCard
-              onCreateLink={handleFocusInput}
-              onViewAnalytics={handleViewAnalytics}
-              onExportData={handleExportData}
-            />
-          </motion.div>
-
           {/* Header */}
           <motion.div
             custom={0}
@@ -274,25 +260,24 @@ export function DashboardMain() {
             animate="visible"
             className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4"
           >
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold gradient-text">
+            <div className="flex items-center gap-2 hover-lift cursor-default">
+              <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold gradient-text tracking-tight">
                 LinkVerse
               </h1>
-              <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div className="flex items-center gap-2 flex-wrap justify-center">
               {/* Command Palette Trigger */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowCommandPalette(true)}
-                className="animate-cmdk-glow flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus-visible-ring min-h-[36px]"
+                className="animate-cmdk-glow flex items-center gap-2 rounded-xl bg-background/50 border border-white/10 dark:border-white/5 shadow-sm hover:shadow-md px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible-ring min-h-[40px] hover-lift"
               >
-                <Search className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Search commands...</span>
-                <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded bg-background/50 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/60 border border-border/30">
-                  <Command className="h-2.5 w-2.5" />K
+                <Search className="h-4 w-4 text-primary/70" />
+                <span className="hidden sm:inline tracking-wide">Search commands...</span>
+                <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded bg-muted/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/80 border border-border/30">
+                  <Command className="h-3 w-3" />K
                 </kbd>
               </motion.button>
               {/* Notification Center */}
@@ -328,7 +313,7 @@ export function DashboardMain() {
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
-            className="glass-card rounded-xl p-2 sm:p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3 overflow-x-auto scrollbar-none gradient-stat-border"
+            className="glass-card rounded-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 overflow-x-auto scrollbar-none gradient-stat-border shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] border border-white/10 dark:border-white/5 hover-lift"
           >
             <div className="flex items-center gap-3 sm:gap-5 text-xs shrink-0">
               <div className="flex items-center gap-1.5">
@@ -361,7 +346,7 @@ export function DashboardMain() {
               </div>
             </div>
 
-            {/* What's New badge + Section Navigation */}
+            {/* What's New badge + Section Navigation (Mobile Only) */}
             <div className="flex items-center gap-2 shrink-0">
               {!whatsNewDismissed && (
                 <Popover>
@@ -403,7 +388,7 @@ export function DashboardMain() {
                   </PopoverContent>
                 </Popover>
               )}
-              <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-0.5">
+              <div className="lg:hidden flex items-center gap-1 bg-muted/30 rounded-lg p-0.5">
                 {SECTIONS.map((section) => (
                   <button
                     key={section.id}
@@ -422,211 +407,211 @@ export function DashboardMain() {
             </div>
           </motion.div>
 
-          {/* Platform Quick Actions */}
-          <motion.div
-            custom={2}
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <PlatformQuickActions />
-          </motion.div>
-
-          {/* Smart Input Section */}
-          <motion.div
-            custom={3}
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-            id="section-input"
-            className="relative"
-          >
-            <SmartInput ref={smartInputRef} />
-
-            {/* URL Suggestions (only when input is empty) */}
-            <UrlSuggestions />
-
-            {/* Category selector */}
-            <div className="mt-2">
-              <CategorySelector />
-            </div>
-
-            {/* Custom Alias */}
-            <div className="mt-2">
-              <CustomAlias />
-            </div>
-
-            {/* Extra action buttons row */}
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-2 mt-3"
-            >
-              <button
-                onClick={() => setBulkOpen(true)}
-                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
-              >
-                <Layers className="h-3.5 w-3.5" />
-                Bulk Open
-              </button>
-              <button
-                onClick={() => setShowShortcuts(true)}
-                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
-              >
-                <Keyboard className="h-3.5 w-3.5" />
-                Shortcuts
-              </button>
-              <button
-                onClick={() => setShowHealthChecker(!showHealthChecker)}
-                className={`btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-colors focus-visible-ring min-h-[36px] ${
-                  showHealthChecker
-                    ? 'text-primary bg-primary/10'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
-                }`}
-              >
-                <HeartPulse className="h-3.5 w-3.5" />
-                Health Check
-              </button>
-              <button
-                onClick={() => setShowApiDocs(true)}
-                className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                API Docs
-              </button>
-            </motion.div>
-          </motion.div>
-
-          {/* Link Result Section */}
-          <motion.div
-            custom={4}
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <LinkResult />
-          </motion.div>
-
-          {/* Link Insights (appears below LinkResult) */}
-          <motion.div
-            custom={4.5}
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <LinkInsights />
-          </motion.div>
-
-          {/* Link Preview Simulator */}
-          <motion.div
-            custom={5}
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <LinkPreviewSimulator />
-          </motion.div>
-
-          {/* Gradient Divider */}
-          <div className="flex items-center justify-center py-2">
-            <div className="h-px w-32 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-          </div>
-
-          {/* Health Checker (toggleable) */}
-          <AnimatePresence>
-            {showHealthChecker && (
+          <AnimatePresence mode="wait">
+            {/* --- CREATE SECTION --- */}
+            {activeSection === 'input' && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
+                key="section-input"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4 sm:space-y-8"
               >
-                <LinkHealthChecker urlToCheck={inputUrl} />
+                {/* Welcome Card */}
+                <WelcomeCard
+                  onCreateLink={handleFocusInput}
+                  onViewAnalytics={handleViewAnalytics}
+                  onExportData={handleExportData}
+                />
+
+                {/* Platform Quick Actions */}
+                <PlatformQuickActions />
+
+                {/* Smart Input Section */}
+                <div id="section-input-area" className="relative">
+                  <SmartInput ref={smartInputRef} />
+
+                  {/* URL Suggestions (only when input is empty) */}
+                  <UrlSuggestions />
+
+                  {/* Category selector */}
+                  <div className="mt-2">
+                    <CategorySelector />
+                  </div>
+
+                  {/* Custom Alias */}
+                  <div className="mt-2">
+                    <CustomAlias />
+                  </div>
+
+                  {/* Extra action buttons row */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <button
+                      onClick={() => setBulkOpen(true)}
+                      className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
+                    >
+                      <Layers className="h-3.5 w-3.5" />
+                      Bulk Open
+                    </button>
+                    <button
+                      onClick={() => setShowShortcuts(true)}
+                      className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
+                    >
+                      <Keyboard className="h-3.5 w-3.5" />
+                      Shortcuts
+                    </button>
+                    <button
+                      onClick={() => setShowHealthChecker(!showHealthChecker)}
+                      className={`btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-colors focus-visible-ring min-h-[36px] ${
+                        showHealthChecker
+                          ? 'text-primary bg-primary/10'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
+                      }`}
+                    >
+                      <HeartPulse className="h-3.5 w-3.5" />
+                      Health Check
+                    </button>
+                    <button
+                      onClick={() => setShowApiDocs(true)}
+                      className="btn-ghost-shine inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors focus-visible-ring min-h-[36px]"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      API Docs
+                    </button>
+                  </div>
+                </div>
+
+                {/* Link Result Section */}
+                <LinkResult />
+
+                {/* Link Insights */}
+                <LinkInsights />
+
+                {/* Link Preview Simulator */}
+                <LinkPreviewSimulator />
+
+                {/* Gradient Divider */}
+                <div className="flex items-center justify-center py-2">
+                  <div className="h-px w-32 bg-linear-to-r from-transparent via-primary/30 to-transparent" />
+                </div>
+
+                {/* Health Checker (toggleable) */}
+                <AnimatePresence>
+                  {showHealthChecker && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <LinkHealthChecker urlToCheck={inputUrl} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Link Search & Filter */}
+                <LinkSearch />
+              </motion.div>
+            )}
+
+            {/* --- ANALYTICS SECTION --- */}
+            {activeSection === 'analytics' && (
+              <motion.div
+                key="section-analytics"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-2"
+              >
+                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BarChart3 className="h-5 w-5 text-violet-400" />
+                    <h2 className="text-lg font-semibold text-foreground">Analytics Overview</h2>
+                  </div>
+                  <AnalyticsCards />
+                  <LinkHeatmap />
+                  <LinkClusters />
+                  <AnalyticsChart />
+                  <PerformanceDashboard />
+                  <MiniChart />
+                </div>
+              </motion.div>
+            )}
+
+            {/* --- HISTORY SECTION --- */}
+            {activeSection === 'history' && (
+              <motion.div
+                key="section-history"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-2"
+              >
+                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="h-5 w-5 text-emerald-400" />
+                    <h2 className="text-lg font-semibold text-foreground">Link History</h2>
+                  </div>
+                  <LinkHistory />
+                </div>
+                <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Activity className="h-5 w-5 text-emerald-400" />
+                    <h2 className="text-lg font-semibold text-foreground">Activity Feed</h2>
+                  </div>
+                  <ActivityFeed />
+                </div>
+              </motion.div>
+            )}
+
+            {/* --- TOOLS SECTION --- */}
+            {activeSection === 'tools' && (
+              <motion.div
+                key="section-tools"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4 sm:space-y-6 mt-2"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="h-5 w-5 text-amber-400" />
+                  <h2 className="text-lg font-semibold text-foreground">Tools & Utilities</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  <UrlBuilder />
+                  <RedirectChain />
+                  <UsageQuota />
+                  <LinkComparison />
+                  <LinkHealthChecker />
+                  <LinkScheduler />
+                  <ExportPanel />
+                  <DeepLinkTester />
+                </div>
+              </motion.div>
+            )}
+
+            {/* --- ADMIN SECTION --- */}
+            {activeSection === 'admin' && user?.role === 'admin' && (
+              <motion.div
+                key="section-admin"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-4 sm:space-y-6 mt-2"
+              >
+                 <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="h-5 w-5 text-amber-400" />
+                  <h2 className="text-lg font-semibold text-foreground">Admin Console</h2>
+                </div>
+                <AdminDashboard />
               </motion.div>
             )}
           </AnimatePresence>
-
-          {/* Link Search & Filter */}
-          <motion.div
-            custom={5.5}
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <LinkSearch />
-          </motion.div>
-
-          {/* Two-Column Layout */}
-          <div id="section-analytics" className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-2">
-            {/* Left Column (wider) */}
-            <motion.div
-              custom={6}
-              variants={sectionVariants}
-              initial="hidden"
-              animate="visible"
-              className="lg:col-span-2 space-y-4 sm:space-y-6"
-            >
-              <AnalyticsCards />
-              <LinkHeatmap />
-              <LinkClusters />
-              <AnalyticsChart />
-              <PerformanceDashboard />
-              <MiniChart />
-            </motion.div>
-
-            {/* Right Column (narrower) */}
-            <motion.div
-              custom={7}
-              variants={sectionVariants}
-              initial="hidden"
-              animate="visible"
-              id="section-history"
-              className="lg:col-span-1 space-y-4 sm:space-y-6"
-            >
-              <LinkHistory />
-              <ActivityFeed />
-            </motion.div>
-          </div>
-
-          {/* Tools Section */}
-          <motion.div
-            custom={8}
-            variants={sectionVariants}
-            initial="hidden"
-            animate="visible"
-            id="section-tools"
-            className="space-y-4 sm:space-y-6"
-          >
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-semibold text-foreground">Tools & Utilities</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              <UrlBuilder />
-              <RedirectChain />
-              <UsageQuota />
-              <LinkComparison />
-              <LinkHealthChecker />
-              <LinkScheduler />
-              <ExportPanel />
-              <DeepLinkTester />
-            </div>
-          </motion.div>
-
-          {/* Admin Section - Only visible for admin users */}
-          {user?.role === 'admin' && (
-            <motion.div
-              custom={9}
-              variants={sectionVariants}
-              initial="hidden"
-              animate="visible"
-              id="section-admin"
-              className="space-y-4 sm:space-y-6"
-            >
-              <AdminDashboard />
-            </motion.div>
-          )}
 
           {/* Mobile Bottom Navigation */}
           <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden glass-card border-t border-border/20 safe-area-bottom">

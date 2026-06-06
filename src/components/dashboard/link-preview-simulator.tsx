@@ -18,15 +18,18 @@ const DEVICES: { id: DeviceType; label: string; icon: typeof Smartphone }[] = [
 // ─── Loading Skeleton ──────────────────────────────────────────────
 
 function PreviewSkeleton({ device, isDark }: { device: DeviceType; isDark: boolean }) {
-  const bgClass = isDark ? 'bg-gray-800' : 'bg-muted/40'
-  const barClass = isDark ? 'bg-gray-700' : 'bg-muted/60'
+  const bgClass = isDark ? 'bg-gray-800' : 'bg-gray-200'
+  const barClass = isDark ? 'bg-gray-700' : 'bg-gray-300'
+  const containerBg = isDark ? 'bg-gray-900' : 'bg-white'
+  const borderClass = isDark ? 'border-gray-700' : 'border-gray-200'
+  const headerBg = isDark ? 'bg-gray-800' : 'bg-gray-50'
 
   if (device === 'mobile') {
     return (
       <div className="flex flex-col items-center gap-2">
-        <div className="relative w-[160px] h-[300px] rounded-[24px] border-2 border-border/40 bg-background/60 overflow-hidden shadow-lg">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-4 bg-muted/30 rounded-b-xl z-10" />
-          <div className="h-8 bg-muted/30 flex items-center justify-center" />
+        <div className={`relative w-[160px] h-[300px] rounded-[24px] border-2 ${borderClass} ${containerBg} overflow-hidden shadow-lg`}>
+          <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-16 h-4 ${headerBg} rounded-b-xl z-10`} />
+          <div className={`h-8 ${headerBg} flex items-center justify-center`} />
           <div className="p-3 space-y-3">
             <div className="flex items-center gap-2">
               <motion.div className={`w-10 h-10 rounded-xl ${bgClass} animate-pulse`} />
@@ -44,15 +47,15 @@ function PreviewSkeleton({ device, isDark }: { device: DeviceType; isDark: boole
   if (device === 'tablet') {
     return (
       <div className="flex flex-col items-center gap-2">
-        <div className="relative w-[200px] h-[260px] rounded-[16px] border-2 border-border/40 bg-background/60 overflow-hidden shadow-lg">
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-muted/30 z-10" />
-          <div className="h-8 bg-muted/30 flex items-center px-2 gap-1.5">
+        <div className={`relative w-[200px] h-[260px] rounded-[16px] border-2 ${borderClass} ${containerBg} overflow-hidden shadow-lg`}>
+          <div className={`absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-300'} z-10`} />
+          <div className={`h-8 ${headerBg} flex items-center px-2 gap-1.5`}>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-red-400/40" />
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400/40" />
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400/40" />
             </div>
-            <motion.div className="flex-1 h-4 rounded bg-muted/30 animate-pulse" />
+            <motion.div className={`flex-1 h-4 rounded ${bgClass} animate-pulse`} />
           </div>
           <div className="p-4 space-y-3">
             <motion.div className={`w-12 h-12 rounded-xl ${bgClass} animate-pulse mx-auto`} />
@@ -67,14 +70,14 @@ function PreviewSkeleton({ device, isDark }: { device: DeviceType; isDark: boole
   // Desktop
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative w-[260px] h-[200px] rounded-t-[10px] border-2 border-b-0 border-border/40 bg-background/60 overflow-hidden shadow-lg">
-        <div className="h-6 bg-muted/30 flex items-center px-2 gap-1.5">
+      <div className={`relative w-[260px] h-[200px] rounded-t-[10px] border-2 border-b-0 ${borderClass} ${containerBg} overflow-hidden shadow-lg`}>
+        <div className={`h-6 ${headerBg} flex items-center px-2 gap-1.5`}>
           <div className="flex gap-1">
             <div className="w-2 h-2 rounded-full bg-red-400/40" />
             <div className="w-2 h-2 rounded-full bg-amber-400/40" />
             <div className="w-2 h-2 rounded-full bg-emerald-400/40" />
           </div>
-          <motion.div className="flex-1 h-4 rounded bg-muted/30 animate-pulse mx-2" />
+          <motion.div className={`flex-1 h-4 rounded ${bgClass} animate-pulse mx-2`} />
         </div>
         <div className="p-4 space-y-3">
           <motion.div className={`w-14 h-14 rounded-xl ${bgClass} animate-pulse mx-auto`} />
@@ -82,8 +85,8 @@ function PreviewSkeleton({ device, isDark }: { device: DeviceType; isDark: boole
           <motion.div className={`h-16 w-full rounded-md ${bgClass} animate-pulse`} />
         </div>
       </div>
-      <div className="w-16 h-3 bg-border/30 rounded-b-sm" />
-      <div className="w-24 h-1.5 bg-border/20 rounded-full" />
+      <div className={`w-16 h-3 ${isDark ? 'bg-gray-700' : 'bg-gray-300'} rounded-b-sm`} />
+      <div className={`w-24 h-1.5 ${isDark ? 'bg-gray-600' : 'bg-gray-200'} rounded-full`} />
     </div>
   )
 }
@@ -160,22 +163,25 @@ function MobileMockup({
   isDark: boolean
   linkMeta: { title: string; description: string }
 }) {
-  const textClass = isDark ? 'text-gray-200' : 'text-foreground'
-  const subtextClass = isDark ? 'text-gray-400' : 'text-muted-foreground'
-  const bgContent = isDark ? 'bg-gray-900' : 'bg-background/60'
-  const cardBg = isDark ? 'bg-gray-800' : 'bg-primary/5'
+  const textClass = isDark ? 'text-gray-200' : 'text-gray-800'
+  const subtextClass = isDark ? 'text-gray-400' : 'text-gray-500'
+  const bgContent = isDark ? 'bg-gray-900' : 'bg-white'
+  const cardBg = isDark ? 'bg-gray-800' : 'bg-gray-100'
+  const borderClass = isDark ? 'border-gray-700' : 'border-gray-200'
+  const headerBg = isDark ? 'bg-gray-800' : 'bg-gray-50'
+  const notchClass = isDark ? 'bg-gray-950' : 'bg-gray-200'
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className={`relative w-[160px] h-[300px] rounded-[24px] border-2 border-border/40 ${bgContent} overflow-hidden shadow-lg transition-colors duration-500`}>
+      <div className={`relative w-[160px] h-[300px] rounded-[24px] border-2 ${borderClass} ${bgContent} overflow-hidden shadow-lg transition-colors duration-500`}>
         {/* Notch */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-4 bg-foreground/10 rounded-b-xl z-10" />
+        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-16 h-4 ${notchClass} rounded-b-xl z-10`} />
         {/* Status bar */}
-        <div className={`h-8 ${isDark ? 'bg-gray-800' : 'bg-background/40'} flex items-center justify-center transition-colors duration-500`}>
-          <span className="text-[8px] text-muted-foreground">9:41</span>
+        <div className={`h-8 ${headerBg} flex items-center justify-center transition-colors duration-500`}>
+          <span className={`text-[8px] ${subtextClass}`}>9:41</span>
         </div>
         {/* App header */}
-        <div className={`h-10 flex items-center px-3 gap-2 border-b ${isDark ? 'border-gray-700' : 'border-border/20'} transition-colors duration-500`}>
+        <div className={`h-10 flex items-center px-3 gap-2 border-b ${borderClass} transition-colors duration-500`}>
           <span className="text-sm">{platform?.icon || '🔗'}</span>
           <span className={`text-[10px] font-medium truncate ${textClass} transition-colors duration-500`}>{platform?.name || 'App'}</span>
         </div>
@@ -202,7 +208,7 @@ function MobileMockup({
           )}
 
           <div className={`w-full rounded-md ${cardBg} px-2 py-1.5 mt-1 transition-colors duration-500`}>
-            <p className="text-[7px] font-mono text-primary/70 break-all line-clamp-2">
+            <p className="text-[7px] font-mono text-emerald-500/70 break-all line-clamp-2">
               {deepLink || 'scheme://path'}
             </p>
           </div>
@@ -213,7 +219,7 @@ function MobileMockup({
         </div>
         {/* Home indicator */}
         <div className="h-4 flex items-center justify-center pb-1">
-          <div className="w-20 h-1 rounded-full bg-foreground/10" />
+          <div className={`w-20 h-1 rounded-full ${notchClass}`} />
         </div>
       </div>
     </div>
@@ -231,24 +237,28 @@ function TabletMockup({
   isDark: boolean
   linkMeta: { title: string; description: string }
 }) {
-  const textClass = isDark ? 'text-gray-200' : 'text-foreground'
-  const subtextClass = isDark ? 'text-gray-400' : 'text-muted-foreground'
-  const bgContent = isDark ? 'bg-gray-900' : 'bg-background/60'
+  const textClass = isDark ? 'text-gray-200' : 'text-gray-800'
+  const subtextClass = isDark ? 'text-gray-400' : 'text-gray-500'
+  const bgContent = isDark ? 'bg-gray-900' : 'bg-white'
+  const borderClass = isDark ? 'border-gray-700' : 'border-gray-200'
+  const headerBg = isDark ? 'bg-gray-800' : 'bg-gray-100'
+  const inputBg = isDark ? 'bg-gray-700' : 'bg-white'
+  const cameraClass = isDark ? 'bg-gray-800' : 'bg-gray-300'
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className={`relative w-[200px] h-[260px] rounded-[16px] border-2 border-border/40 ${bgContent} overflow-hidden shadow-lg transition-colors duration-500`}>
+      <div className={`relative w-[200px] h-[260px] rounded-[16px] border-2 ${borderClass} ${bgContent} overflow-hidden shadow-lg transition-colors duration-500`}>
         {/* Camera */}
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-foreground/10 z-10" />
+        <div className={`absolute top-2 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full ${cameraClass} z-10`} />
         {/* Browser bar */}
-        <div className={`h-8 ${isDark ? 'bg-gray-800' : 'bg-muted/40'} flex items-center px-2 gap-1.5 transition-colors duration-500`}>
+        <div className={`h-8 ${headerBg} flex items-center px-2 gap-1.5 transition-colors duration-500`}>
           <div className="flex gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-red-400/60" />
             <div className="w-1.5 h-1.5 rounded-full bg-amber-400/60" />
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400/60" />
           </div>
-          <div className={`flex-1 rounded px-2 py-0.5 ${isDark ? 'bg-gray-700' : 'bg-background/50'}`}>
-            <span className="text-[7px] text-muted-foreground truncate block">
+          <div className={`flex-1 rounded px-2 py-0.5 ${inputBg}`}>
+            <span className={`text-[7px] ${subtextClass} truncate block`}>
               linkverse.app/s/abc123
             </span>
           </div>
@@ -272,8 +282,8 @@ function TabletMockup({
               {linkMeta.description}
             </span>
           )}
-          <div className="w-full rounded-md bg-primary/5 border border-primary/10 px-2 py-1.5">
-            <p className="text-[7px] font-mono text-primary/60 break-all line-clamp-2">
+          <div className={`w-full rounded-md ${isDark ? 'bg-gray-800' : 'bg-gray-50'} border ${borderClass} px-2 py-1.5`}>
+            <p className="text-[7px] font-mono text-emerald-500/80 break-all line-clamp-2">
               {deepLink || 'scheme://path'}
             </p>
           </div>
@@ -294,22 +304,25 @@ function DesktopMockup({
   isDark: boolean
   linkMeta: { title: string; description: string }
 }) {
-  const textClass = isDark ? 'text-gray-200' : 'text-foreground'
-  const subtextClass = isDark ? 'text-gray-400' : 'text-muted-foreground'
-  const bgContent = isDark ? 'bg-gray-900' : 'bg-background/60'
+  const textClass = isDark ? 'text-gray-200' : 'text-gray-800'
+  const subtextClass = isDark ? 'text-gray-400' : 'text-gray-500'
+  const bgContent = isDark ? 'bg-gray-900' : 'bg-white'
+  const borderClass = isDark ? 'border-gray-700' : 'border-gray-200'
+  const headerBg = isDark ? 'bg-gray-800' : 'bg-gray-100'
+  const inputBg = isDark ? 'bg-gray-700' : 'bg-white'
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className={`relative w-[260px] h-[200px] rounded-t-[10px] border-2 border-b-0 border-border/40 ${bgContent} overflow-hidden shadow-lg transition-colors duration-500`}>
+      <div className={`relative w-[260px] h-[200px] rounded-t-[10px] border-2 border-b-0 ${borderClass} ${bgContent} overflow-hidden shadow-lg transition-colors duration-500`}>
         {/* Title bar */}
-        <div className={`h-6 ${isDark ? 'bg-gray-800' : 'bg-muted/40'} flex items-center px-2 gap-1.5 transition-colors duration-500`}>
+        <div className={`h-6 ${headerBg} flex items-center px-2 gap-1.5 transition-colors duration-500`}>
           <div className="flex gap-1">
             <div className="w-2 h-2 rounded-full bg-red-400/60" />
             <div className="w-2 h-2 rounded-full bg-amber-400/60" />
             <div className="w-2 h-2 rounded-full bg-emerald-400/60" />
           </div>
-          <div className={`flex-1 rounded px-3 py-0.5 mx-2 ${isDark ? 'bg-gray-700' : 'bg-background/50'}`}>
-            <span className="text-[8px] text-muted-foreground truncate block">
+          <div className={`flex-1 rounded px-3 py-0.5 mx-2 ${inputBg}`}>
+            <span className={`text-[8px] ${subtextClass} truncate block`}>
               linkverse.app — {linkMeta.title || 'Deep Link Preview'}
             </span>
           </div>
@@ -342,8 +355,8 @@ function DesktopMockup({
             {linkMeta.description && (
               <span className={`text-[7px] ${subtextClass} line-clamp-2 transition-colors duration-500`}>{linkMeta.description}</span>
             )}
-            <div className="rounded-md bg-primary/5 border border-primary/10 px-2 py-1.5">
-              <p className="text-[7px] font-mono text-primary/60 break-all line-clamp-3">
+            <div className={`rounded-md ${isDark ? 'bg-gray-800' : 'bg-gray-50'} border ${borderClass} px-2 py-1.5`}>
+              <p className="text-[7px] font-mono text-emerald-500/80 break-all line-clamp-3">
                 {deepLink || 'scheme://path'}
               </p>
             </div>
@@ -355,8 +368,8 @@ function DesktopMockup({
         </div>
       </div>
       {/* Monitor stand */}
-      <div className="w-16 h-3 bg-border/30 rounded-b-sm" />
-      <div className="w-24 h-1.5 bg-border/20 rounded-full" />
+      <div className={`w-16 h-3 ${isDark ? 'bg-gray-700' : 'bg-gray-300'} rounded-b-sm`} />
+      <div className={`w-24 h-1.5 ${isDark ? 'bg-gray-600' : 'bg-gray-200'} rounded-full`} />
     </div>
   )
 }

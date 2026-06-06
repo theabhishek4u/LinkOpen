@@ -125,15 +125,15 @@ export function WelcomeCard({ onCreateLink, onViewAnalytics, onExportData }: Wel
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: -15 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: -20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -15, height: 0 }}
-        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const }}
-        className={`relative glass-card rounded-xl overflow-hidden border border-border/20`}
+        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as const }}
+        className={`relative glass-card rounded-2xl overflow-hidden border border-white/10 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover-lift`}
       >
         {/* Gradient background */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${greeting.gradient} pointer-events-none`}
+          className={`absolute inset-0 bg-linear-to-br ${greeting.gradient} pointer-events-none`}
           aria-hidden="true"
         />
 
@@ -206,11 +206,11 @@ export function WelcomeCard({ onCreateLink, onViewAnalytics, onExportData }: Wel
               <motion.button
                 key={action.label}
                 onClick={action.onClick}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium ${action.color} border border-border/20 transition-colors focus-visible-ring min-h-[36px]`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-semibold ${action.color} border border-white/5 shadow-sm hover:shadow-md transition-all focus-visible-ring min-h-[36px] ${action.label === 'Create Link' ? 'btn-glow' : ''}`}
               >
-                <action.icon className="h-3.5 w-3.5" />
+                <action.icon className="h-4 w-4" />
                 {action.label}
               </motion.button>
             ))}
