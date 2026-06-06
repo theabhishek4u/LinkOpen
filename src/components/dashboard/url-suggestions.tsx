@@ -48,7 +48,7 @@ function SuggestionCard({
           transition={{
             duration: 0.3,
             delay: index * 0.05,
-            ease: [0.25, 0.46, 0.45, 0.94],
+            ease: [0.25, 0.46, 0.45, 0.94] as const,
           }}
           whileHover={{ scale: 1.02, x: 4 }}
           whileTap={{ scale: 0.98 }}

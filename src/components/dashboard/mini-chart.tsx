@@ -116,7 +116,7 @@ export function MiniChart() {
                   transition={{
                     duration: 0.6,
                     delay: index * 0.08,
-                    ease: [0.25, 0.46, 0.45, 0.94],
+                    ease: [0.25, 0.46, 0.45, 0.94] as const,
                   }}
                   className="w-full max-w-[32px] rounded-t-md relative overflow-hidden cursor-pointer group/bar"
                   style={{

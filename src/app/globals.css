@@ -1,3 +1,4 @@
+/* DEBUG: VERIFYING CHANGE 1 */
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -297,6 +298,8 @@
 
   /* ── Animated gradient text ──────────────────────────────── */
   .gradient-text {
+    display: inline-block;
+    width: fit-content;
     background: linear-gradient(
       135deg,
       oklch(0.50 0.17 162.48) 0%,
@@ -306,9 +309,10 @@
       oklch(0.50 0.17 162.48) 100%
     );
     background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
     animation: gradient-shift 6s ease infinite;
   }
 
@@ -321,9 +325,13 @@
       oklch(0.58 0.2 270) 75%,
       oklch(0.696 0.17 162.48) 100%
     );
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
   }
 
   .gradient-text-green {
+    display: inline-block;
+    width: fit-content;
     background: linear-gradient(
       135deg,
       oklch(0.50 0.17 162.48) 0%,
@@ -331,9 +339,10 @@
       oklch(0.40 0.18 162) 100%
     );
     background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
     animation: gradient-shift 4s ease infinite;
   }
 
@@ -344,9 +353,13 @@
       oklch(0.82 0.19 160) 50%,
       oklch(0.55 0.18 162) 100%
     );
+    -webkit-background-clip: text;
+    background-clip: text;
   }
 
   .gradient-text-purple {
+    display: inline-block;
+    width: fit-content;
     background: linear-gradient(
       135deg,
       oklch(0.38 0.243 264.376) 0%,
@@ -357,6 +370,7 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
     animation: gradient-shift 4s ease infinite;
   }
 
@@ -367,6 +381,8 @@
       oklch(0.65 0.25 290) 50%,
       oklch(0.58 0.2 270) 100%
     );
+    -webkit-background-clip: text;
+    background-clip: text;
   }
 
   /* ── Animated mesh gradient background ───────────────────── */
@@ -388,6 +404,7 @@
         transparent 50%
       ),
       oklch(0.99 0.001 160);
+    background-attachment: fixed;
     animation: mesh-drift 12s ease-in-out infinite alternate;
   }
 
@@ -409,6 +426,7 @@
         transparent 50%
       ),
       oklch(0.058 0.008 280);
+    background-attachment: fixed;
   }
 
   .mesh-gradient-subtle {
@@ -424,6 +442,7 @@
         transparent 50%
       ),
       oklch(0.99 0.001 160);
+    background-attachment: fixed;
     animation: mesh-drift 16s ease-in-out infinite alternate;
   }
 
@@ -440,6 +459,7 @@
         transparent 50%
       ),
       oklch(0.058 0.008 280);
+    background-attachment: fixed;
   }
 
   /* ── Animated premium border ────────────────────────────── */
@@ -4688,8 +4708,8 @@ nav a:focus-visible {
   }
 
   /* Scale up very small text on mobile for readability */
-  .text-\\[9px\\],
-  .text-\\[8px\\] {
+  .text-\[9px\],
+  .text-\[8px\] {
     font-size: 10px;
   }
 

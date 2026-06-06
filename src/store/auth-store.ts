@@ -4,10 +4,10 @@ import { signIn, signOut } from 'next-auth/react'
 export interface AuthUser {
   id: string
   email: string
-  name: string | null
+  name: string | null | undefined
   role: string
   plan: string
-  avatar: string | null
+  avatar: string | null | undefined
 }
 
 interface AuthState {

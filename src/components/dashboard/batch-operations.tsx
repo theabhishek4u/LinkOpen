@@ -383,7 +383,7 @@ export function BatchOperationsBar() {
                         Export
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-40 p-1.5" align="bottom" sideOffset={8}>
+                    <PopoverContent className="w-40 p-1.5" align="start" sideOffset={8}>
                       <button
                         onClick={handleExportJSON}
                         className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/40 transition-colors"
@@ -416,7 +416,7 @@ export function BatchOperationsBar() {
                         Tag
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-48 p-2" align="bottom" sideOffset={8}>
+                    <PopoverContent className="w-48 p-2" align="start" sideOffset={8}>
                       <div className="space-y-1">
                         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1">
                           Assign Tag to {count} link{count > 1 ? 's' : ''}

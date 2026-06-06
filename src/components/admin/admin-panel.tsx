@@ -111,7 +111,7 @@ const platformColors: Record<string, string> = {
 
 const tabVariants = {
   hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] as const } },
   exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
 }
 
@@ -1448,7 +1448,7 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const }}
         className="space-y-6"
       >
         {/* Header */}

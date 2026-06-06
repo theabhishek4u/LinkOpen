@@ -267,7 +267,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
-          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const }}
         >
           <LandingView onSwitchToDashboard={handleSwitchToDashboard} />
         </motion.div>
@@ -277,7 +277,7 @@ export default function Home() {
           initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95, filter: 'blur(4px)' }}
-          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const }}
         >
           <DashboardView onSwitchToLanding={handleSwitchToLanding} />
         </motion.div>

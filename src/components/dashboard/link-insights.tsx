@@ -574,9 +574,10 @@ export function LinkInsights() {
                   </button>
                   <button
                     onClick={() => {
-                      window.open(latestLink.deepLink, '_blank').catch(() => {
+                      const win = window.open(latestLink.deepLink, '_blank')
+                      if (!win) {
                         window.open(latestLink.originalUrl, '_blank')
-                      })
+                      }
                     }}
                     className="flex items-center gap-1 px-2 py-1 rounded-md bg-muted/30 text-muted-foreground text-[10px] hover:text-foreground hover:bg-muted/50 transition-colors"
                   >

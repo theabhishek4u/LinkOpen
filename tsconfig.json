@@ -23,6 +23,7 @@
         "name": "next"
       }
     ],
+    "types": ["node", "react", "react-dom", "next", "estree", "hast", "mdast", "unist", "qrcode"],
     "paths": {
       "@/*": [
         "./src/*"
@@ -37,6 +38,7 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "examples"
   ]
 }

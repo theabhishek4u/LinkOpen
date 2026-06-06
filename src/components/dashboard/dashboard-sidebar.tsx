@@ -32,7 +32,7 @@ export function DashboardSidebar({ activeSection, onSectionChange }: DashboardSi
     <motion.aside
       initial={false}
       animate={{ width: collapsed ? 56 : 180 }}
-      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] as const }}
       className="hidden lg:flex flex-col h-[calc(100vh-4rem)] sticky top-16 glass-card rounded-xl border border-border/10 overflow-hidden shrink-0"
     >
       {/* Toggle button */}

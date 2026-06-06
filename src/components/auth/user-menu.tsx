@@ -24,7 +24,7 @@ function getPlanBadge(plan: string) {
   }
 }
 
-function getInitials(name: string | null, email: string): string {
+function getInitials(name: string | null | undefined, email: string): string {
   if (name) {
     const parts = name.trim().split(/\s+/)
     if (parts.length >= 2) {

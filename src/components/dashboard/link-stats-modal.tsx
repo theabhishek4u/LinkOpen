@@ -28,9 +28,16 @@ import {
 import { Button } from '@/components/ui/button'
 import { useLinkStore } from '@/store/link-store'
 
+interface DayStat {
+  date: string
+  opens: number
+  nativeOpens: number
+  browserOpens: number
+}
+
 // Generate 30 days of mock data
-function generate30DayData() {
-  const data = []
+function generate30DayData(): DayStat[] {
+  const data: DayStat[] = []
   const now = new Date()
   for (let i = 29; i >= 0; i--) {
     const date = new Date(now)
@@ -149,7 +156,7 @@ function CustomTooltip({ active, payload, label }: { active?: boolean; payload?:
 export function LinkStatsModal({ open, onOpenChange }: LinkStatsModalProps) {
   const { analytics } = useLinkStore()
 
-  const thirtyDayData = useMemo(() => generate30DayData(), [])
+  const thirtyDayData = useMemo<DayStat[]>(() => generate30DayData(), [])
   const platformData = useMemo(() => generatePlatformData(), [])
   const nativeVsBrowserData = useMemo(() => {
     return thirtyDayData.slice(-14).map((d) => ({

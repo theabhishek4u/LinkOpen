@@ -622,7 +622,7 @@ export function PerformanceDashboard() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="glass-card rounded-xl p-4 flex flex-col items-center justify-center border border-border/20 metric-gradient-border"
+          className="glass-card rounded-xl p-4 flex flex-col items-center justify-center border border-border/20 metric-gradient-border overflow-hidden"
         >
           <h4 className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium mb-3">
             Performance Score
@@ -635,7 +635,7 @@ export function PerformanceDashboard() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.15 }}
-          className="glass-card rounded-xl p-4 border border-border/20"
+          className="glass-card rounded-xl p-4 border border-border/20 overflow-hidden"
         >
           <h4 className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-medium mb-4 text-center">
             Conversion Funnel

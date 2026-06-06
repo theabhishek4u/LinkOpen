@@ -46,7 +46,7 @@ import { useLinkStore } from '@/store/link-store'
 import { useAuthStore } from '@/store/auth-store'
 import { useTheme } from 'next-themes'
 
-type SectionId = 'input' | 'analytics' | 'history' | 'tools' | 'admin'
+type SectionId = 'input' | 'analytics' | 'history' | 'tools' | 'admin' | 'settings'
 
 const SECTIONS = [
   { id: 'input' as const, label: 'Create', icon: Link2 },
@@ -64,7 +64,7 @@ const sectionVariants = {
     transition: {
       duration: 0.5,
       delay: i * 0.08,
-      ease: [0.25, 0.46, 0.45, 0.94],
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
     },
   }),
   exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
@@ -76,6 +76,8 @@ const sectionBgColors: Record<SectionId, string> = {
   analytics: 'from-violet-500/[0.02] to-transparent',
   tools: 'from-amber-500/[0.02] to-transparent',
   history: 'from-emerald-500/[0.02] to-transparent',
+  settings: 'from-violet-500/[0.02] to-transparent',
+  admin: 'from-amber-500/[0.02] to-transparent',
 }
 
 export function DashboardMain() {

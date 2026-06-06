@@ -107,7 +107,7 @@ function FaqItem({ faq, index, isOpen, onToggle }: { faq: typeof faqs[0]; index:
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] as const }}
             className="overflow-hidden"
           >
             <div className="px-4 sm:px-5 pb-4 pl-15 sm:pl-16 text-sm text-muted-foreground leading-relaxed">

@@ -160,7 +160,7 @@ function ChartBar({ bar, index, animated, hoveredBar, onHover, onLeave }: {
           y: hoveredBar === index ? 0 : 4,
           scale: hoveredBar === index ? 1 : 0.85,
         }}
-        transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] }}
+        transition={{ duration: 0.15, ease: [0.25, 0.46, 0.45, 0.94] as const }}
         className="bar-tooltip"
       >
         {bar.value} opens
@@ -174,7 +174,7 @@ function ChartBar({ bar, index, animated, hoveredBar, onHover, onLeave }: {
             opacity: animated ? (hoveredBar === index ? 1 : 0.85) : 0.3,
           }}
           transition={{
-            scaleY: { duration: 0.8, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] },
+            scaleY: { duration: 0.8, delay: index * 0.1, ease: [0.25, 0.46, 0.45, 0.94] as const },
             opacity: { duration: 0.3 },
           }}
           style={{
@@ -391,7 +391,7 @@ export default function AnalyticsPreview() {
                         initial={{ width: 0 }}
                         whileInView={{ width: `${animated ? platform.value : 0}%` }}
                         viewport={{ once: true }}
-                        transition={{ duration: 1.2, delay: 0.5 + i * 0.12, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        transition={{ duration: 1.2, delay: 0.5 + i * 0.12, ease: [0.25, 0.46, 0.45, 0.94] as const }}
                       >
                         {/* Shimmer effect on bar */}
                         <div className="absolute inset-0 opacity-30" style={{

@@ -51,7 +51,7 @@ export interface AnalyticsData {
   totalOpens: number
   nativeOpens: number
   browserOpens: number
-  topPlatforms: { platform: string; count: number; color: string }[]
+  topPlatforms: { platform: string; count: number; percentage?: number; color: string }[]
   recentActivity: { date: string; opens: number }[]
   deviceBreakdown: { device: string; count: number }[]
 }
@@ -107,14 +107,8 @@ const defaultSettings: LinkVerseSettings = {
 interface LinkState {
   inputUrl: string
   setInputUrl: (url: string) => void
-  detectedPlatform: {
-    id: string
-    name: string
-    icon: string
-    color: string
-    deepLinkScheme: string
-  } | null
-  setDetectedPlatform: (platform: LinkState['detectedPlatform']) => void
+  detectedPlatform: import('@/lib/platform-detect').PlatformInfo | null
+  setDetectedPlatform: (platform: import('@/lib/platform-detect').PlatformInfo | null) => void
   deepLinkResult: {
     originalUrl: string
     deepLink: string

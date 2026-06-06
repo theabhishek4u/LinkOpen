@@ -21,6 +21,7 @@ const plansMonthly = [
     cta: 'Get Started',
     highlighted: false,
     accent: 'emerald',
+    savings: undefined,
   },
   {
     name: 'Pro',
@@ -38,6 +39,7 @@ const plansMonthly = [
     cta: 'Start Pro Trial',
     highlighted: true,
     accent: 'emerald',
+    savings: undefined,
   },
   {
     name: 'Enterprise',
@@ -55,6 +57,7 @@ const plansMonthly = [
     cta: 'Contact Sales',
     highlighted: false,
     accent: 'violet',
+    savings: undefined,
   },
 ]
 
@@ -232,7 +235,7 @@ export default function Pricing() {
                         initial={{ opacity: 0, y: priceDirection === 'up' ? 20 : -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: priceDirection === 'up' ? -20 : 20 }}
-                        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] as const }}
                         className={`inline-block ${priceDirection === 'up' ? 'price-counter-enter-up' : 'price-counter-enter-down'}`}
                       >
                         {plan.price}

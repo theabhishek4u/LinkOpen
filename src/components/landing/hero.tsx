@@ -88,7 +88,7 @@ function useStars(count: number) {
   useEffect(() => {
     if (generatedRef.current) return
     generatedRef.current = true
-    const generated = []
+    const generated: Array<{ id: number; x: string; y: string; duration: string; delay: string; bright: boolean }> = []
     for (let i = 0; i < count; i++) {
       generated.push({
         id: i,
@@ -383,7 +383,7 @@ export default function Hero({ onTryNow }: HeroProps) {
                 <motion.div
                   initial={{ opacity: 0, height: 0, y: -10 }}
                   animate={{ opacity: 1, height: 'auto', y: 0 }}
-                  transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const }}
                   className="mt-4 p-4 rounded-xl bg-emerald-500/8 border border-emerald-500/15 relative z-10"
                 >
                   <div className="flex items-center gap-2 text-sm mb-2">

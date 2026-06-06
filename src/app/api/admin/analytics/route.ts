@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
 
     // Click trends over time (daily for the selected range)
     const days = range === '7d' ? 7 : range === 'today' ? 1 : range === '90d' ? 90 : 30
-    const trendData = []
+    const trendData: { date: string; opens: number; nativeOpens: number }[] = []
     for (let i = days - 1; i >= 0; i--) {
       const dayStart = new Date(now)
       dayStart.setDate(dayStart.getDate() - i)

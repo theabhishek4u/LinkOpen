@@ -120,8 +120,7 @@ export async function GET(request: NextRequest) {
     const rateLimitResponse = withRateLimit(request, RATE_LIMITS.default)
     if (rateLimitResponse) return rateLimitResponse
 
-    const entries = Array.from(sharedLinks.entries()).map(([code, link]) => ({
-      code,
+    const entries = Array.from(sharedLinks.entries()).map(([, link]) => ({
       ...link,
     }))
 
